@@ -1,4 +1,4 @@
-package Database;
+package edu.oswego.database;
 
 import java.io.File;
 import java.io.FileNotFoundException;

@@ -1,7 +1,8 @@
 package Runnables;
 
-import Database.Database;
-import JavaMail.Mailer;
+import edu.oswego.database.Database;
+import edu.oswego.mail.Mailer;
+
 import com.google.gson.JsonObject;
 
 import java.util.concurrent.atomic.AtomicBoolean;
