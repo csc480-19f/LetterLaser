@@ -19,7 +19,7 @@ import javax.mail.search.FlagTerm;
 
 @Deprecated
 public class MailDemo {
-
+/*
 	// https://www.tutorialspoint.com/javamail_api/javamail_api_checking_emails.htm
 	
 	public static void main(String[] args) {
@@ -34,7 +34,7 @@ public class MailDemo {
 		try {
 			readInboxAttributes(store);
 		} catch (IOException e1) {
-			// TODO Auto-generated catch block
+
 			e1.printStackTrace();
 		}
 		//testTimeAlt(store);
@@ -146,10 +146,10 @@ public class MailDemo {
 		} catch (MessagingException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
+
 			e.printStackTrace();
 		}
 	}
 
-	
+	*/
 }

@@ -17,10 +17,7 @@ import javax.mail.MessagingException;
 import javax.mail.NoSuchProviderException;
 
 import JavaMail.Mailer;
-import edu.oswego.model.Label;
-import edu.oswego.model.UserFavourites;
-import edu.oswego.model.UserFolder;
-import Settings;
+import model.*;
 import SentimentAnalyzer.SentimentScore;
 
 /**
@@ -68,7 +65,7 @@ public class Database {
 	/*
 	 * Displays all INBOX folder messages through console output.
 	 */
-	public static void showTables() {
+	public void showTables() {
 		long ct = System.currentTimeMillis();
 		ResultSet queryTbl;
 		try {
@@ -105,7 +102,7 @@ public class Database {
 	 * 
 	 * @param query statement
 	 */
-	public static void query(String statement) {
+	public void query(String statement) {
 		PreparedStatement ps;
 		try {
 			ps = getConnection().prepareStatement(statement);
@@ -120,7 +117,7 @@ public class Database {
 	 * 
 	 * @see truncateTable method
 	 */
-	public static void truncateTables() {
+	public void truncateTables() {
 		for (String tbl : Settings.DATABASE_TABLES)
 			truncateTable(tbl);
 	}
@@ -130,7 +127,7 @@ public class Database {
 	 * 
 	 * @param table name
 	 */
-	public static void truncateTable(String table) {
+	public void truncateTable(String table) {
 		PreparedStatement ps;
 		try {
 			ps = getConnection().prepareStatement("TRUNCATE TABLE " + table + ";");
@@ -143,7 +140,7 @@ public class Database {
 	/*
 	 * Pulls all emails from IMAP server and separates meta-data
 	 */
-	public static void pull() {
+	public void pull() {
 		Message[] msgs = Mailer.pullEmails("INBOX");
 		for (Message m : msgs) {
 			try {
@@ -159,7 +156,7 @@ public class Database {
 	 * 
 	 * @param Array of address objects from Message.getFrom()
 	 */
-	private static void insertEmailAddress(Address[] addresses) {
+	private void insertEmailAddress(Address[] addresses) {
 		for (int i = 0; i < addresses.length; i++) {
 			PreparedStatement ps;
 			try {
@@ -179,7 +176,7 @@ public class Database {
 	/*
 	 * For testing/debug purposes via Database Team.
 	 */
-	public static void insertDummyData() {
+	public void insertDummyData() {
 
 		String[] dummyStatements = { "INSERT INTO user (email_address) VALUE ('first@gmail.com');",
 				"INSERT INTO user (email_address) VALUE ('second@gmail.com');",
@@ -208,7 +205,7 @@ public class Database {
 	 * 
 	 * @return new Folder object if it doesn't exist.
 	 */
-	public static UserFolder getFolder(int id, String name) {
+	public UserFolder getFolder(int id, String name) {
 		for (UserFolder folder : folderList)
 			if (folder.getId() == id)
 				return folder;
@@ -219,7 +216,7 @@ public class Database {
 		return fold;
 	}
 
-	public static List<Label> getLabels() {
+	public List<Label> getLabels() {
 		try {
 			Folder[] f = Mailer.getStorage(Settings.EMAIL_ADDRESS, Settings.EMAIL_PWD).getDefaultFolder().list();
 			for (Folder fd : f) {
@@ -241,7 +238,7 @@ public class Database {
 	 * 
 	 * @return List of UserFavourites objects.
 	 */
-	public static List<UserFavourites> fetchFavourites(String emailAddress) {
+	public List<UserFavourites> fetchFavourites(String emailAddress) {
 		List<UserFavourites> favsList = new ArrayList<>(); // HMMM CLASS LIST MAYBE?
 
 		System.out.println("FETCHING FAVOURITES FOR :" + emailAddress + "\n----------------------");
@@ -279,7 +276,7 @@ public class Database {
 	 * 
 	 * @see insertSentimentScore method
 	 */
-	public static void calculateSentimentScore(int emailId, SentimentScore score) {
+	public void calculateSentimentScore(int emailId, SentimentScore score) {
 		int sentimentId = insertSentimentScore(score);
 
 		if (sentimentId == -1) {
@@ -297,7 +294,7 @@ public class Database {
 	 * 
 	 * @return id attribute from sentiment_score table of inserted object
 	 */
-	private static int insertSentimentScore(SentimentScore score) {
+	private int insertSentimentScore(SentimentScore score) {
 		try {
 			PreparedStatement ps = getConnection()
 					.prepareStatement("INSERT INTO sentiment_score (positive, negative, neutral, compound) VALUE ("
@@ -320,7 +317,7 @@ public class Database {
 	 * 
 	 * @param email id and sentiment score id from database table
 	 */
-	private static void insertSentimentScoreIntoEmail(int emailId, int sentimentScoreId) {
+	private void insertSentimentScoreIntoEmail(int emailId, int sentimentScoreId) {
 		try {
 			PreparedStatement pstmt = getConnection().prepareStatement(
 					"UPDATE email SET sentiment_score_id = " + sentimentScoreId + " WHERE id = " + emailId + ";");
