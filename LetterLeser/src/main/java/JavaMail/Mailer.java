@@ -1,4 +1,4 @@
-package edu.oswego.mail;
+package JavaMail;
 
 import java.util.Properties;
 
@@ -9,7 +9,7 @@ import javax.mail.NoSuchProviderException;
 import javax.mail.Session;
 import javax.mail.Store;
 
-import edu.oswego.props.Settings;
+import Database.Settings;
 
 /**
  * Singleton Mailer class that has the Session/Store objects as well as
