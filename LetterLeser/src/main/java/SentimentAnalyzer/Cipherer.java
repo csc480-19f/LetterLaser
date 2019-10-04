@@ -1,7 +1,9 @@
-import javax.crypto.Cipher;
-
 /**
  * @author Phoenix Boisnier
+ */
+package SentimentAnalyzer;
+
+/**
  * This class is used to encipher text.
  */
 public class Cipherer {
