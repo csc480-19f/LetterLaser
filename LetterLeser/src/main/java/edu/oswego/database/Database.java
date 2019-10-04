@@ -32,7 +32,29 @@ public class Database {
 	private static Connection connection;
 	private static List<Address> addrList = new ArrayList<>();
 	private static List<UserFolder> folderList = new ArrayList<>();
-
+	
+	
+	public static boolean hasEmailFromUser(String email) {
+		ResultSet queryTbl;
+		try {
+			queryTbl = getConnection().prepareStatement("SELECT * from user "
+					+ "JOIN user_email ON user.id = user_email.id "
+					+ "JOIN email ON email.id = user_email.email_id;").executeQuery();
+			int size = 0;
+			
+			while (queryTbl.next()) {
+				size++;
+				if (size > 0)
+					return true;
+			}
+			
+			queryTbl.close();
+			
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return false;
+	}
 	
 	// WIP
 	// SQL DATE
