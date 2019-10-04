@@ -1,1 +1,7 @@
 /target/
+
+# Find it on the Discord.
+credentials.txt
+
+# MacOS sys files
+.DS_store
