@@ -1,7 +1,6 @@
 /**
  * @author Phoenix Boisnier
  */
-package SentimentAnalyzer;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -29,8 +28,10 @@ public class AnalyzeThis {
             pyIn.createNewFile();
             FileWriter write = new FileWriter(pyIn);
             for (String email : emails) {
+                //What we really do first is fix the string.
+                String fixedEmail = fix(email);
                 //First we apply a caesar shift of 10 to our email.
-                String[] param1 = {email, "10"};
+                String[] param1 = {fixedEmail, "10"};
                 String ciph1 = Cipherer.encipher(0, param1);
                 //Then we apply a vignere cipher with keyword systemic to the caesar shifted text.
                 String[] param2 = {ciph1, "systemic"};
@@ -180,8 +181,10 @@ public class AnalyzeThis {
         String retVal = "";
         char[] letters = s.toCharArray();
         for(int i = 0; i < letters.length; i++){
-            if(letters[i] >= 0 && letters[i] <=255){
-                retVal += letters[i];
+            if(letters[i] <=255){
+                if(!(i==129||i==141||i==143||i==144||i==157||i==193||i==205||i==207||i==208||i==221)){
+                    retVal += letters[i];
+                }
             }
         }
         return retVal;
