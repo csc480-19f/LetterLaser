@@ -4,14 +4,15 @@ Backend of Letter Leser written in Java 8. Handles mail calculation and meta dat
 
 ## Getting Started
 
-Initialize git and pull files into repository folder.
-*Intellij IDE
+
+* Intellij IDE
 ```
 VCS -> Checkout Version Control
 Paste url
 Clone
 ```
 * command line
+* Initialize git and pull files into repository folder.
 ```
 git init
 git remote add origin https://github.com/csc480-19f/LetterLeser.git
