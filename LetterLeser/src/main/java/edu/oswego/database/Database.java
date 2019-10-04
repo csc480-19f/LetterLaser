@@ -1,4 +1,4 @@
-package Database;
+package edu.oswego.database;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -16,9 +16,9 @@ import javax.mail.Message;
 import javax.mail.MessagingException;
 import javax.mail.NoSuchProviderException;
 
-import JavaMail.Mailer;
-import model.*;
 import SentimentAnalyzer.SentimentScore;
+import edu.oswego.mail.Mailer;
+import edu.oswego.model.*;
 
 /**
  * Database class to get connection, push/pull data, and submit queries.

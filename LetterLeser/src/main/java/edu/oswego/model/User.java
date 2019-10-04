@@ -1,4 +1,4 @@
-package model;
+package edu.oswego.model;
 
 import java.util.List;
 

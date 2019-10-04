@@ -1,4 +1,4 @@
-package Database;
+package edu.oswego.database;
 
 public class DBdemo {
 

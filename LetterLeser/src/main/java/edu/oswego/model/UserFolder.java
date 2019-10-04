@@ -1,4 +1,4 @@
-package model;
+package edu.oswego.model;
 
 public class UserFolder {
 	
