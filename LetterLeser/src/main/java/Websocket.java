@@ -1,3 +1,5 @@
+import Runnables.ValidationRunnable;
+
 import javax.websocket.*;
 import javax.websocket.server.ServerEndpoint;
 import java.io.IOException;
@@ -16,13 +18,14 @@ public class Websocket {
 
         System.out.println("Session "+session.getId()+" been established");
         Handler handler = new Handler(session);
+        ValidationRunnable vr = new ValidationRunnable(handler.getAtomicBoolean());
         Thread sessionThread = new Thread(handler);//this is technically not needed but prevents null checks later in the code
-        Thread dbValidThread = new Thread();
+        Thread dbValidThread = new Thread(vr);
         /*
         validThread needs a runnable to handle database validation thread.
         once a correct runnable has been added, delete this comment
          */
-        Object[] threadNrunnable = {sessionThread,handler,-1,dbValidThread};
+        Object[] threadNrunnable = {sessionThread,handler,-1,dbValidThread, vr};
         sessionThreadMapper.put(session.getId(),threadNrunnable);
     }
 
@@ -37,7 +40,7 @@ public class Websocket {
         //The first message that must be sent to the websocket is a valid googlejsonobject
         if((int) array[2]==0){
             if(((Handler) array[1]).setGoogleAccessToken(message)){
-                databaseValidation();
+                databaseValidation(session);
             }else {
                 try {
                     session.close();
@@ -46,9 +49,9 @@ public class Websocket {
                 }
             }
         }else if(message.equals("refresh")){
-            databaseValidation();
+            databaseValidation(session);
         }else{
-            newRequest(session,array);
+            newRequest(session,message,array);
         }
 
     }
@@ -69,14 +72,26 @@ public class Websocket {
     all private functional methods are below
      */
 
-    private void databaseValidation(){
-
+    private void databaseValidation(Session session){
+        Object[] array = sessionThreadMapper.get(session.getId());
+        Handler handler = (Handler) array[1];
+        Thread dv = (Thread) array[3];
+        ValidationRunnable vr = (ValidationRunnable) array[4];
+        if(dv.getState().equals(Thread.State.NEW)){
+            vr.setGoogleAccessToken(handler.getGoogleAccessToken());
+            dv.start();
+        }else if(dv.getState().equals(Thread.State.TERMINATED)){
+            vr = new ValidationRunnable(handler.getAtomicBoolean());
+            dv = new Thread(vr);
+            dv.start();
+            array[3] = dv;
+            array[4] = vr;
+        }
     }
 
-    private void newRequest(Session session, Object[] array){
+    private void newRequest(Session session, String message, Object[] array){
         Thread thread = (Thread) array[0];
-        Handler handler = (Handler) array[1];
-        Handler newHandler = new Handler(session);
+        Handler newHandler = new Handler(session,message);
         Thread newThread = new Thread(newHandler);
         if(!thread.getState().equals(Thread.State.TERMINATED)|| !thread.getState().equals(Thread.State.NEW)){
             thread.interrupt();

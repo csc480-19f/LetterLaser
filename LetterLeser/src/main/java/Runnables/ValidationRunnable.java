@@ -2,13 +2,19 @@ package Runnables;
 
 import Database.Database;
 import JavaMail.Mailer;
+import com.google.gson.JsonObject;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class ValidationRunnable implements Runnable{
     private static AtomicBoolean emailStored;
+    private static JsonObject googleAccessToken;
     public ValidationRunnable(AtomicBoolean ab){
         emailStored=ab;
+    }
+
+    public void setGoogleAccessToken(JsonObject jo){
+        googleAccessToken = jo;
     }
     @Override
     public void run() {
