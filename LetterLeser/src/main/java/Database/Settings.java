@@ -1,4 +1,4 @@
-package edu.oswego.props;
+package Database;
 
 import java.io.File;
 import java.io.FileNotFoundException;

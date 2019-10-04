@@ -1,6 +1,4 @@
-package edu.oswego.database;
-
-import edu.oswego.props.Settings;
+package Database;
 
 public class DBdemo {
 
