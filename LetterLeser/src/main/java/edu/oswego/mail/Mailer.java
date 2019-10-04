@@ -12,10 +12,11 @@ import javax.mail.Store;
 import edu.oswego.props.Settings;
 
 /**
- * Singleton Mailer class that has the Session/Store objects as well as host/port/tls settings.
+ * Singleton Mailer class that has the Session/Store objects as well as
+ * host/port/tls settings.
  * 
  * @author Jimmy Nguyen
- * @since 09/19/2019
+ * @since 10/04/2019
  */
 
 public class Mailer {
@@ -26,7 +27,12 @@ public class Mailer {
 	private final static int PORT = 995;
 	private final static boolean TLS_ENABLED = true;
 
-	public static Session getConnection() {
+	/*
+	 * Establish a connection using imap
+	 * 
+	 * @return a javaxmail Session object. Needed for getting a javaxmail Storage object.
+	 */
+	private static Session getConnection() {
 		if (session == null) {
 			Properties properties = new Properties();
 			properties.put("mail.imap.host", HOST);
@@ -34,10 +40,14 @@ public class Mailer {
 			properties.put("mail.imap.starttls.enable", TLS_ENABLED);
 			session = Session.getDefaultInstance(properties);
 		}
-
 		return session;
 	}
 
+	/*
+	 * Logins with a user and password
+	 * 
+	 * @return javaxmail Store object. Needed to pull by special means.
+	 */
 	public static Store getStorage(String user, String password) {
 		if (storage == null) {
 			try {
@@ -60,18 +70,20 @@ public class Mailer {
 
 	/*
 	 * Uses DB connection and PreparedStatement to execute a query.
+	 * 
+	 * @return array of javaxmail Message object.
 	 */
-	public static Message[] pullEmails(String folder) {
+	public static Message[] pullEmails(String folderName) {
 		Store store = getStorage(Settings.EMAIL_ADDRESS, Settings.EMAIL_PWD);
 		try {
-			Folder inbox = store.getFolder(folder);
-			inbox.open(Folder.READ_ONLY);
-			Message[] msgs = inbox.getMessages();
+			Folder folder = store.getFolder(folderName);
+			folder.open(Folder.READ_ONLY);
+			Message[] msgs = folder.getMessages();
 			return msgs;
 		} catch (MessagingException e) {
 			e.printStackTrace();
 		}
-		
+
 		return null;
 	}
 

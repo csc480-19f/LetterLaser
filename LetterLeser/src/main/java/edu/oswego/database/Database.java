@@ -1,7 +1,6 @@
 package edu.oswego.database;
 
 import java.sql.Connection;
-import java.sql.Date;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -16,7 +15,6 @@ import javax.mail.Folder;
 import javax.mail.Message;
 import javax.mail.MessagingException;
 import javax.mail.NoSuchProviderException;
-import javax.mail.Store;
 
 import edu.oswego.mail.Mailer;
 import edu.oswego.model.Label;
@@ -29,7 +27,7 @@ import edu.oswego.sentiment.SentimentScore;
  * Database class to get connection, push/pull data, and submit queries.
  * 
  * @author Jimmy
- * @since 09/18/2019
+ * @since 10/04/2019
  */
 
 public class Database {
@@ -38,13 +36,15 @@ public class Database {
 	private static List<Address> addrList = new ArrayList<>();
 	private static List<UserFolder> folderList = new ArrayList<>();
 
+	
+	// WIP
 	// SQL DATE
-	private static void getEmailByFilters(String email, String folder, String label, boolean byAttachment,
-			boolean bySeen, Date startDate, Date endDate, int interval) {
-		if (startDate != null || endDate != null) { // same with label
-			// concat dates into query
-		}
-	}
+//	private static void getEmailByFilters(String email, String folder, String label, boolean byAttachment,
+//			boolean bySeen, Date startDate, Date endDate, int interval) {
+//		if (startDate != null || endDate != null) { // same with label
+//			// concat dates into query
+//		}
+//	}
 
 	/*
 	 * Singleton-style connection fetch method.
@@ -220,11 +220,8 @@ public class Database {
 	}
 
 	public static List<Label> getLabels() {
-		Store store;
 		try {
-			store = Mailer.getConnection().getStore("imaps");
-			store.connect("imap.gmail.com", "csc344testacc@gmail.com", "T3st123A");
-			Folder[] f = store.getDefaultFolder().list();
+			Folder[] f = Mailer.getStorage(Settings.EMAIL_ADDRESS, Settings.EMAIL_PWD).getDefaultFolder().list();
 			for (Folder fd : f) {
 				System.out.println(">> " + fd.getName());
 				System.out.println(fd.getFolder("Alumni").exists());
@@ -337,14 +334,15 @@ public class Database {
 	}
 
 	// needs return list of emails
-	public static void getRecipientList(int emailId) {
-		String statement = "SELECT email_addr.email_address FROM recipient_list JOIN email_addr ON email_addr.id = recipient_list.email_addr_id WHERE email_id = '"
-				+ emailId + "';";
-	}
-
-	public static void getEmail() {
-		String statement = "SELECT * FROM email WHERE"; // NEED TO HAVE another table for all emails linking to a userId
-	}
+//	public static void getRecipientList(int emailId) {
+//		String statement = "SELECT email_addr.email_address FROM recipient_list JOIN email_addr ON email_addr.id = recipient_list.email_addr_id WHERE email_id = '"
+//				+ emailId + "';";
+//		
+//	}
+//
+//	public static void getEmail() {
+//		String statement = "SELECT * FROM email WHERE"; // NEED TO HAVE another table for all emails linking to a userId
+//	}
 
 }
 // http://makble.com/gradle-example-to-connect-to-mysql-with-jdbc-in-eclipse
