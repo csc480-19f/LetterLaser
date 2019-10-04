@@ -22,7 +22,7 @@ git pull
 ## Authors
 
 * ˁ˚ᴥ˚ˀ **Jimmy Nguyen** 
-**Alexander Lawrence**
+* **Alexander Lawrence**
 * Add your name here, Engine.
 
 
