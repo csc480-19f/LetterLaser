@@ -167,8 +167,12 @@ public class Database {
 					
 					String address = addresses[i].toString();
 					
+					
+					address = address.replaceAll("[,)']", "");
+					//address = address.replace("'", "").replace(")", "").replace(", ", " ");
+					
 
-					//address.replaceAll(, "");
+//					address.replaceAll(, "");
 					System.out.print("THIS ONE: " + addresses[i]);
 //					if (addresses[i].toString().contains("'") || addresses[i].toString().contains(", "))
 //						address.replace("'", "''");
