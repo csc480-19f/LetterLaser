@@ -35,6 +35,22 @@ public class Database {
 	private static Connection connection;
 	private static List<Address> addrList = new ArrayList<>();
 	private static List<UserFolder> folderList = new ArrayList<>();
+	
+//	private static void insertFolder(Folder[] folder) {
+//		for (int i = 0; i < addresses.length; i++) {
+//			PreparedStatement ps;
+//			try {
+//				if (!addrList.contains(addresses[i])) {
+//					addrList.add(addresses[i]);
+//					System.out.println("THIS ONE: " + addresses[i]);
+//					ps = getConnection().prepareStatement("INSERT INTO email_addr (email_address) VALUE ('" + addresses[i].toString().replace("'", "`") + "');");
+//					ps.execute();
+//				}
+//			} catch (SQLException e) {
+//				e.printStackTrace();
+//			}
+//		}
+//	}
 
 	/*
 	 * Pulls all emails from IMAP server and separates meta-data
@@ -42,24 +58,17 @@ public class Database {
 	public static void pull(String folderName) {
 		// should pull for all known folders
 		Message[] msgs = Mailer.pullEmails(folderName); // "[Gmail]/All Mail");
-//		int msgNum = 301;
-//		try {
-//			System.out.println(msgs[msgNum].getFrom()[0] + "\t::\t" + msgs[msgNum].getSubject());
-//		} catch (MessagingException e) {
-//			e.printStackTrace();
-//		}
-		
 		
 		for (Message m : msgs) {
 			try {
-//				if (m.getFrom().length > 1) {	// multiple from-ers... recips? confusing... recip linked to email i believe
-//					insertEmailAddress(m.getFrom());
-//					break;
-//				} else {
-//					insertEmailAddress(m.getFrom());
-//				}
-				
-				insertEmailAddress(m.getFrom());
+//				insertEmailAddress(m.getFrom());
+//				insertFolder(m.getFolder().list());
+				Folder[] folders = m.getFolder().list();		// NESTED FOLDER
+				for (Folder f : folders) {
+					System.out.println(f.getFullName());
+				}
+				System.out.println(m.getFolder().getFullName() + "\t:: trying");
+//				System.out.println(m.getFolder().list());
 			} catch (MessagingException e) {
 				e.printStackTrace();
 			}
