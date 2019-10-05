@@ -34,69 +34,41 @@ public class Database {
 	private static Connection connection;
 	private static List<Address> addrList = new ArrayList<>();
 	private static List<UserFolder> folderList = new ArrayList<>();
-	
-	public static boolean validate(String emailAddress) {
-		int validatedEmails = 0;
-		ResultSet queryTbl;
-		try {
-			queryTbl = getConnection().prepareStatement("SELECT * FROM user WHERE user.email_address = '" + emailAddress + "'").executeQuery();
-			
-			while (queryTbl.next()) {
-				validatedEmails = queryTbl.getInt(3);
-			}
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-		
-		
-		Folder validationFolder = Mailer.getFolder("CSC480_19f");
-		try {
-			int newEmails = validationFolder.getMessageCount();
-			if (newEmails != validatedEmails) {
-				System.out.println("The database emails and user's emails do not match.");
-				System.out.println(newEmails + "_" + validatedEmails);
-				return false;
-			}
-		} catch (MessagingException e) {
-			e.printStackTrace();
-		}
-		
-		return true;
-	}
-	
+
 	public static int getEmailsByFolder() {
 		ResultSet queryTbl;
 		int size = 0;
 		try {
-			queryTbl = getConnection().prepareStatement(""
-					+ "SELECT * FROM user " + 
-					"JOIN user_email " + 
-					"ON user.id = user_email.user_id " + 
-					"JOIN email ON email.id = user_email.email_id " + 
-					"JOIN folder ON folder.id = email.folder_id " + 
-					"WHERE folder.fold_name = 'poop_sac';").executeQuery();
-			
-			//SELECT * FROM user JOIN user_email ON user.id=user_email.user_id JOIN email  ON email.id=user_email.email_id JOIN folder on folder.id = email.folder_id WHERE folder.fold_name != 'SENT';
-			
+			queryTbl = getConnection()
+					.prepareStatement("" + "SELECT * FROM user " + "JOIN user_email "
+							+ "ON user.id = user_email.user_id " + "JOIN email ON email.id = user_email.email_id "
+							+ "JOIN folder ON folder.id = email.folder_id " + "WHERE folder.fold_name = 'poop_sac';")
+					.executeQuery();
+
+			// SELECT * FROM user JOIN user_email ON user.id=user_email.user_id JOIN email
+			// ON email.id=user_email.email_id JOIN folder on folder.id = email.folder_id
+			// WHERE folder.fold_name != 'SENT';
+
 			while (queryTbl.next())
 				size++;
-			
+
 			queryTbl.close();
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
-		
+
 		return size;
 	}
-	
+
 	// WIP
 	// SQL DATE // filter on attachment? // need attachment name
-//	private static static void getEmailByFilters(String email, String folder, String label, boolean byAttachment,
-//			boolean bySeen, Date startDate, Date endDate, int interval) {
-//		if (startDate != null || endDate != null) { // same with label
-//			// concat dates into query
-//		}
-//	}
+	// private static static void getEmailByFilters(String email, String folder,
+	// String label, boolean byAttachment,
+	// boolean bySeen, Date startDate, Date endDate, int interval) {
+	// if (startDate != null || endDate != null) { // same with label
+	// // concat dates into query
+	// }
+	// }
 
 	/*
 	 * Displays all INBOX folder messages through console output.
@@ -152,7 +124,7 @@ public class Database {
 	 * Pulls all emails from IMAP server and separates meta-data
 	 */
 	public static void pull() {
-		Message[] msgs = Mailer.pullEmails("INBOX"); //"[Gmail]/All Mail");
+		Message[] msgs = Mailer.pullEmails("INBOX"); // "[Gmail]/All Mail");
 		for (Message m : msgs) {
 			try {
 				insertEmailAddress(m.getFrom());
@@ -162,8 +134,8 @@ public class Database {
 		}
 	}
 
-	// 
-	
+	//
+
 	/*
 	 * Inserts into email_addr. Removes duplicates with addrList.
 	 * 
@@ -184,13 +156,12 @@ public class Database {
 					ps.execute();
 					System.out.println(addresses[i]);
 					// NEED LIST OF DEEZ
-					
-//					if (labelSize != newSize) {
-//						// label
-//						if ()
-//					}
-					
-					
+
+					// if (labelSize != newSize) {
+					// // label
+					// if ()
+					// }
+
 				}
 			} catch (SQLException e) {
 				e.printStackTrace();
@@ -233,22 +204,23 @@ public class Database {
 		return fold;
 	}
 
-
 	// needs return list of emails
-//	public static void getRecipientList(int emailId) {
-//		String statement = "SELECT email_addr.email_address FROM recipient_list "
-//				+ "JOIN email_addr ON email_addr.id = recipient_list.email_addr_id "
-//				+ "WHERE email_id = '"
-//				+ emailId + "';";
-//	}
-//
-//	public static void getEmail() {
-//		String statement = "SELECT * FROM email WHERE"; // NEED TO HAVE another table for all emails linking to a userId
-//	}
+	// public static void getRecipientList(int emailId) {
+	// String statement = "SELECT email_addr.email_address FROM recipient_list "
+	// + "JOIN email_addr ON email_addr.id = recipient_list.email_addr_id "
+	// + "WHERE email_id = '"
+	// + emailId + "';";
+	// }
+	//
+	// public static void getEmail() {
+	// String statement = "SELECT * FROM email WHERE"; // NEED TO HAVE another table
+	// for all emails linking to a userId
+	// }
 	/**
-	 * --------------- ALL DONE GO HERE ----------------------------------------------------------------------------------------------------
+	 * --------------- ALL DONE GO HERE
+	 * ----------------------------------------------------------------------------------------------------
 	 */
-	
+
 	/*
 	 * Singleton-style connection fetch method.
 	 * 
@@ -268,6 +240,27 @@ public class Database {
 		return connection;
 	}
 	
+	/*
+	 * Gets list of validated emails set in user attribute (3).
+	 * 
+	 * @return number of validated emails (must be updated)
+	 */
+	public static int getValidatedEmails(String emailAddress) {
+		int validatedEmails = 0;
+		ResultSet queryTbl;
+		try {
+			queryTbl = getConnection()
+					.prepareStatement("SELECT * FROM user WHERE user.email_address = '" + emailAddress + "'")
+					.executeQuery();
+			while (queryTbl.next())
+				validatedEmails = queryTbl.getInt(3);
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return validatedEmails;
+	}
+
 	/*
 	 * Truncates all tables in the Schema.
 	 * 
@@ -292,35 +285,37 @@ public class Database {
 			e.printStackTrace();
 		}
 	}
-	
+
 	/*
 	 * Figures out if a user has email.
 	 * 
 	 * @return whether a user has emails in their account
+	 * 
 	 * @param email address of the user.
 	 */
 	public static boolean hasEmails(String emailAddress) {
 		ResultSet queryTbl;
 		try {
-			queryTbl = getConnection().prepareStatement("SELECT * from user "
-					+ "JOIN user_email ON user.id = user_email.id "
-					+ "JOIN email ON email.id = user_email.email_id WHERE email = " + emailAddress + ";").executeQuery();
+			queryTbl = getConnection()
+					.prepareStatement("SELECT * from user " + "JOIN user_email ON user.id = user_email.id "
+							+ "JOIN email ON email.id = user_email.email_id WHERE email = " + emailAddress + ";")
+					.executeQuery();
 			int size = 0;
-			
+
 			while (queryTbl.next()) {
 				size++;
 				if (size > 0)
 					return true;
 			}
-			
+
 			queryTbl.close();
-			
+
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
 		return false;
 	}
-	
+
 	public static List<Label> getLabels() {
 		try {
 			Folder[] f = Mailer.getStorage().getDefaultFolder().list();
@@ -416,7 +411,7 @@ public class Database {
 		}
 		return -1;
 	}
-	
+
 	/*
 	 * Links sentiment score to an email via Foreign Key UPDATE.
 	 * 

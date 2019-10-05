@@ -1,5 +1,7 @@
 package edu.oswego.database;
 
+import edu.oswego.calc.Calculator;
+
 public class DBdemo {
 
 	public static void main(String[] args) {
@@ -67,7 +69,11 @@ public class DBdemo {
 	});
 		//Database.showTables();
 		
-		Database.validate("first@gmail.com");
+//		Database.validate("first@gmail.com");
+		
+		Calculator calc = new Calculator();
+		
+		System.out.println(calc.needsValidation("first@gmail.com"));
 
 		// Database.truncateTables();
 		// Database.insertDummyData();
