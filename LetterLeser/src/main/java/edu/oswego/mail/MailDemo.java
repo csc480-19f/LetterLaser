@@ -1,16 +1,4 @@
 package edu.oswego.mail;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Scanner;
-
-import javax.mail.Flags;
-import javax.mail.Folder;
-import javax.mail.Message;
-import javax.mail.MessagingException;
-import javax.mail.Store;
-import javax.mail.internet.MimeMessage;
-import javax.mail.search.FlagTerm;
 
 /**
  * @deprecated Create a new demo class with more structure.
