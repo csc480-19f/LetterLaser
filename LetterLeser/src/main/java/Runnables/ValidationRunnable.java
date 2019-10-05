@@ -1,7 +1,6 @@
 package Runnables;
 
 import edu.oswego.database.Database;
-import edu.oswego.mail.Mailer;
 
 import com.google.gson.JsonObject;
 
