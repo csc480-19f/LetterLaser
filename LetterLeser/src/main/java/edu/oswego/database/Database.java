@@ -15,6 +15,7 @@ import javax.mail.Folder;
 import javax.mail.Message;
 import javax.mail.MessagingException;
 import javax.mail.NoSuchProviderException;
+import javax.mail.Store;
 
 import SentimentAnalyzer.SentimentScore;
 import edu.oswego.mail.Mailer;
@@ -33,13 +34,58 @@ public class Database {
 	private static List<Address> addrList = new ArrayList<>();
 	private static List<UserFolder> folderList = new ArrayList<>();
 	
+	public static boolean validate(String email) {
+//		Store store = Mailer.getStorage(Settings.EMAIL_ADDRESS, Settings.EMAIL_PWD);
+//		store.getFolder(arg0);
+//		
+//		Message[] msgs = Mailer.pullEmails("INBOX"); //"[Gmail]/All Mail");
+//		for (Message m : msgs) {
+//			try {
+//				insertEmailAddress(m.getFrom());
+//				// https://javaee.github.io/javamail/docs/api/index.html?com/sun/mail/gimap/GmailFolder.html
+//				int x = m.getFolder().getMessageCount(); // make one for folder csc480_19f
+//				
+//			} catch (MessagingException e) {
+//				e.printStackTrace();
+//			}
+//		}
+//		
+		return true;
+	}
+	
+	public static int priy() {
+		ResultSet queryTbl;
+		int size = 0;
+		try {
+			queryTbl = getConnection().prepareStatement(""
+					+ "SELECT * FROM user " + 
+					"JOIN user_email " + 
+					"ON user.id = user_email.user_id " + 
+					"JOIN email ON email.id = user_email.email_id " + 
+					"JOIN folder ON folder.id = email.folder_id " + 
+					"WHERE folder.fold_name = 'poop_sac';").executeQuery();
+			
+			//SELECT * FROM user JOIN user_email ON user.id=user_email.user_id JOIN email  ON email.id=user_email.email_id JOIN folder on folder.id = email.folder_id WHERE folder.fold_name != 'SENT';
+			
+			while (queryTbl.next()) {
+				size++;
+			}
+			
+			queryTbl.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		
+		return size;
+	}
+	
 	
 	public static boolean hasEmailFromUser(String email) {
 		ResultSet queryTbl;
 		try {
 			queryTbl = getConnection().prepareStatement("SELECT * from user "
 					+ "JOIN user_email ON user.id = user_email.id "
-					+ "JOIN email ON email.id = user_email.email_id;").executeQuery();
+					+ "JOIN email ON email.id = user_email.email_id WHERE email = " + email + ";").executeQuery();
 			int size = 0;
 			
 			while (queryTbl.next()) {
@@ -57,14 +103,14 @@ public class Database {
 	}
 	
 	// WIP
-	// SQL DATE
+	// SQL DATE // filter on attachment? // need attachment name
 //	private static static void getEmailByFilters(String email, String folder, String label, boolean byAttachment,
 //			boolean bySeen, Date startDate, Date endDate, int interval) {
 //		if (startDate != null || endDate != null) { // same with label
 //			// concat dates into query
 //		}
 //	}
-	
+
 	
 
 	/*
@@ -165,7 +211,7 @@ public class Database {
 	 * Pulls all emails from IMAP server and separates meta-data
 	 */
 	public static void pull() {
-		Message[] msgs = Mailer.pullEmails("INBOX");
+		Message[] msgs = Mailer.pullEmails("INBOX"); //"[Gmail]/All Mail");
 		for (Message m : msgs) {
 			try {
 				insertEmailAddress(m.getFrom());
@@ -175,10 +221,16 @@ public class Database {
 		}
 	}
 
+	// 
+	
 	/*
 	 * Inserts into email_addr. Removes duplicates with addrList.
 	 * 
 	 * @param Array of address objects from Message.getFrom()
+	 */
+	// ERROR IN HERE
+	/*
+	 * @error
 	 */
 	private static void insertEmailAddress(Address[] addresses) {
 		for (int i = 0; i < addresses.length; i++) {
@@ -189,7 +241,15 @@ public class Database {
 					ps = getConnection()
 							.prepareStatement("INSERT INTO email_addr (email_address) VALUE ('" + addresses[i] + "');");
 					ps.execute();
+					System.out.println(addresses[i]);
 					// NEED LIST OF DEEZ
+					
+//					if (labelSize != newSize) {
+//						// label
+//						if ()
+//					}
+					
+					
 				}
 			} catch (SQLException e) {
 				e.printStackTrace();
@@ -206,8 +266,8 @@ public class Database {
 				"INSERT INTO user (email_address) VALUE ('second@gmail.com');",
 				"INSERT INTO folder (fold_name) VALUE ('poop_sac');",
 				"INSERT INTO filter_settings (fav_name, start_date, end_date, interval_range, folder_id) VALUES ('FAV1', CURDATE(), CURDATE(), 69, 1), ('POFIA', CURDATE(), CURDATE(), 96, 1), ('MASTA', CURDATE(), CURDATE(), 55, 1);",
-				"INSERT INTO user_favourites (user_id, filter_settings_id) VALUES (1, 1), (2, 2), (1, 3);",
-				"UPDATE filter_settings SET fav_name = 'POPSAC_DATA_HERE_FRANK' WHERE fav_name = 'FAV1';" };
+				"INSERT INTO user_favourites (user_id, filter_settings_id) VALUES (1, 1), (2, 2), (1, 3);"};
+				//"UPDATE filter_settings SET fav_name = 'POPSAC_DATA_HERE_FRANK' WHERE fav_name = 'FAV1';" };
 
 		PreparedStatement ps;
 		try {
@@ -355,13 +415,14 @@ public class Database {
 	}
 
 	// needs return list of emails
-//	public static static void getRecipientList(int emailId) {
-//		String statement = "SELECT email_addr.email_address FROM recipient_list JOIN email_addr ON email_addr.id = recipient_list.email_addr_id WHERE email_id = '"
+//	public static void getRecipientList(int emailId) {
+//		String statement = "SELECT email_addr.email_address FROM recipient_list "
+//				+ "JOIN email_addr ON email_addr.id = recipient_list.email_addr_id "
+//				+ "WHERE email_id = '"
 //				+ emailId + "';";
-//		
 //	}
 //
-//	public static static void getEmail() {
+//	public static void getEmail() {
 //		String statement = "SELECT * FROM email WHERE"; // NEED TO HAVE another table for all emails linking to a userId
 //	}
 
