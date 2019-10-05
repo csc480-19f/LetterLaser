@@ -10,6 +10,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class ValidationRunnable implements Runnable{
     private static AtomicBoolean emailStored;
     private static JsonObject googleAccessToken;
+    
     public ValidationRunnable(AtomicBoolean ab){
         emailStored=ab;
     }
@@ -34,14 +35,5 @@ public class ValidationRunnable implements Runnable{
             just dump everything from Mailer into db
         }
          */
-
-
-
-
-
-
-
-
-
     }
 }
