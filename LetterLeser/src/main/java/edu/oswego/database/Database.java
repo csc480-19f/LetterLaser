@@ -21,6 +21,7 @@ import edu.oswego.mail.Mailer;
 import edu.oswego.model.Label;
 import edu.oswego.model.UserFavourites;
 import edu.oswego.model.UserFolder;
+import edu.oswego.props.Settings;
 
 /**
  * Database class to get connection, push/pull data, and submit queries.
@@ -35,19 +36,48 @@ public class Database {
 	private static List<Address> addrList = new ArrayList<>();
 	private static List<UserFolder> folderList = new ArrayList<>();
 
-	public static int getEmailsByFolder() {
+	/*
+	 * Pulls all emails from IMAP server and separates meta-data
+	 */
+	public static void pull(String folderName) {
+		// should pull for all known folders
+		Message[] msgs = Mailer.pullEmails(folderName); // "[Gmail]/All Mail");
+//		int msgNum = 301;
+//		try {
+//			System.out.println(msgs[msgNum].getFrom()[0] + "\t::\t" + msgs[msgNum].getSubject());
+//		} catch (MessagingException e) {
+//			e.printStackTrace();
+//		}
+		
+		
+		for (Message m : msgs) {
+			try {
+//				if (m.getFrom().length > 1) {	// multiple from-ers... recips? confusing... recip linked to email i believe
+//					insertEmailAddress(m.getFrom());
+//					break;
+//				} else {
+//					insertEmailAddress(m.getFrom());
+//				}
+				
+				insertEmailAddress(m.getFrom());
+			} catch (MessagingException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+
+	public static int getEmailCountByFolder(String folderName) {
+		// can get sent count by putting foldername as sent. received is all folders aggregate.
+		// lets be able to get all folders to do this?
 		ResultSet queryTbl;
 		int size = 0;
 		try {
-			queryTbl = getConnection()
-					.prepareStatement("" + "SELECT * FROM user " + "JOIN user_email "
-							+ "ON user.id = user_email.user_id " + "JOIN email ON email.id = user_email.email_id "
-							+ "JOIN folder ON folder.id = email.folder_id " + "WHERE folder.fold_name = 'poop_sac';")
+			queryTbl = getConnection().prepareStatement("SELECT * FROM user " +
+							"JOIN user_email ON user.id = user_email.user_id " +
+							"JOIN email ON email.id = user_email.email_id " +
+							"JOIN folder ON folder.id = email.folder_id " +
+							"WHERE folder.fold_name != '" + folderName + "';")
 					.executeQuery();
-
-			// SELECT * FROM user JOIN user_email ON user.id=user_email.user_id JOIN email
-			// ON email.id=user_email.email_id JOIN folder on folder.id = email.folder_id
-			// WHERE folder.fold_name != 'SENT';
 
 			while (queryTbl.next())
 				size++;
@@ -120,20 +150,6 @@ public class Database {
 		}
 	}
 
-	/*
-	 * Pulls all emails from IMAP server and separates meta-data
-	 */
-	public static void pull() {
-		Message[] msgs = Mailer.pullEmails("INBOX"); // "[Gmail]/All Mail");
-		for (Message m : msgs) {
-			try {
-				insertEmailAddress(m.getFrom());
-			} catch (MessagingException e) {
-				e.printStackTrace();
-			}
-		}
-	}
-
 	//
 
 	/*
@@ -141,27 +157,25 @@ public class Database {
 	 * 
 	 * @param Array of address objects from Message.getFrom()
 	 */
-	// ERROR IN HERE
-	/*
-	 * @error
-	 */
+	// ERROR IN HERE?
 	private static void insertEmailAddress(Address[] addresses) {
 		for (int i = 0; i < addresses.length; i++) {
 			PreparedStatement ps;
 			try {
 				if (!addrList.contains(addresses[i])) {
 					addrList.add(addresses[i]);
-					ps = getConnection()
-							.prepareStatement("INSERT INTO email_addr (email_address) VALUE ('" + addresses[i] + "');");
+					
+					String address = addresses[i].toString();
+					
+
+					//address.replaceAll(, "");
+					System.out.print("THIS ONE: " + addresses[i]);
+//					if (addresses[i].toString().contains("'") || addresses[i].toString().contains(", "))
+//						address.replace("'", "''");
+					
+					ps = getConnection().prepareStatement("INSERT INTO email_addr (email_address) VALUE ('" + address + "');");
 					ps.execute();
-					System.out.println(addresses[i]);
-					// NEED LIST OF DEEZ
-
-					// if (labelSize != newSize) {
-					// // label
-					// if ()
-					// }
-
+					System.out.println();
 				}
 			} catch (SQLException e) {
 				e.printStackTrace();
@@ -239,7 +253,7 @@ public class Database {
 
 		return connection;
 	}
-	
+
 	/*
 	 * Gets list of validated emails set in user attribute (3).
 	 * 
