@@ -6,6 +6,8 @@ import SentimentAnalyzer.SentimentScore;
 
 public class Email {
 	
+	// SENT OR RECEIVED?
+	
 	private int id;
 	private Date dateReceived;
 	private String subject;

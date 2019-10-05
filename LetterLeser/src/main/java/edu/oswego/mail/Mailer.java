@@ -9,7 +9,7 @@ import javax.mail.NoSuchProviderException;
 import javax.mail.Session;
 import javax.mail.Store;
 
-import edu.oswego.database.Settings;
+import edu.oswego.props.Settings;
 
 /**
  * Singleton Mailer class that has the Session/Store objects as well as
@@ -20,7 +20,7 @@ import edu.oswego.database.Settings;
  */
 
 public class Mailer {
-
+	
 	private static Session session;
 	private static Store storage;
 	private final static String HOST = "imap.gmail.com";
