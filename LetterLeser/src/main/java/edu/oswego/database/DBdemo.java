@@ -1,7 +1,5 @@
 package edu.oswego.database;
 
-import edu.oswego.calc.Calculator;
-import edu.oswego.props.EmailType;
 import edu.oswego.props.Settings;
 
 public class DBdemo {
@@ -69,7 +67,10 @@ public class DBdemo {
 //					+ "(3, 3); ",
 //				"UPDATE user SET validated_emails = 10 WHERE id = 1"
 //	});
-		Database.pull("[Gmail]/All Mail");
+		
+		
+//		Database.pull("[Gmail]/All Mail");
+		Database.pull("Misc");
 //		Database.showTables();
 		
 		
