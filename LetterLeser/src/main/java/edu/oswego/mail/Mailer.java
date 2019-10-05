@@ -27,10 +27,15 @@ public class Mailer {
 	private final static int PORT = 995;
 	private final static boolean TLS_ENABLED = true;
 
+	private Mailer() {
+		// blank cause singleton
+	}
+
 	/*
 	 * Establish a connection using imap
 	 * 
-	 * @return a javaxmail Session object. Needed for getting a javaxmail Storage object.
+	 * @return a javaxmail Session object. Needed for getting a javaxmail Storage
+	 * object.
 	 */
 	private static Session getConnection() {
 		if (session == null) {
@@ -48,7 +53,7 @@ public class Mailer {
 	 * 
 	 * @return javaxmail Store object. Needed to pull by special means.
 	 */
-	public static Store getStorage(String user, String password) {
+	public static Store getStorage() {
 		if (storage == null) {
 			try {
 				storage = getConnection().getStore("imaps");
@@ -59,7 +64,7 @@ public class Mailer {
 
 		if (!storage.isConnected()) {
 			try {
-				storage.connect(HOST, user, password);
+				storage.connect(HOST, Settings.EMAIL_ADDRESS, Settings.EMAIL_PWD);
 			} catch (MessagingException e) {
 				e.printStackTrace();
 			}
@@ -68,13 +73,25 @@ public class Mailer {
 		return storage;
 	}
 
+	public static Folder getFolder(String folderName) {
+		Store store = getStorage();
+		Folder folder = null;
+		try {
+			folder = store.getFolder(folderName);
+		} catch (MessagingException e) {
+			e.printStackTrace();
+		}
+		return folder;
+	}
+	
+	
 	/*
 	 * Uses DB connection and PreparedStatement to execute a query.
 	 * 
 	 * @return array of javaxmail Message object.
 	 */
 	public static Message[] pullEmails(String folderName) {
-		Store store = getStorage(Settings.EMAIL_ADDRESS, Settings.EMAIL_PWD);
+		Store store = getStorage();
 		try {
 			Folder folder = store.getFolder(folderName);
 			folder.open(Folder.READ_ONLY);

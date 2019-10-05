@@ -20,8 +20,8 @@ public class ValidationRunnable implements Runnable{
     }
     @Override
     public void run() {
-        Database db = new Database();
-        Mailer m = new Mailer();
+//        Database db = new Database();
+//        Mailer m = new Mailer();
         /*
         get db emails waiting on method
         obj listOfEmails = db.method();

@@ -15,11 +15,12 @@ import javax.mail.Folder;
 import javax.mail.Message;
 import javax.mail.MessagingException;
 import javax.mail.NoSuchProviderException;
-import javax.mail.Store;
 
 import SentimentAnalyzer.SentimentScore;
 import edu.oswego.mail.Mailer;
-import edu.oswego.model.*;
+import edu.oswego.model.Label;
+import edu.oswego.model.UserFavourites;
+import edu.oswego.model.UserFolder;
 
 /**
  * Database class to get connection, push/pull data, and submit queries.
@@ -34,26 +35,36 @@ public class Database {
 	private static List<Address> addrList = new ArrayList<>();
 	private static List<UserFolder> folderList = new ArrayList<>();
 	
-	public static boolean validate(String email) {
-//		Store store = Mailer.getStorage(Settings.EMAIL_ADDRESS, Settings.EMAIL_PWD);
-//		store.getFolder(arg0);
-//		
-//		Message[] msgs = Mailer.pullEmails("INBOX"); //"[Gmail]/All Mail");
-//		for (Message m : msgs) {
-//			try {
-//				insertEmailAddress(m.getFrom());
-//				// https://javaee.github.io/javamail/docs/api/index.html?com/sun/mail/gimap/GmailFolder.html
-//				int x = m.getFolder().getMessageCount(); // make one for folder csc480_19f
-//				
-//			} catch (MessagingException e) {
-//				e.printStackTrace();
-//			}
-//		}
-//		
+	public static boolean validate(String emailAddress) {
+		int validatedEmails = 0;
+		ResultSet queryTbl;
+		try {
+			queryTbl = getConnection().prepareStatement("SELECT * FROM user WHERE user.email_address = '" + emailAddress + "'").executeQuery();
+			
+			while (queryTbl.next()) {
+				validatedEmails = queryTbl.getInt(3);
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		
+		
+		Folder validationFolder = Mailer.getFolder("CSC480_19f");
+		try {
+			int newEmails = validationFolder.getMessageCount();
+			if (newEmails != validatedEmails) {
+				System.out.println("The database emails and user's emails do not match.");
+				System.out.println(newEmails + "_" + validatedEmails);
+				return false;
+			}
+		} catch (MessagingException e) {
+			e.printStackTrace();
+		}
+		
 		return true;
 	}
 	
-	public static int priy() {
+	public static int getEmailsByFolder() {
 		ResultSet queryTbl;
 		int size = 0;
 		try {
@@ -67,9 +78,8 @@ public class Database {
 			
 			//SELECT * FROM user JOIN user_email ON user.id=user_email.user_id JOIN email  ON email.id=user_email.email_id JOIN folder on folder.id = email.folder_id WHERE folder.fold_name != 'SENT';
 			
-			while (queryTbl.next()) {
+			while (queryTbl.next())
 				size++;
-			}
 			
 			queryTbl.close();
 		} catch (SQLException e) {
@@ -77,29 +87,6 @@ public class Database {
 		}
 		
 		return size;
-	}
-	
-	
-	public static boolean hasEmailFromUser(String email) {
-		ResultSet queryTbl;
-		try {
-			queryTbl = getConnection().prepareStatement("SELECT * from user "
-					+ "JOIN user_email ON user.id = user_email.id "
-					+ "JOIN email ON email.id = user_email.email_id WHERE email = " + email + ";").executeQuery();
-			int size = 0;
-			
-			while (queryTbl.next()) {
-				size++;
-				if (size > 0)
-					return true;
-			}
-			
-			queryTbl.close();
-			
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-		return false;
 	}
 	
 	// WIP
@@ -110,27 +97,6 @@ public class Database {
 //			// concat dates into query
 //		}
 //	}
-
-	
-
-	/*
-	 * Singleton-style connection fetch method.
-	 * 
-	 * @return a MySQL JDBC Connection object
-	 */
-	public static Connection getConnection() {
-		try {
-			if (connection == null || connection.isClosed())
-				connection = DriverManager.getConnection("jdbc:mysql://" + Settings.DATABASE_HOST + ":"
-						+ Settings.DATABASE_PORT + "/" + Settings.DATABASE_SCHEMA
-						+ "?useUnicode=true&characterEncoding=UTF-8&serverTimezone=UTC&user="
-						+ Settings.DATABASE_USERNAME + "&password=" + Settings.DATABASE_PASSWORD);
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-
-		return connection;
-	}
 
 	/*
 	 * Displays all INBOX folder messages through console output.
@@ -176,31 +142,6 @@ public class Database {
 		PreparedStatement ps;
 		try {
 			ps = getConnection().prepareStatement(statement);
-			ps.execute();
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-	}
-
-	/*
-	 * Truncates all tables in the Schema.
-	 * 
-	 * @see truncateTable method
-	 */
-	public static void truncateTables() {
-		for (String tbl : Settings.DATABASE_TABLES)
-			truncateTable(tbl);
-	}
-
-	/*
-	 * Truncates one table in the Schema.
-	 * 
-	 * @param table name
-	 */
-	public static void truncateTable(String table) {
-		PreparedStatement ps;
-		try {
-			ps = getConnection().prepareStatement("TRUNCATE TABLE " + table + ";");
 			ps.execute();
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -260,15 +201,7 @@ public class Database {
 	/*
 	 * For testing/debug purposes via Database Team.
 	 */
-	public static void insertDummyData() {
-
-		String[] dummyStatements = { "INSERT INTO user (email_address) VALUE ('first@gmail.com');",
-				"INSERT INTO user (email_address) VALUE ('second@gmail.com');",
-				"INSERT INTO folder (fold_name) VALUE ('poop_sac');",
-				"INSERT INTO filter_settings (fav_name, start_date, end_date, interval_range, folder_id) VALUES ('FAV1', CURDATE(), CURDATE(), 69, 1), ('POFIA', CURDATE(), CURDATE(), 96, 1), ('MASTA', CURDATE(), CURDATE(), 55, 1);",
-				"INSERT INTO user_favourites (user_id, filter_settings_id) VALUES (1, 1), (2, 2), (1, 3);"};
-				//"UPDATE filter_settings SET fav_name = 'POPSAC_DATA_HERE_FRANK' WHERE fav_name = 'FAV1';" };
-
+	public static void insertDummyData(String[] dummyStatements) {
 		PreparedStatement ps;
 		try {
 			for (String statement : dummyStatements) {
@@ -300,9 +233,97 @@ public class Database {
 		return fold;
 	}
 
+
+	// needs return list of emails
+//	public static void getRecipientList(int emailId) {
+//		String statement = "SELECT email_addr.email_address FROM recipient_list "
+//				+ "JOIN email_addr ON email_addr.id = recipient_list.email_addr_id "
+//				+ "WHERE email_id = '"
+//				+ emailId + "';";
+//	}
+//
+//	public static void getEmail() {
+//		String statement = "SELECT * FROM email WHERE"; // NEED TO HAVE another table for all emails linking to a userId
+//	}
+	/**
+	 * --------------- ALL DONE GO HERE ----------------------------------------------------------------------------------------------------
+	 */
+	
+	/*
+	 * Singleton-style connection fetch method.
+	 * 
+	 * @return a MySQL JDBC Connection object
+	 */
+	public static Connection getConnection() {
+		try {
+			if (connection == null || connection.isClosed())
+				connection = DriverManager.getConnection("jdbc:mysql://" + Settings.DATABASE_HOST + ":"
+						+ Settings.DATABASE_PORT + "/" + Settings.DATABASE_SCHEMA
+						+ "?useUnicode=true&characterEncoding=UTF-8&serverTimezone=UTC&user="
+						+ Settings.DATABASE_USERNAME + "&password=" + Settings.DATABASE_PASSWORD);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+
+		return connection;
+	}
+	
+	/*
+	 * Truncates all tables in the Schema.
+	 * 
+	 * @see truncateTable method
+	 */
+	public static void truncateTables() {
+		for (String tbl : Settings.DATABASE_TABLES)
+			truncateTable(tbl);
+	}
+
+	/*
+	 * Truncates one table in the Schema.
+	 * 
+	 * @param table name
+	 */
+	public static void truncateTable(String table) {
+		PreparedStatement ps;
+		try {
+			ps = getConnection().prepareStatement("TRUNCATE TABLE " + table + ";");
+			ps.execute();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	/*
+	 * Figures out if a user has email.
+	 * 
+	 * @return whether a user has emails in their account
+	 * @param email address of the user.
+	 */
+	public static boolean hasEmails(String emailAddress) {
+		ResultSet queryTbl;
+		try {
+			queryTbl = getConnection().prepareStatement("SELECT * from user "
+					+ "JOIN user_email ON user.id = user_email.id "
+					+ "JOIN email ON email.id = user_email.email_id WHERE email = " + emailAddress + ";").executeQuery();
+			int size = 0;
+			
+			while (queryTbl.next()) {
+				size++;
+				if (size > 0)
+					return true;
+			}
+			
+			queryTbl.close();
+			
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return false;
+	}
+	
 	public static List<Label> getLabels() {
 		try {
-			Folder[] f = Mailer.getStorage(Settings.EMAIL_ADDRESS, Settings.EMAIL_PWD).getDefaultFolder().list();
+			Folder[] f = Mailer.getStorage().getDefaultFolder().list();
 			for (Folder fd : f) {
 				System.out.println(">> " + fd.getName());
 				System.out.println(fd.getFolder("Alumni").exists());
@@ -395,7 +416,7 @@ public class Database {
 		}
 		return -1;
 	}
-
+	
 	/*
 	 * Links sentiment score to an email via Foreign Key UPDATE.
 	 * 
@@ -413,18 +434,6 @@ public class Database {
 			e.printStackTrace();
 		}
 	}
-
-	// needs return list of emails
-//	public static void getRecipientList(int emailId) {
-//		String statement = "SELECT email_addr.email_address FROM recipient_list "
-//				+ "JOIN email_addr ON email_addr.id = recipient_list.email_addr_id "
-//				+ "WHERE email_id = '"
-//				+ emailId + "';";
-//	}
-//
-//	public static void getEmail() {
-//		String statement = "SELECT * FROM email WHERE"; // NEED TO HAVE another table for all emails linking to a userId
-//	}
 
 }
 // http://makble.com/gradle-example-to-connect-to-mysql-with-jdbc-in-eclipse
