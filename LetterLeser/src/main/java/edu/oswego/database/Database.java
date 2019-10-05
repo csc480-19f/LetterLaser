@@ -157,29 +157,15 @@ public class Database {
 	 * 
 	 * @param Array of address objects from Message.getFrom()
 	 */
-	// ERROR IN HERE?
 	private static void insertEmailAddress(Address[] addresses) {
 		for (int i = 0; i < addresses.length; i++) {
 			PreparedStatement ps;
 			try {
 				if (!addrList.contains(addresses[i])) {
 					addrList.add(addresses[i]);
-					
-					String address = addresses[i].toString();
-					
-					
-					address = address.replaceAll("[,)']", "");
-					//address = address.replace("'", "").replace(")", "").replace(", ", " ");
-					
-
-//					address.replaceAll(, "");
-					System.out.print("THIS ONE: " + addresses[i]);
-//					if (addresses[i].toString().contains("'") || addresses[i].toString().contains(", "))
-//						address.replace("'", "''");
-					
-					ps = getConnection().prepareStatement("INSERT INTO email_addr (email_address) VALUE ('" + address + "');");
+					System.out.println("THIS ONE: " + addresses[i]);
+					ps = getConnection().prepareStatement("INSERT INTO email_addr (email_address) VALUE ('" + addresses[i].toString().replace("'", "`") + "');");
 					ps.execute();
-					System.out.println();
 				}
 			} catch (SQLException e) {
 				e.printStackTrace();
