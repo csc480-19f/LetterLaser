@@ -184,8 +184,9 @@ public class Database {
 					emailAddrList.add(new EmailAddress(emailAddressId, address)); // why is all 1?
 				} else {
 					ResultSet rs = getConnection().prepareStatement("SELECT * FROM email_addr WHERE email_address = '" + address + "';").executeQuery();
-					while (rs.next())
+					while (rs.next()) {
 						emailAddrList.add(new EmailAddress(rs.getInt(1), rs.getString(2)));
+					}
 					rs.close();
 				}
 			} catch (SQLException e) {
@@ -199,7 +200,7 @@ public class Database {
 		importFolders(); // make function not static. Lets change this so pass as param to menthods so take list?
 
 		int i = 0;
-		int stopper = 5; // limit our pull for testing
+		int stopper = 30; // limit our pull for testing
 
 		for (UserFolder f : folderList) {
 			Message[] msgs = Mailer.pullEmails(f.getFolder().getFullName()); // Do not use "[Gmail]/All Mail");
@@ -212,8 +213,7 @@ public class Database {
 					}
 					insertUserEmail(new EmailAddress(1, "first@gmail.com"), emailId); // NO BELONG HERE. MUST BE USER EMAILADDRESS
 					emailIdList.add(emailId);
-//					insertUserLabelList(emailId, m); // not working?
-					
+
 					i++;
 					if (i > stopper)
 						return;
@@ -234,24 +234,7 @@ public class Database {
 		query("INSERT INTO received_email (email_id, email_addr_id) VALUE ('" + emailId + "', " + emailAddrId + ");");
 	}
 
-	// WIP
-//	private static void insertUserLabelList(int emailId, Message m) {
-//		for (Label l: labelList) {
-//			Folder f = Mailer.getFolder(l.getFolder().getFullName());
-//			try {
-//				f.open(Folder.READ_WRITE);
-//				if (Arrays.asList(f.getMessages()).contains(m)) {
-//					System.out.println("SAME");
-//					query("INSERT INTO label_list (email_id, label_id) VALUE ('" + emailId + "', " + l.getId() + ");");
-//				}
-//				f.close();
-//			} catch (MessagingException e) {
-//				e.printStackTrace();
-//			}
-//		}
-//	}
-
-	// shit this is OUR ID
+	// shit this is OUR ID NOT just EmailAddress. H
 	private static void insertUserEmail(EmailAddress addr, int emailId) {
 		query("INSERT INTO user_email (user_id, email_id) VALUE ('" + addr.getId() + "', " + emailId + ");");
 	}
