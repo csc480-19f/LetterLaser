@@ -9,7 +9,7 @@ public class DBdemo {
 	public static void main(String[] args) {
 		Settings.loadCredentials();
 
-//		Database.truncateTables();
+		Database.truncateTables();
 //		System.out.println("TRUNCATED");
 //		Database.insertDummyData(new String[]{
 //			"USE csc480_19f;",
@@ -72,14 +72,14 @@ public class DBdemo {
 //	});
 		
 		
-//		Database.pull("[Gmail]/All Mail");
+		Database.pull();
 //		Database.pull("Inbox");
-//		Database.showTables();
+		Database.showTables();
 //		Database.insertFolders();
 //		Database.showTables();
-		Database.importFolders();
+//		Database.importFolders();
 //		Database.query("INSERT INTO folder (fold_name) VALUE ('tubes')");
-		Database.showTables();
+//		Database.showTables();
 		
 		
 //		Database.validate("first@gmail.com");
