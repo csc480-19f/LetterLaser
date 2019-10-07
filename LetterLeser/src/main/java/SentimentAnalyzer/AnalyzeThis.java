@@ -208,4 +208,32 @@ public class AnalyzeThis {
         }
         return retVal;
     }
+    
+    /**
+     * Feed me the results please.
+     * @param results Results from a processResults(sentimize(emails)) call.
+     * @return The list of compound scores.
+     */
+    public static SentimentScore[] getScoresObjects(double[][][] results){
+        SentimentScore[] retVal = new SentimentScore[results.length];
+        for(int q = 0; q < retVal.length; q++){
+            double negAvg = 0.0;
+            double neuAvg = 0.0;
+            double posAvg = 0.0;
+            double comAvg = 0.0;
+            for(int w = 0; w < results[q].length; w++){
+                negAvg += results[q][w][0];
+                neuAvg += results[q][w][1];
+                posAvg += results[q][w][2];
+                comAvg += results[q][w][3];
+            }
+            negAvg /= results[q].length;
+            neuAvg /= results[q].length;
+            posAvg /= results[q].length;
+            comAvg /= results[q].length;
+            SentimentScore s = new SentimentScore(negAvg, neuAvg, posAvg, comAvg);
+            retVal[q] = s;
+        }
+        return retVal;
+    }
 }
