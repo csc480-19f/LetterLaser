@@ -122,29 +122,27 @@ public class Database {
 			rs = getConnection().prepareStatement("SELECT * FROM folder WHERE fold_name = '" + folderName + "'").executeQuery();
 			while (rs.next()) {
 				folderList.add(new UserFolder(rs.getInt(1), Mailer.getFolder(rs.getString(2))));
-				return false;
+				return true;
 			}
 		} catch (SQLException e1) {
 			e1.printStackTrace();
 		}
-		return true;
+		return false;
 	}
 	
 	private boolean emailAddressExists(String emailAddress) {
-		ResultSet queryTbl;
-		int size = -1;
+		ResultSet rs;
 		try {
-			queryTbl = getConnection()
+			rs = getConnection()
 					.prepareStatement("SELECT count(*) FROM email_addr WHERE email_address = '" + emailAddress + "'")
 					.executeQuery();
-			while (queryTbl.next()) {
-				size = queryTbl.getInt(1);
-				break;
+			while (rs.next()) {
+				return true;
 			}
 		} catch (SQLException e1) {
 			e1.printStackTrace();
 		}
-		return size >= 1;
+		return false;
 	}
 	
 	public List<UserFolder> importFolders() {
@@ -175,10 +173,33 @@ public class Database {
 		return folderList;
 	}
 	
+	private int getEmailId(Message m) {
+		try {
+			PreparedStatement pstmt = getConnection().prepareStatement("SELECT * FROM email WHERE date_received = ? AND subject = ? AND size = ?");
+			pstmt.setObject(1, m.getReceivedDate());
+			pstmt.setString(2, m.getSubject());
+			pstmt.setInt(3, m.getSize());
+			
+			ResultSet rs = pstmt.executeQuery();
+			while (rs.next())
+				return rs.getInt(1);
+			
+		} catch (SQLException e1) {
+			e1.printStackTrace();
+		} catch (MessagingException e) {
+			e.printStackTrace();
+		}
+		return -1;
+	}
+	
 	private int insertEmail(Message m, List<UserFolder> folderList, List<Integer> emailIdList) {
-		// no duplicates in case in multiple folders? CHECK DATE RECEIVED AT SAME TIME
-		// AND OTHER SHET?
 		int emailId = -1;
+		
+		emailId = getEmailId(m);
+		
+		if (emailId != -1)
+			return emailId;
+		
 		PreparedStatement ps;
 		try {
 			// ps = getConnection().prepareStatement("INSERT INTO email (date_received,
@@ -274,7 +295,8 @@ public class Database {
 	}
 
 	private void insertUserEmail(EmailAddress addr, int emailId) {
-		query("INSERT INTO user_email (user_id, email_id) VALUE ('" + addr.getId() + "', " + emailId + ");");
+		query("INSERT IGNORE INTO user_email (user_id, email_id) VALUE ('" + addr.getId() + "', " + emailId + ");"); 
+		// deal with this later, email first
 	}
 
 	public int getEmailCountByFolder(String folderName) {
