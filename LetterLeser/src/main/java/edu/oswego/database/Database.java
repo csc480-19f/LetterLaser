@@ -38,6 +38,10 @@ public class Database {
 	private static List<UserFolder> folderList = new ArrayList<>();
 	private static List<Integer> emailIdList = new ArrayList<>();
 
+	public static void setValidatedEmailCount(String emailAddress, int count) {
+		query("UPDATE user SET validated_emails = " + count + " WHERE email_address = '" + emailAddress + "';");
+	}
+	
 	private static boolean folderExists(String folderName) {
 		ResultSet queryTbl;
 		int size = -1;
@@ -61,7 +65,7 @@ public class Database {
 			Folder[] folders = Mailer.getStorage().getDefaultFolder().list("%");
 			
 			for (Folder f : folders) {
-				if (!folderExists(f.getFullName()) && !f.getFullName().equals("[Gmail]")) {
+				if (!folderExists(f.getFullName()) && !f.getFullName().equals("[Gmail]") && !f.getFullName().equals("CSC480_19F") ) {
 					PreparedStatement ps = getConnection().prepareStatement(
 							"INSERT INTO folder (fold_name) VALUE ('" + f.getFullName() + "')",
 							Statement.RETURN_GENERATED_KEYS);
@@ -178,11 +182,12 @@ public class Database {
 				try {
 					List<EmailAddress> fromList = insertEmailAddress(m.getFrom());// get this list and return for
 																					// user_email table
-					int emailId = insertEmail(m);
+					int emailId = insertEmail(m);	// must tag it with CSC480_19f label
+														// how to set label?					// Mailer.setMarked at end
 					for (EmailAddress ea : fromList)
 						insertUserEmail(ea, emailId);
-
-					System.out.print(".");
+					
+//					m.setFlag(Flags.Flag.USER, true);
 					// System.out.println(Mailer.processAttachment(m));
 
 					i++;
@@ -193,6 +198,8 @@ public class Database {
 					e.printStackTrace();
 				}
 			}
+			
+			Mailer.markEmailsInFolder(f.getFolder().getFullName(), msgs);
 		}
 	}
 
