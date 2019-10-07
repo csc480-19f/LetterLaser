@@ -77,9 +77,25 @@ public class Database {
 		return size >= 1;
 	}
 
+	private static boolean emailAddressExists(String emailAddress) {
+		ResultSet queryTbl;
+		int size = -1;
+		try {
+			queryTbl = getConnection()
+					.prepareStatement("SELECT count(*) FROM email_addr WHERE email_address = '" + emailAddress + "'")
+					.executeQuery();
+			while (queryTbl.next()) {
+				size = queryTbl.getInt(1);
+				break;
+			}
+		} catch (SQLException e1) {
+			e1.printStackTrace();
+		}
+		return size >= 1;
+	}
+	
 	public static void importFolders() {
 		try {
-			System.out.println("TRYING FOLDERS");
 			Folder[] folders = Mailer.getStorage().getDefaultFolder().list("%");
 			
 			for (Folder f : folders) {
@@ -185,19 +201,15 @@ public class Database {
 	}
 
 	private static List<EmailAddress> insertEmailAddress(Address[] addresses) {
-		List<EmailAddress> addrList = new ArrayList<>();
+		List<EmailAddress> emailAddrList = new ArrayList<>();
+		
 		for (int i = 0; i < addresses.length; i++) {
 			PreparedStatement ps;
 			try {
 				
-				// THIS BROKE
-				
-				if (!addrList.contains(addresses[i])) {
-					String address = addresses[i].toString().replace("'", "`");
-					addrList.add(new EmailAddress(1, address));
-					ps = getConnection().prepareStatement(
-							"INSERT INTO email_addr (email_address) VALUE ('" + address + "');",
-							Statement.RETURN_GENERATED_KEYS);
+				String address = addresses[i].toString().replace("'", "`");
+				if (!emailAddressExists(address)) {
+					ps = getConnection().prepareStatement("INSERT INTO email_addr (email_address) VALUE ('" + address + "');", Statement.RETURN_GENERATED_KEYS);
 
 					if (ps.executeUpdate() == 0)
 						throw new SQLException("Could not insert into folder, no rows affected");
@@ -208,20 +220,20 @@ public class Database {
 						emailAddressId = generatedKeys.getInt(1);
 						break;
 					}
-
+					
+					emailAddrList.add(new EmailAddress(emailAddressId, address));
 					emailIdList.add(emailAddressId);
 				}
 			} catch (SQLException e) {
 				e.printStackTrace();
 			}
 		}
-
-		return addrList;
+		return emailAddrList;
 	}
 
 	public static void pull() {
-		// order matters. Folders must come first.
-		importFolders(); // make not static. Lets change this so pass as param to menthods
+		// order matters. Folders must come first so labels don't import folders.
+		importFolders(); // make function not static. Lets change this so pass as param to menthods so take list?
 		importLabels();
 
 		int i = 0;
@@ -238,9 +250,6 @@ public class Database {
 					for (EmailAddress ea : fromList)
 						insertUserEmail(ea, emailId);
 					
-//					m.setFlag(Flags.Flag.USER, true);
-					// System.out.println(Mailer.processAttachment(m));
-
 					i++;
 					if (i > stopper)
 						return;
