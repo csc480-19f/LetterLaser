@@ -17,7 +17,11 @@ import javax.mail.Folder;
 import javax.mail.Message;
 import javax.mail.MessagingException;
 
+import SentimentAnalyzer.SentimentScore;
+import com.google.gson.JsonObject;
 import edu.oswego.mail.Mailer;
+import edu.oswego.model.Email;
+import edu.oswego.model.Label;
 import edu.oswego.model.EmailAddress;
 import edu.oswego.model.UserFavourites;
 import edu.oswego.model.UserFolder;
@@ -32,6 +36,39 @@ import edu.oswego.sentiment.SentimentScore;
  */
 
 public class Database {
+/*
+	private volatile Connection connection;
+	private volatile List<Address> addrList = new ArrayList<>();
+	private volatile List<UserFolder> folderList = new ArrayList<>();
+*/
+
+	/*
+	done by Alex:
+	I'm gonna add blank methods with what they should return.
+	I'll put comments in the methods for you so you know what they should do
+	 */
+	public List<UserFolder> getFolders(String email){
+		//TODO get all the folders
+		return null;
+	}
+
+	public boolean populateDatabase(String email){//only called in validation thread
+		//TODO This method passes an email and will populate all db with emails from that inbox
+		return true;
+	}
+
+
+
+	public boolean hasEmails(String email){//only called validation thread
+		//TODO method that takes an email and checks if db has any data on it
+		return true;
+	}
+
+	public ArrayList<Email> getMetaDataWithAppliedFilters(String folder, String date, String interval, boolean attachment, boolean seen){//only called in handler
+		//TODO make a method that returns all my emails unsorted
+		return new ArrayList<>();
+	}
+
 
 	private Connection connection;
 	private EmailAddress user;
@@ -218,6 +255,24 @@ public class Database {
 	// public void updateUserFavourites() {
 	//
 	// }
+
+	//This is the end of my methods -alex
+
+//	private static void insertFolder(Folder[] folder) {
+//		for (int i = 0; i < addresses.length; i++) {
+//			PreparedStatement ps;
+//			try {
+//				if (!addrList.contains(addresses[i])) {
+//					addrList.add(addresses[i]);
+//					System.out.println("THIS ONE: " + addresses[i]);
+//					ps = getConnection().prepareStatement("INSERT INTO email_addr (email_address) VALUE ('" + addresses[i].toString().replace("'", "`") + "');");
+//					ps.execute();
+//				}
+//			} catch (SQLException e) {
+//				e.printStackTrace();
+//			}
+//		}
+//	}
 
 	public boolean removeUserFavourite(String favName) {
 		try {

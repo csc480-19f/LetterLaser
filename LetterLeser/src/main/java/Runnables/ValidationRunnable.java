@@ -4,35 +4,40 @@ import edu.oswego.database.Database;
 
 import com.google.gson.JsonObject;
 
+import javax.websocket.Session;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class ValidationRunnable implements Runnable{
-    private static AtomicBoolean emailStored;
-    private static JsonObject googleAccessToken;
-    
-    public ValidationRunnable(AtomicBoolean ab){
-        emailStored=ab;
+    private volatile AtomicReference<Session> session;
+    private volatile AtomicReference<JsonObject> googleAccessToken;
+    private volatile AtomicReference<Database> atomicDatabase;
+    public volatile AtomicBoolean emailStored;
+
+    public ValidationRunnable(AtomicReference<Session> session,AtomicReference<JsonObject> googleAccessToken, AtomicReference<Database> atomicDatabase,AtomicBoolean emailStored){
+        this.emailStored=emailStored;
+        this.atomicDatabase = atomicDatabase;
+        this.googleAccessToken = googleAccessToken;
+        this.session = session;
     }
 
-    public void setGoogleAccessToken(JsonObject jo){
-        googleAccessToken = jo;
+    public ValidationRunnable(ValidationRunnable validationRunnable){
+        this.emailStored=validationRunnable.emailStored;
+        this.atomicDatabase = validationRunnable.atomicDatabase;
+        this.googleAccessToken = validationRunnable.googleAccessToken;
+        this.session = validationRunnable.session;
     }
+
     @Override
     public void run() {
-//        Database db = new Database();
-//        Mailer m = new Mailer();
-        /*
-        get db emails waiting on method
-        obj listOfEmails = db.method();
-         */
-
-        /*
-        if(listOfEmails != null/0){
-            emailStored = true;
-            run a one to one comparison
+        //TODO check if that is how you get email from google json object
+        String email = googleAccessToken.get().getAsJsonObject("profileObj").get("email").getAsString();
+        Database db = atomicDatabase.get();
+        if(db.hasEmails(email)){
+            emailStored.compareAndSet(false,true);
+            //TODO validate DB
         }else{
-            just dump everything from Mailer into db
+            db.populateDatabase(email);
         }
-         */
     }
 }
