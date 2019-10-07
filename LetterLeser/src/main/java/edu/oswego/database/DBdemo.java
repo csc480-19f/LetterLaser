@@ -11,7 +11,7 @@ public class DBdemo {
 		
 //		db.pull();
 		db.showTables();
-//		db.truncateTables();
+		db.truncateTables();
 		
 //		Mailer.moveToMarkedFolder();
 //		Database.insertDummyData(new String[]{
