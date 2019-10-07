@@ -11,7 +11,6 @@ public class DBdemo {
 		Settings.loadCredentials();
 
 		Database.truncateTables();
-//		System.out.println("TRUNCATED");
 //		Database.insertDummyData(new String[]{
 //			"USE csc480_19f;",
 //			"INSERT INTO user (email_address) VALUE ('first@gmail.com'); ",
@@ -75,31 +74,7 @@ public class DBdemo {
 		
 //		Mailer.moveToMarkedFolder();
 		Database.pull();
-//		Database.pull("Inbox");
 		Database.showTables();
-//		Database.insertFolders();
-//		Database.showTables();
-//		Database.importFolders();
-//		Database.query("INSERT INTO folder (fold_name) VALUE ('tubes')");
-//		Database.showTables();
-		
-		
-//		Database.validate("first@gmail.com");
-		
-//		Calculator calc = new Calculator();
-		
-//		System.out.println(calc.needsValidation("first@gmail.com"));
-
-		// Database.truncateTables();
-		// Database.insertDummyData();
-		
-		//Database.pull(); // for all mailbox gets error?
-		
-		// System.out.println("PRIY: " + Database.priy());
-		// Database.showTables();
-		// Database.fetchFavourites("first@gmail.com");
-
-		// Database.getLabels();
 	}
 
 }
