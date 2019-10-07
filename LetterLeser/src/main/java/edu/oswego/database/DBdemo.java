@@ -57,17 +57,6 @@ public class DBdemo {
 //						+ "(1, 1), "
 //						+ "(2, 2), "
 //						+ "(3, 3); ",
-//				"INSERT INTO label (lb_name) " +
-//					"VALUES "
-//					+ "('SCHOOL'), "
-//					+ "('WORK'), "
-//					+ "('OTHER'); ",
-//				"INSERT INTO label_list (email_id, label_id)" +
-//					" VALUES "
-//					+ "(1, 1), "
-//					+ "(2, 1), "
-//					+ "(3, 2), "
-//					+ "(3, 3); ",
 //				"UPDATE user SET validated_emails = 10 WHERE id = 1"
 //	});
 		
