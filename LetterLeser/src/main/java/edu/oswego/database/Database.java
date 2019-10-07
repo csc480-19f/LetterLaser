@@ -40,30 +40,28 @@ public class Database {
 
 	private static boolean folderExists(String folderName) {
 		ResultSet queryTbl;
+		int size = -1;
 		try {
 			queryTbl = getConnection().prepareStatement("SELECT count(*) FROM folder WHERE fold_name = '" + folderName + "'").executeQuery();
 			while (queryTbl.next()) {
-				return queryTbl.getInt(1) >= 1;
+				size = queryTbl.getInt(1);
+				break;
 			}
 		} catch (SQLException e1) {
 			e1.printStackTrace();
 		}
 		
-		return false;
+		return size >= 1;
 	}
 	
 	public static void importFolders() {
-		ResultSet queryTbl;
 		try {
-
 			Folder[] folders = Mailer.getStorage().getDefaultFolder().list("*");
-			
 			for (Folder f: folders) {
-//				System.out.println(f.getFullName());
-				
 				if (!folderExists(f.getFullName())) {
 					PreparedStatement ps = getConnection().prepareStatement("INSERT INTO folder (fold_name) VALUE ('" + f.getFullName() + "')", Statement.RETURN_GENERATED_KEYS);
-					int affectedRows = ps.executeUpdate();
+					if (ps.executeUpdate() == 0)
+						throw new SQLException("Could not insert into folder, no rows affected");
 					
 					ResultSet generatedKeys = ps.getGeneratedKeys();
 					
@@ -74,51 +72,81 @@ public class Database {
 				}
 			}
 			
-			
 		} catch (SQLException | MessagingException e) {
 			e.printStackTrace();
 		}
 	}
 
 	private static void insertEmail(Message m) {
+		List<Integer> emailIdList = new ArrayList<>();
+		
 		PreparedStatement ps;
-		String statement;
-		boolean seen;
 		try {
-			if (m.getFlags().contains(Flags.Flag.SEEN)) {
-				seen = true;
-			} else {
-				seen = false;
-			}
-			// System.out.println("EMAIL DATA BABY: " + m);
-			statement = ("INSERT INTO email (date_received, subject, size, seen, folder_id) VALUE (?, ?, ?, ?, ?)");
-			ps = getConnection().prepareStatement(statement);
+			ps = getConnection().prepareStatement("", Statement.RETURN_GENERATED_KEYS);
 			ps.setObject(1, m.getReceivedDate());
 			ps.setString(2, m.getSubject());
 			ps.setDouble(3, m.getSize());
-			ps.setBoolean(4, seen);
-
+			ps.setBoolean(4, m.getFlags().contains(Flags.Flag.SEEN));
+			
 			int folderId = -1;
 			for (UserFolder f : folderList) {
-//				System.out.println(f.getFolder().getFullName() + "\t::\t" + m.getFolder().getFullName());
 				if (f.getFolder().getFullName().equals(m.getFolder().getFullName())) {
 					folderId = f.getId();
 					break;
 				}
 			}
-
 			ps.setInt(5, folderId);
-			ps.execute();
+			
+			if (ps.executeUpdate() == 0)
+				throw new SQLException("Could not insert into folder, no rows affected");
+			
+			ResultSet generatedKeys = ps.getGeneratedKeys();
+			if (generatedKeys.next())
+				emailIdList.add(generatedKeys.getInt(1));
+			
 		} catch (SQLException e) {
 			e.printStackTrace();
 		} catch (MessagingException e) {
 			e.printStackTrace();
-		}
+		} 
+		
+//		
+//		
+////		PreparedStatement ps;
+////		String statement;
+////		boolean seen;
+////		try {
+////			if (m.getFlags().contains(Flags.Flag.SEEN)) {
+////				seen = true;
+////			} else {
+////				seen = false;
+////			}
+////			// System.out.println("EMAIL DATA BABY: " + m);
+////			statement = ("INSERT INTO email (date_received, subject, size, seen, folder_id) VALUE (?, ?, ?, ?, ?)");
+////			ps = getConnection().prepareStatement(statement);
+////			ps.setObject(1, m.getReceivedDate());
+////			ps.setString(2, m.getSubject());
+////			ps.setDouble(3, m.getSize());
+////			ps.setBoolean(4, seen);
+////
+////			int folderId = -1;
+////			for (UserFolder f : folderList) {
+//////				System.out.println(f.getFolder().getFullName() + "\t::\t" + m.getFolder().getFullName());
+////				if (f.getFolder().getFullName().equals(m.getFolder().getFullName())) {
+////					folderId = f.getId();
+////					break;
+////				}
+////			}
+////
+////			ps.setInt(5, folderId);
+////			ps.execute();
+//		} catch (SQLException e) {
+//			e.printStackTrace();
+//		} catch (MessagingException e) {
+//			e.printStackTrace();
+//		}
 	}
 
-	/*
-	 * Pulls all emails from IMAP server and separates meta-data
-	 */
 	public static void pull() {
 
 		// List<Folder> folders = insertFolders();
@@ -133,13 +161,9 @@ public class Database {
 			Message[] msgs = Mailer.pullEmails(f.getFolder().getFullName()); // "[Gmail]/All Mail");
 			for (Message m : msgs) {
 				try {
-
-					System.out.println(m.getFolder());
-					// folder first
 					insertEmailAddress(m.getFrom());
 					insertEmail(m);
 					// System.out.println(Mailer.processAttachment(m));
-					System.out.println(m.getReceivedDate().toString());
 					
 					i++;
 					if (i > 100)
@@ -256,7 +280,6 @@ public class Database {
 			try {
 				if (!addrList.contains(addresses[i])) {
 					addrList.add(addresses[i]);
-					System.out.println("THIS ONE: " + addresses[i]);
 					ps = getConnection().prepareStatement("INSERT INTO email_addr (email_address) VALUE ('"
 							+ addresses[i].toString().replace("'", "`") + "');");
 					ps.execute();
