@@ -1,35 +1,42 @@
+import Runnables.*;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
+import edu.oswego.database.Database;
+import edu.oswego.model.Email;
+import edu.oswego.model.UserFolder;
 
 import javax.websocket.Session;
+import java.io.IOException;
+import java.io.InterruptedIOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.FutureTask;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class Handler implements Runnable {
-    private static Session session;
-    private static MySQLServer sqlServer;
-    private static Calculations calculations;
-    private static InboxHandler inboxHandler;
-    private static JsonObject googleAccessToken;
-    private static AtomicBoolean dataBaseHasData;
-    private static String message;
+    private volatile AtomicReference<Session> session;
+    private volatile AtomicReference<Database> database;
+    private volatile AtomicReference<JsonObject> googleAccessToken;
+    private volatile AtomicBoolean hasEmails;
+    private volatile AtomicReference<String> message;
+    private volatile AtomicReference<Thread> oldThread;
 
-    Handler(Session session){
+    Handler(AtomicReference<Session> session,AtomicReference<String> message, AtomicReference<JsonObject> googleAccessToken,AtomicReference<Database> database, AtomicBoolean hasEmails){
         this.session=session;
-        this.sqlServer = new MySQLServer();
-        this.calculations = new Calculations();
-        this.inboxHandler = new InboxHandler();
-        googleAccessToken=null;
-        message = null;
-        dataBaseHasData = new AtomicBoolean(false);
-    }
-    Handler(Session session,String message){
-        this.session=session;
-        this.sqlServer = new MySQLServer();
-        this.calculations = new Calculations();
-        this.inboxHandler = new InboxHandler();
-        googleAccessToken=null;
         this.message = message;
-        dataBaseHasData = new AtomicBoolean(false);
+        this.googleAccessToken = googleAccessToken;
+        this.database = database;
+        this.hasEmails = hasEmails;
+    }
+
+    Handler(Handler handler, String message, Thread oldThread){
+        this.session = handler.session;
+        this.database=handler.database;
+        this.googleAccessToken=handler.googleAccessToken;
+        this.hasEmails=handler.hasEmails;
+        this.message = new AtomicReference<>(message);
+        this.oldThread = new AtomicReference<>(oldThread);
     }
 
 
@@ -38,35 +45,123 @@ public class Handler implements Runnable {
 
         if (googleAccessToken == null || Thread.interrupted()) {
             return;
+        }else if(message.equals("folders")){
+            try {
+                sendFolders();
+            } catch (IOException e) {
+                //cant really do anything
+            }
         }else{
-            handleMessage(message);
+            try {
+                handleMessage(message.get());
+            } catch (InterruptedIOException e) {
+
+            }
         }
 
     }
 
-    public JsonObject getGoogleAccessToken(){
-        return googleAccessToken;
-    }
-
-    public AtomicBoolean getAtomicBoolean(){
-        return dataBaseHasData;
+    private void sendFolders() throws IOException {
+        List<UserFolder> folders =  database.get().getFolders(googleAccessToken.get().getAsJsonObject("").get("email").getAsString());
+        session.get().getBasicRemote().sendText(folders.toString());
     }
 
 
-    public boolean setGoogleAccessToken(String message){
+
+
+    private void handleMessage(String message) throws InterruptedIOException {
+        //waiting to know if db has data or not: look at ValidationRunnable
+        while(!hasEmails.get()){
+            try {
+                Thread.sleep(50);
+            } catch (InterruptedException e) {
+                throw new InterruptedIOException();
+            }
+        }
+        //TODO make sure gui sends comma seperators
+        /*
+        filters include: folder,date,interval,seen_email,attatchment
+        ex cs,2/12/2019,week,t,t
+         */
+        String[] filters = message.split(",");
+        //Waiting for the oldThread to terminate
+        while(oldThread.get().isAlive()){
+            if(Thread.interrupted()){
+                throw new InterruptedIOException();
+            }
+        }
+        //parse the booleans
+        boolean attachment;
+        boolean seen;
+        if(filters[3].contains("t")){
+            seen = true;
+        }else{
+            seen = false;
+        }
+        if(filters[4].contains("t")){
+            attachment = true;
+        }else{
+            attachment = false;
+        }
+        //get all the emails
+        ArrayList<Email> emails = database.get().getMetaDataWithAppliedFilters(filters[0],filters[1],filters[2],attachment,seen);
+        //this will store the final data
+        if(Thread.interrupted()){
+            throw new InterruptedIOException();
+        }
+        //Making all the callables and futures and executing them in threads
+        DomainCallable dc = new DomainCallable();
+        SentimentScoreCallable ssc = new SentimentScoreCallable();
+        FolderCallable fc = new FolderCallable();
+        NumOfEmailsCallable noec = new NumOfEmailsCallable();
+        SnRCallable src = new SnRCallable();
+        TimeBetweenRepliesCallable tbrc = new TimeBetweenRepliesCallable();
+
+        FutureTask sscTask = new FutureTask<>(ssc);
+        FutureTask dcTask = new FutureTask<>(dc);
+        FutureTask fcTask = new FutureTask<>(fc);
+        FutureTask noecTask = new FutureTask<>(noec);
+        FutureTask srcTask = new FutureTask<>(src);
+        FutureTask tbrcTask = new FutureTask<>(tbrc);
+
+
+        if(Thread.interrupted()){
+            throw new InterruptedIOException();
+        }
+
+        new Thread(sscTask).start();
+        new Thread(dcTask).start();
+        new Thread(fcTask).start();
+        new Thread(noecTask).start();
+        new Thread(srcTask).start();
+        new Thread(tbrcTask).start();
+
+        Object dcData;
+        Object sscData;
+        Object fcData;
+        Object noecData;
+        Object srcData;
+        Object tbrcData;
+
         try {
-            googleAccessToken = new JsonParser().parse(message).getAsJsonObject();
-            return true;
-        }catch(Exception e){
-            return false;
+            sscData = sscTask.get();
+            dcData = dcTask.get();
+            fcData = fcTask.get();
+            noecData = noecTask.get();
+            srcData = srcTask.get();
+            tbrcData = tbrcTask.get();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
         }
+
+        JsonObject dataSet = new JsonObject();
+
+
+
     }
 
 
-
-
-    private void handleMessage(String message){
-
-    }
 
 }
