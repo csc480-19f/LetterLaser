@@ -8,7 +8,6 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import javax.mail.Address;
@@ -34,17 +33,89 @@ import edu.oswego.props.Settings;
 
 public class Database {
 
-	private static Connection connection;
-	// private static List<Email> emailList = new ArrayList<>();
-	private static List<UserFolder> folderList = new ArrayList<>();
-	private static List<Integer> emailIdList = new ArrayList<>();
-	private static List<Label> labelList = new ArrayList<>();
+	private Connection connection;
+	private EmailAddress user;
+//	private Mailer mailer;
+	
+	public Database(String emailAddress, String oauth2) {
+		user = getUser(emailAddress);
+//		mailer = new Mailer();
+		pull();
+	}
+	
+	private EmailAddress getUser(String emailAddress) {
+		ResultSet rs;
+		try {
+			rs = getConnection().prepareStatement("SELECT * FROM user WHERE email_address = '" + emailAddress + "';", Statement.RETURN_GENERATED_KEYS).executeQuery();
+			while(rs.next())
+				return new EmailAddress(rs.getInt(1), rs.getString(2));
+			
+			rs.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		
+		return new EmailAddress(insertUser(emailAddress), emailAddress);
+	}
+	
+	private int insertUser(String emailAddress) {
+		PreparedStatement ps;
+		try {
+			ps = getConnection().prepareStatement("INSERT INTO user (email_address) VALUE ('" + emailAddress + "')",
+					Statement.RETURN_GENERATED_KEYS);
+			if (ps.executeUpdate() == 0)
+				throw new SQLException("Could not insert into folder, no rows affected");
 
-	public static void setValidatedEmailCount(String emailAddress, int count) {
+			ResultSet generatedKeys = ps.getGeneratedKeys();
+
+			if (generatedKeys.next())
+				return generatedKeys.getInt(1);
+			
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return -1;
+	}
+	
+	public void pull() {
+		List<UserFolder> folderList = importFolders(); // make function not static. Lets change this so pass as param to menthods so take list?
+		List<Integer> emailIdList = new ArrayList<>();
+
+		int i = 0;
+		int stopper = 50; // limit our pull for testing
+
+		for (UserFolder f : folderList) {
+			Message[] msgs = Mailer.pullEmails(f.getFolder().getFullName()); // Do not use "[Gmail]/All Mail");
+			for (Message m : msgs) {
+				try {
+					List<EmailAddress> fromList = insertEmailAddress(m.getFrom());// get this list and return for user_email table
+					int emailId = insertEmail(m, folderList, emailIdList);
+					for (EmailAddress ea : fromList) {
+						insertReceivedEmails(emailId, ea.getId());
+					}
+					insertUserEmail(user, emailId);
+					emailIdList.add(emailId);
+//					insertRecipientList(emailId, m.getAllRecipients());
+					
+					i++;
+					if (i > stopper)
+						return;
+
+				} catch (MessagingException e) {
+					e.printStackTrace();
+				}
+			}
+			// If not already in folder, copy it over.
+			// NULL POINTER EXCEPTION. FIX DIS yo.
+//			Mailer.markEmailsInFolder(f.getFolder().getFullName(), msgs);
+		}
+	}
+
+	public void setValidatedEmailCount(String emailAddress, int count) {
 		query("UPDATE user SET validated_emails = " + count + " WHERE email_address = '" + emailAddress + "';");
 	}
 	
-	private static boolean folderExists(String folderName) {
+	private boolean folderExists(String folderName) {
 		ResultSet queryTbl;
 		int size = -1;
 		try {
@@ -61,7 +132,7 @@ public class Database {
 		return size >= 1;
 	}
 	
-	private static boolean emailAddressExists(String emailAddress) {
+	private boolean emailAddressExists(String emailAddress) {
 		ResultSet queryTbl;
 		int size = -1;
 		try {
@@ -78,7 +149,8 @@ public class Database {
 		return size >= 1;
 	}
 	
-	public static void importFolders() {
+	public List<UserFolder> importFolders() {
+		List<UserFolder> folderList = new ArrayList<>(); 
 		try {
 			Folder[] folders = Mailer.getStorage().getDefaultFolder().list("*");
 			
@@ -102,9 +174,10 @@ public class Database {
 		} catch (SQLException | MessagingException e) {
 			e.printStackTrace();
 		}
+		return folderList;
 	}
 	
-	private static int insertEmail(Message m) {
+	private int insertEmail(Message m, List<UserFolder> folderList, List<Integer> emailIdList) {
 		// no duplicates in case in multiple folders? CHECK DATE RECEIVED AT SAME TIME
 		// AND OTHER SHET?
 		int emailId = -1;
@@ -156,7 +229,7 @@ public class Database {
 		return emailId;
 	}
 
-	private static List<EmailAddress> insertEmailAddress(Address[] addresses) {
+	private List<EmailAddress> insertEmailAddress(Address[] addresses) {
 		List<EmailAddress> emailAddrList = new ArrayList<>();
 		
 		for (int i = 0; i < addresses.length; i++) {
@@ -196,78 +269,16 @@ public class Database {
 		return emailAddrList;
 	}
 	
-//	private static EmailAddress getUser(String emailAddress) {
-//		ResultSet rs = getConnection().prepareStatement("SELECT * FROM email_addr WHERE email_address = '" + emailAddress + "';", Statement.RETURN_GENERATED_KEYS).executeQuery();
-//		
-//		if (count > 0)
-//			return new EmailAddress("")
-//		
-//		rs.close();
-//	}
-//	
-//	private static int insertUser() {
-//		PreparedStatement ps = getConnection().prepareStatement(
-//				"INSERT INTO folder (fold_name) VALUE ('" + f.getFullName() + "')",
-//				Statement.RETURN_GENERATED_KEYS);
-//		if (ps.executeUpdate() == 0)
-//			throw new SQLException("Could not insert into folder, no rows affected");
-//
-//		ResultSet generatedKeys = ps.getGeneratedKeys();
-//
-//		if (generatedKeys.next()) {
-//			folderList.add(new UserFolder(generatedKeys.getInt(1), f));
-//			System.out.println("ADDED FOLDER:\t" + f.getFullName());
-//		}
-//	}
-	
-	public static void pull() {
-		//EmailAddress loggedUser;
-		//getUser("");
-		
-		
-		importFolders(); // make function not static. Lets change this so pass as param to menthods so take list?
-
-		int i = 0;
-		int stopper = 30; // limit our pull for testing
-
-		for (UserFolder f : folderList) {
-			Message[] msgs = Mailer.pullEmails(f.getFolder().getFullName()); // Do not use "[Gmail]/All Mail");
-			for (Message m : msgs) {
-				try {
-					List<EmailAddress> fromList = insertEmailAddress(m.getFrom());// get this list and return for user_email table
-					int emailId = insertEmail(m);
-					for (EmailAddress ea : fromList) {
-						insertReceivedEmails(emailId, ea.getId());
-					}
-					insertUserEmail(new EmailAddress(1, "first@gmail.com"), emailId); // NO BELONG HERE. MUST BE USER EMAILADDRESS
-					emailIdList.add(emailId);
-
-					i++;
-					if (i > stopper)
-						return;
-
-				} catch (MessagingException e) {
-					e.printStackTrace();
-				}
-			}
-			// If not already in folder, copy it over.
-			// NULL POINTER EXCEPTION. FIX DIS yo.
-//			Mailer.markEmailsInFolder(f.getFolder().getFullName(), msgs);
-		}
-	}
-	
-	// error here.
-	private static void insertReceivedEmails(int emailId, int emailAddrId) {
-		// if not already there. UGH GOTTA DO CHEKS 4 EVRYTHANG
+	private void insertReceivedEmails(int emailId, int emailAddrId) {
+		// maybe does not even need to check if exists cause we use fromList which will be empty if no updates/validation.
 		query("INSERT INTO received_email (email_id, email_addr_id) VALUE ('" + emailId + "', " + emailAddrId + ");");
 	}
 
-	// shit this is OUR ID NOT just EmailAddress. H
-	private static void insertUserEmail(EmailAddress addr, int emailId) {
+	private void insertUserEmail(EmailAddress addr, int emailId) {
 		query("INSERT INTO user_email (user_id, email_id) VALUE ('" + addr.getId() + "', " + emailId + ");");
 	}
 
-	public static int getEmailCountByFolder(String folderName) {
+	public int getEmailCountByFolder(String folderName) {
 		// can get sent count by putting foldername as sent. received is all folders
 		// aggregate.
 		// lets be able to get all folders to do this?
@@ -290,9 +301,36 @@ public class Database {
 		return size;
 	}
 
+	private void insertRecipientList(int emailId, Address[] recipients) {
+		
+		List<EmailAddress> recipientList = insertEmailAddress(recipients);
+		for (EmailAddress ea: recipientList) {
+			if (recipientListExists(ea, emailId)) {
+				query("INSERT INTO recipient_list (email_id, email_addr_id) VALUE ('" + emailId + "', " + ea.getId() + ");");
+			}
+		}
+	}
+	
+	private boolean recipientListExists(EmailAddress emailAddr, int emailId) {
+		PreparedStatement ps;
+		try {
+			ps = getConnection().prepareStatement("SELECT * FROM recipient_list WHERE email_id = " + emailId + " AND email_addr_id = " + emailAddr.getId() + ";", Statement.RETURN_GENERATED_KEYS);
+			if (ps.executeUpdate() == 0)
+				throw new SQLException("Could not insert into folder, no rows affected");
+
+			ResultSet generatedKeys = ps.getGeneratedKeys();
+			if (generatedKeys.next())
+				return true;
+			
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return false;
+	}
+	
 	// WIP
 	// SQL DATE // filter on attachment? // need attachment name
-	// private static static void getEmailByFilters(String email, String folder,
+	// private void getEmailByFilters(String email, String folder,
 	// String label, boolean byAttachment,
 	// boolean bySeen, Date startDate, Date endDate, int interval) {
 	// if (startDate != null || endDate != null) { // same with label
@@ -303,7 +341,7 @@ public class Database {
 	/*
 	 * Displays all INBOX folder messages through console output.
 	 */
-	public static void showTables() {
+	public void showTables() {
 		long ct = System.currentTimeMillis();
 		ResultSet queryTbl;
 		try {
@@ -315,7 +353,7 @@ public class Database {
 				System.out.println("[INBOX] Table: " + tbl + "\n-------------------");
 
 				// show all attributes from the tables
-				ResultSet queryAttr = Database.getConnection().prepareStatement("select * from " + tbl).executeQuery();
+				ResultSet queryAttr = getConnection().prepareStatement("select * from " + tbl).executeQuery();
 				while (queryAttr.next()) {
 					ResultSetMetaData md = queryAttr.getMetaData();
 					for (int i = 1; i < md.getColumnCount() + 1; i++)
@@ -340,7 +378,7 @@ public class Database {
 	 * 
 	 * @param query statement
 	 */
-	public static void query(String statement) {
+	public void query(String statement) {
 		PreparedStatement ps;
 		try {
 			ps = getConnection().prepareStatement(statement);
@@ -353,7 +391,7 @@ public class Database {
 	/*
 	 * For testing/debug purposes via Database Team.
 	 */
-	public static void insertDummyData(String[] dummyStatements) {
+	public void insertDummyData(String[] dummyStatements) {
 		PreparedStatement ps;
 		try {
 			for (String statement : dummyStatements) {
@@ -374,7 +412,7 @@ public class Database {
 	 * 
 	 * @return new Folder object if it doesn't exist.
 	 */
-	// public static UserFolder getFolder(int id, String name) {
+	// public UserFolder getFolder(int id, String name) {
 	// for (UserFolder folder : folderList)
 	// if (folder.getId() == id)
 	// return folder;
@@ -386,14 +424,14 @@ public class Database {
 	// }
 
 	// needs return list of emails
-	// public static void getRecipientList(int emailId) {
+	// public void getRecipientList(int emailId) {
 	// String statement = "SELECT email_addr.email_address FROM recipient_list "
 	// + "JOIN email_addr ON email_addr.id = recipient_list.email_addr_id "
 	// + "WHERE email_id = '"
 	// + emailId + "';";
 	// }
 	//
-	// public static void getEmail() {
+	// public void getEmail() {
 	// String statement = "SELECT * FROM email WHERE"; // NEED TO HAVE another table
 	// for all emails linking to a userId
 	// }
@@ -407,7 +445,7 @@ public class Database {
 	 * 
 	 * @return a MySQL JDBC Connection object
 	 */
-	public static Connection getConnection() {
+	private Connection getConnection() {
 		try {
 			if (connection == null || connection.isClosed())
 				connection = DriverManager.getConnection("jdbc:mysql://" + Settings.DATABASE_HOST + ":"
@@ -426,7 +464,7 @@ public class Database {
 	 * 
 	 * @return number of validated emails (must be updated)
 	 */
-	public static int getValidatedEmails(String emailAddress) {
+	public int getValidatedEmails(String emailAddress) {
 		int validatedEmails = 0;
 		ResultSet queryTbl;
 		try {
@@ -447,7 +485,7 @@ public class Database {
 	 * 
 	 * @see truncateTable method
 	 */
-	public static void truncateTables() {
+	public void truncateTables() {
 		for (String tbl : Settings.DATABASE_TABLES)
 			truncateTable(tbl);
 	}
@@ -457,7 +495,7 @@ public class Database {
 	 * 
 	 * @param table name
 	 */
-	public static void truncateTable(String table) {
+	public void truncateTable(String table) {
 		PreparedStatement ps;
 		try {
 			ps = getConnection().prepareStatement("TRUNCATE TABLE " + table + ";");
@@ -474,7 +512,7 @@ public class Database {
 	 * 
 	 * @param email address of the user.
 	 */
-	public static boolean hasEmails(String emailAddress) {
+	public boolean hasEmails(String emailAddress) {
 		ResultSet queryTbl;
 		try {
 			queryTbl = getConnection()
@@ -497,7 +535,7 @@ public class Database {
 		return false;
 	}
 
-	public static List<Label> getLabels() {
+	public List<Label> getLabels() {
 		try {
 			Folder[] f = Mailer.getStorage().getDefaultFolder().list();
 			for (Folder fd : f) {
@@ -519,7 +557,7 @@ public class Database {
 	// *
 	// * @return List of UserFavourites objects.
 	// */
-	// public static List<UserFavourites> fetchFavourites(String emailAddress) {
+	// public List<UserFavourites> fetchFavourites(String emailAddress) {
 	// List<UserFavourites> favsList = new ArrayList<>(); // HMMM CLASS LIST MAYBE?
 	//
 	// System.out.println("FETCHING FAVOURITES FOR :" + emailAddress +
@@ -565,7 +603,7 @@ public class Database {
 	 * 
 	 * @see insertSentimentScore method
 	 */
-	public static void calculateSentimentScore(int emailId, SentimentScore score) {
+	public void calculateSentimentScore(int emailId, SentimentScore score) {
 		int sentimentId = insertSentimentScore(score);
 
 		if (sentimentId == -1) {
@@ -583,7 +621,7 @@ public class Database {
 	 * 
 	 * @return id attribute from sentiment_score table of inserted object
 	 */
-	private static int insertSentimentScore(SentimentScore score) {
+	private int insertSentimentScore(SentimentScore score) {
 		try {
 			PreparedStatement ps = getConnection()
 					.prepareStatement("INSERT INTO sentiment_score (positive, negative, neutral, compound) VALUE ("
@@ -606,7 +644,7 @@ public class Database {
 	 * 
 	 * @param email id and sentiment score id from database table
 	 */
-	private static void insertSentimentScoreIntoEmail(int emailId, int sentimentScoreId) {
+	private void insertSentimentScoreIntoEmail(int emailId, int sentimentScoreId) {
 		try {
 			PreparedStatement pstmt = getConnection().prepareStatement(
 					"UPDATE email SET sentiment_score_id = " + sentimentScoreId + " WHERE id = " + emailId + ";");
