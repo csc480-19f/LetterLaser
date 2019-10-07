@@ -2,7 +2,7 @@ package edu.oswego.model;
 
 import javax.mail.Folder;
 
-public class Label {
+public class Label implements MailFolder {
 	
 	private int id;
 	private Folder folder;
@@ -27,5 +27,5 @@ public class Label {
 	public void setFolder(Folder folder) {
 		this.folder = folder;
 	}
-	
+
 }

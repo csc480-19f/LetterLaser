@@ -22,6 +22,7 @@ import SentimentAnalyzer.SentimentScore;
 import edu.oswego.mail.Mailer;
 import edu.oswego.model.EmailAddress;
 import edu.oswego.model.Label;
+import edu.oswego.model.MailFolder;
 import edu.oswego.model.UserFolder;
 import edu.oswego.props.Settings;
 
@@ -245,35 +246,43 @@ public class Database {
 		importFolders(); // make function not static. Lets change this so pass as param to menthods so take list?
 		importLabels();
 
-		int i = 0;
-		int stopper = 300; // limit our pull for testing
-
 		// take a folder as parent and do this for labels? since labels and folders don't cross one another.
 		for (UserFolder f : folderList) {
-			Message[] msgs = Mailer.pullEmails(f.getFolder().getFullName()); // Do not use "[Gmail]/All Mail");
-			for (Message m : msgs) {
-				try {
-					List<EmailAddress> fromList = insertEmailAddress(m.getFrom());// get this list and return for user_email table
-					int emailId = insertEmail(m);
-					for (EmailAddress ea : fromList) {
-						insertUserEmail(ea, emailId);
-						insertReceivedEmails(emailId, ea.getId());
-					}
-					emailIdList.add(emailId);
-					insertUserLabelList(emailId, m); // not working?
-					
-					i++;
-					if (i > stopper)
-						return;
-
-				} catch (MessagingException e) {
-					e.printStackTrace();
-				}
-			}
-			
-			// If not already in folder, copy it over.
-			Mailer.markEmailsInFolder(f.getFolder().getFullName(), msgs);
+			insertion(f);
 		}
+		
+		for (Label l: labelList) {
+			insertion(l);
+		}
+	}
+	
+	private static void insertion(MailFolder f) {
+		int i = 0; 
+		int stopper = 10;
+		Message[] msgs = Mailer.pullEmails(f.getFolder().getFullName()); // Do not use "[Gmail]/All Mail");
+		for (Message m : msgs) {
+			try {
+				List<EmailAddress> fromList = insertEmailAddress(m.getFrom());// get this list and return for user_email table
+				int emailId = insertEmail(m);
+				for (EmailAddress ea : fromList) {
+					insertUserEmail(ea, emailId);
+					insertReceivedEmails(emailId, ea.getId());
+				}
+				emailIdList.add(emailId);
+				if (f instanceof Label)
+					insertUserLabelList(emailId, m); // not working?
+				
+				i++;
+				if (i > stopper)
+					return;
+
+			} catch (MessagingException e) {
+				e.printStackTrace();
+			}
+		}
+		
+		// If not already in folder, copy it over.
+		Mailer.markEmailsInFolder(f.getFolder().getFullName(), msgs);
 	}
 	
 	// error here.
