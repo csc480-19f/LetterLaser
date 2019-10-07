@@ -1,5 +1,7 @@
 package edu.oswego.database;
 
+import javax.mail.Folder;
+
 import edu.oswego.props.Settings;
 
 public class DBdemo {
@@ -7,7 +9,8 @@ public class DBdemo {
 	public static void main(String[] args) {
 		Settings.loadCredentials();
 
-		Database.truncateTables();
+//		Database.truncateTables();
+//		System.out.println("TRUNCATED");
 //		Database.insertDummyData(new String[]{
 //			"USE csc480_19f;",
 //			"INSERT INTO user (email_address) VALUE ('first@gmail.com'); ",
@@ -70,8 +73,13 @@ public class DBdemo {
 		
 		
 //		Database.pull("[Gmail]/All Mail");
-		Database.pull("Misc");
+//		Database.pull("Inbox");
 //		Database.showTables();
+//		Database.insertFolders();
+//		Database.showTables();
+		Database.importFolders();
+//		Database.query("INSERT INTO folder (fold_name) VALUE ('tubes')");
+		Database.showTables();
 		
 		
 //		Database.validate("first@gmail.com");

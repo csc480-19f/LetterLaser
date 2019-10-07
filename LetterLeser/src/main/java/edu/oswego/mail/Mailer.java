@@ -6,6 +6,7 @@ import javax.mail.Folder;
 import javax.mail.Message;
 import javax.mail.MessagingException;
 import javax.mail.NoSuchProviderException;
+import javax.mail.Part;
 import javax.mail.Session;
 import javax.mail.Store;
 
@@ -20,7 +21,7 @@ import edu.oswego.props.Settings;
  */
 
 public class Mailer {
-	
+
 	private static Session session;
 	private static Store storage;
 	private final static String HOST = "imap.gmail.com";
@@ -83,8 +84,7 @@ public class Mailer {
 		}
 		return folder;
 	}
-	
-	
+
 	/*
 	 * Uses DB connection and PreparedStatement to execute a query.
 	 * 
@@ -103,5 +103,44 @@ public class Mailer {
 
 		return null;
 	}
+
+	public static String processAttachment(Message m) {
+		String disposition;
+		try {
+			disposition = m.getDisposition();
+			if (hasAttachment(disposition) && disposition.equals(Part.ATTACHMENT)) {
+				System.out.println("This part is an attachment");
+				String fileName = m.getFileName();
+				System.out.println("The file name of this attachment is " + fileName);
+				return fileName;
+			}
+		} catch (MessagingException e) {
+			e.printStackTrace();
+		}
+
+		return null;
+	}
+
+	private static boolean hasAttachment(String disposition) {
+		return disposition != null;
+	}
+
+	// SELECT * FROM filter_settings
+	// JOIN folder
+	// on folder.id=filter_settings.folder_id
+	// WHERE folder.id= 'SOME_ID';
+	//
+	// INSERT INTO filter_settings(start_date, end_date, interval_range, folder.id)
+	// VALUE ("CURDATE()", "CURDATE()", 7, 1);
+	
+//	SELECT * FROM user_favorites
+//	JOIN user
+//		on user.id=user_favorites.user_id
+//	WHERE user.id='SOME_ID';
+//
+//	INSERT INTO user_favorites (user_id, fav_name, filter_settings_id) VALUE ('SOME_USER_ID', 'FAVNAME' 'SOME_FILTER_SETTINGS_ID');
+	
+	
+	
 
 }
