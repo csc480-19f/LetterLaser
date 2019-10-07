@@ -5,13 +5,28 @@ import edu.oswego.props.Settings;
 public class DBdemo {
 
 	public static void main(String[] args) {
+		long ct = System.currentTimeMillis();
 		Settings.loadCredentials();
 
 		Database db = new Database("csc344testacc@gmail.com", "KEY_HERE");
 		
 //		db.pull();
+		
+//		String lastCrawlDate = "2014-01-28";
+//		Date utilDate;
+//		try {
+//			utilDate = (Date) new SimpleDateFormat("yyyy-MM-dd").parse(lastCrawlDate);
+//			insertFilter(new Filter(utilDate, utilDate, 5, f));
+//		} catch (ParseException e) {
+//			e.printStackTrace();
+//		}
+		
+		
 		db.showTables();
-		db.truncateTables();
+//		db.truncateTables();
+		
+		double time = (double) ((System.currentTimeMillis() - ct) * .001);
+		System.out.println("Total runtime: " + time + " seconds\n");
 		
 //		Mailer.moveToMarkedFolder();
 //		Database.insertDummyData(new String[]{
