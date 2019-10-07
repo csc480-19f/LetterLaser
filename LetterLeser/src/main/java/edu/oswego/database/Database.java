@@ -242,7 +242,7 @@ public class Database {
 		importLabels();
 
 		int i = 0;
-		int stopper = 10; // limit our pull for testing
+		int stopper = 100; // limit our pull for testing
 
 		for (UserFolder f : folderList) {
 			Message[] msgs = Mailer.pullEmails(f.getFolder().getFullName()); // "[Gmail]/All Mail");
@@ -255,7 +255,7 @@ public class Database {
 						insertReceivedEmails(emailId, ea.getId());
 					}
 					emailIdList.add(emailId);
-					//insertUserLabelList(emailId, m);
+					insertUserLabelList(emailId, m);
 					// If we insert label... how do we know if it's in there? Creat efunction that looks at folder and sees if this email is inside? Then label? CANCER!
 					
 					i++;
@@ -288,9 +288,13 @@ public class Database {
 				// same email
 				for (Message m2 : msgs) {
 					if (m.equals(m2)) {
+						System.out.println("SAME");
 						query("INSERT INTO label_list (email_id, label_id) VALUE ('" + emailId + "', " + l.getId() + ");");
+					} else {
+						System.out.println("NOPE");
 					}
 				}
+				f.close();
 			} catch (MessagingException e) {
 				e.printStackTrace();
 			}
