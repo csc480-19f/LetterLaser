@@ -207,7 +207,15 @@ public class Database {
 		for (int i = 0; i < addresses.length; i++) {
 			PreparedStatement ps;
 			try {
-				String address = addresses[i].toString().replace("'", "`");
+//				 this one bugs out if i run on 100 emails? one of them formatted weird? Maybe split by space and trim and grab between "<e>" there.
+				String address = "";
+				if (addresses[i].toString().contains("<")) {
+					String addrParser[] = addresses[i].toString().replace("'", "`").split("<");
+					address = addrParser[1].replace(">", "");
+				} else 
+					address = addresses[i].toString();
+				
+//				String address = addresses[i].toString().replace("'", "`");
 				if (!emailAddressExists(address)) {
 					ps = getConnection().prepareStatement("INSERT INTO email_addr (email_address) VALUE ('" + address + "');", Statement.RETURN_GENERATED_KEYS);
 
@@ -221,12 +229,10 @@ public class Database {
 					}
 					
 					emailAddrList.add(new EmailAddress(emailAddressId, address));
-					//emailIdList.add(emailAddressId); // why did i do this?
 				} else {
 					ResultSet rs = getConnection().prepareStatement("SELECT * FROM email_addr WHERE email_address = '" + address + "';").executeQuery();
-					while (rs.next()) {
+					while (rs.next())
 						emailAddrList.add(new EmailAddress(rs.getInt(1), rs.getString(2)));
-					}
 					rs.close();
 				}
 			} catch (SQLException e) {
@@ -290,8 +296,6 @@ public class Database {
 					if (m.equals(m2)) {
 						System.out.println("SAME");
 						query("INSERT INTO label_list (email_id, label_id) VALUE ('" + emailId + "', " + l.getId() + ");");
-					} else {
-						System.out.println("NOPE");
 					}
 				}
 				f.close();
