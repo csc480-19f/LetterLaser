@@ -22,7 +22,6 @@ import SentimentAnalyzer.SentimentScore;
 import edu.oswego.mail.Mailer;
 import edu.oswego.model.EmailAddress;
 import edu.oswego.model.Label;
-import edu.oswego.model.MailFolder;
 import edu.oswego.model.UserFolder;
 import edu.oswego.props.Settings;
 
@@ -98,10 +97,10 @@ public class Database {
 	
 	public static void importFolders() {
 		try {
-			Folder[] folders = Mailer.getStorage().getDefaultFolder().list("%");
+			Folder[] folders = Mailer.getStorage().getDefaultFolder().list("*");
 			
 			for (Folder f : folders) {
-				if (!folderExists(f.getFullName()) && !f.getFullName().equals("[Gmail]") && !f.getFullName().equals("CSC480_19F")) {
+				if (!folderExists(f.getFullName()) && !f.getFullName().equals("[Gmail]") && !f.getFullName().equals("CSC480_19F") && !f.getFullName().equals("[Gmail]/All Mail")) {
 					PreparedStatement ps = getConnection().prepareStatement(
 							"INSERT INTO folder (fold_name) VALUE ('" + f.getFullName() + "')",
 							Statement.RETURN_GENERATED_KEYS);
@@ -246,43 +245,35 @@ public class Database {
 		importFolders(); // make function not static. Lets change this so pass as param to menthods so take list?
 		importLabels();
 
+		int i = 0;
+		int stopper = 25; // limit our pull for testing
+
 		// take a folder as parent and do this for labels? since labels and folders don't cross one another.
 		for (UserFolder f : folderList) {
-			insertion(f);
-		}
-		
-		for (Label l: labelList) {
-			insertion(l);
-		}
-	}
-	
-	private static void insertion(MailFolder f) {
-		int i = 0; 
-		int stopper = 10;
-		Message[] msgs = Mailer.pullEmails(f.getFolder().getFullName()); // Do not use "[Gmail]/All Mail");
-		for (Message m : msgs) {
-			try {
-				List<EmailAddress> fromList = insertEmailAddress(m.getFrom());// get this list and return for user_email table
-				int emailId = insertEmail(m);
-				for (EmailAddress ea : fromList) {
-					insertUserEmail(ea, emailId);
-					insertReceivedEmails(emailId, ea.getId());
-				}
-				emailIdList.add(emailId);
-				if (f instanceof Label)
-					insertUserLabelList(emailId, m); // not working?
-				
-				i++;
-				if (i > stopper)
-					return;
+			Message[] msgs = Mailer.pullEmails(f.getFolder().getFullName()); // Do not use "[Gmail]/All Mail");
+			for (Message m : msgs) {
+				try {
+					List<EmailAddress> fromList = insertEmailAddress(m.getFrom());// get this list and return for user_email table
+					int emailId = insertEmail(m);
+					for (EmailAddress ea : fromList) {
+						insertUserEmail(ea, emailId);
+						insertReceivedEmails(emailId, ea.getId());
+					}
+					emailIdList.add(emailId);
+//					insertUserLabelList(emailId, m); // not working?
+					
+					i++;
+					if (i > stopper)
+						return;
 
-			} catch (MessagingException e) {
-				e.printStackTrace();
+				} catch (MessagingException e) {
+					e.printStackTrace();
+				}
 			}
+			
+			// If not already in folder, copy it over.
+			Mailer.markEmailsInFolder(f.getFolder().getFullName(), msgs);
 		}
-		
-		// If not already in folder, copy it over.
-		Mailer.markEmailsInFolder(f.getFolder().getFullName(), msgs);
 	}
 	
 	// error here.
@@ -292,21 +283,21 @@ public class Database {
 	}
 
 	// WIP
-	private static void insertUserLabelList(int emailId, Message m) {
-		for (Label l: labelList) {
-			Folder f = Mailer.getFolder(l.getFolder().getFullName());
-			try {
-				f.open(Folder.READ_WRITE);
-				if (Arrays.asList(f.getMessages()).contains(m)) {
-					System.out.println("SAME");
-					query("INSERT INTO label_list (email_id, label_id) VALUE ('" + emailId + "', " + l.getId() + ");");
-				}
-				f.close();
-			} catch (MessagingException e) {
-				e.printStackTrace();
-			}
-		}
-	}
+//	private static void insertUserLabelList(int emailId, Message m) {
+//		for (Label l: labelList) {
+//			Folder f = Mailer.getFolder(l.getFolder().getFullName());
+//			try {
+//				f.open(Folder.READ_WRITE);
+//				if (Arrays.asList(f.getMessages()).contains(m)) {
+//					System.out.println("SAME");
+//					query("INSERT INTO label_list (email_id, label_id) VALUE ('" + emailId + "', " + l.getId() + ");");
+//				}
+//				f.close();
+//			} catch (MessagingException e) {
+//				e.printStackTrace();
+//			}
+//		}
+//	}
 
 	private static void insertUserEmail(EmailAddress addr, int emailId) {
 		query("INSERT INTO user_email (user_id, email_id) VALUE ('" + addr.getId() + "', " + emailId + ");");
