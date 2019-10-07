@@ -131,10 +131,8 @@ public class Mailer {
 			Multipart multiPart = (Multipart) m.getContent();
 			for (int i = 0; i < multiPart.getCount(); i++) {
 				MimeBodyPart part = (MimeBodyPart) multiPart.getBodyPart(i);
-				if (Part.ATTACHMENT.equalsIgnoreCase(part.getDisposition())) {
-					System.out.println("Sennnnnnnpai! I brought obentou tee-hee!" + part.getFileName());
+				if (Part.ATTACHMENT.equalsIgnoreCase(part.getDisposition()))
 					return part.getFileName().toString();
-				}
 			}
 		} catch (MessagingException e) {
 			e.printStackTrace();
