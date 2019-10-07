@@ -226,7 +226,6 @@ public class Database {
 					ResultSet rs = getConnection().prepareStatement("SELECT * FROM email_addr WHERE email_address = '" + address + "';").executeQuery();
 					while (rs.next()) {
 						emailAddrList.add(new EmailAddress(rs.getInt(1), rs.getString(2)));
-						System.out.println("DUPE");
 					}
 					rs.close();
 				}
@@ -234,15 +233,9 @@ public class Database {
 				e.printStackTrace();
 			}
 		}
-		
-		for (EmailAddress ea: emailAddrList) {
-			System.out.println(ea);
-		}
 		return emailAddrList;
 	}
 	
-	
-
 	public static void pull() {
 		// order matters. Folders must come first so labels don't import folders.
 		importFolders(); // make function not static. Lets change this so pass as param to menthods so take list?
@@ -261,7 +254,8 @@ public class Database {
 						insertUserEmail(ea, emailId);
 						insertReceivedEmails(emailId, ea.getId());
 					}
-//					insertUserLabel(m, emailId);
+					emailIdList.add(emailId);
+					//insertUserLabelList(emailId, m);
 					// If we insert label... how do we know if it's in there? Creat efunction that looks at folder and sees if this email is inside? Then label? CANCER!
 					
 					i++;
@@ -282,22 +276,26 @@ public class Database {
 	private static void insertReceivedEmails(int emailId, int emailAddrId) {
 		// if not already there. UGH GOTTA DO CHEKS 4 EVRYTHANG
 		query("INSERT INTO received_email (email_id, email_addr_id) VALUE ('" + emailId + "', " + emailAddrId + ");");
-		System.out.println("DONE IT");
 	}
 
 	// WIP
-//	private static void insertUserLabel(Message m, int emailId) {
-//		for (Label l: labelList) {
-//			Folder f = Mailer.getFolder(l.getFolder().getFullName());
-//			try {
-//				if (Arrays.asList(f.getMessages()).contains(m)) {
-//					query("INSERT INTO ")
-//				}
-//			} catch (MessagingException e) {
-//				e.printStackTrace();
-//			}
-//		}
-//	}
+	private static void insertUserLabelList(int emailId, Message m) {
+		for (Label l: labelList) {
+			Folder f = Mailer.getFolder(l.getFolder().getFullName());
+			try {
+				f.open(Folder.READ_WRITE);
+				Message[] msgs = f.getMessages();
+				// same email
+				for (Message m2 : msgs) {
+					if (m.equals(m2)) {
+						query("INSERT INTO label_list (email_id, label_id) VALUE ('" + emailId + "', " + l.getId() + ");");
+					}
+				}
+			} catch (MessagingException e) {
+				e.printStackTrace();
+			}
+		}
+	}
 
 	private static void insertUserEmail(EmailAddress addr, int emailId) {
 		query("INSERT INTO user_email (user_id, email_id) VALUE ('" + addr.getId() + "', " + emailId + ");");
