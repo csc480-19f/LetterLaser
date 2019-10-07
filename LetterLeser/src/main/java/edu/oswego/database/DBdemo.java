@@ -9,9 +9,9 @@ public class DBdemo {
 
 		Database db = new Database("csc344testacc@gmail.com", "KEY_HERE");
 		
-		db.pull();
+//		db.pull();
 		db.showTables();
-		db.truncateTables();
+//		db.truncateTables();
 		
 //		Mailer.moveToMarkedFolder();
 //		Database.insertDummyData(new String[]{

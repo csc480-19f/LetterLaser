@@ -80,9 +80,11 @@ public class Database {
 	public void pull() {
 		List<UserFolder> folderList = importFolders(); // make function not static. Lets change this so pass as param to menthods so take list?
 		List<Integer> emailIdList = new ArrayList<>();
-
+		
 		int i = 0;
-		int stopper = 50; // limit our pull for testing
+		int stopper = 10; // limit our pull for testing
+		
+		System.out.println(folderList.size() + "\t::\t" + folderList);
 
 		for (UserFolder f : folderList) {
 			Message[] msgs = Mailer.pullEmails(f.getFolder().getFullName()); // Do not use "[Gmail]/All Mail");
@@ -95,7 +97,6 @@ public class Database {
 					}
 					insertUserEmail(user, emailId);
 					emailIdList.add(emailId);
-//					insertRecipientList(emailId, m.getAllRecipients());
 					
 					i++;
 					if (i > stopper)
@@ -115,21 +116,18 @@ public class Database {
 		query("UPDATE user SET validated_emails = " + count + " WHERE email_address = '" + emailAddress + "';");
 	}
 	
-	private boolean folderExists(String folderName) {
-		ResultSet queryTbl;
-		int size = -1;
+	private boolean folderExists(String folderName, List<UserFolder> folderList) {
+		ResultSet rs;
 		try {
-			queryTbl = getConnection()
-					.prepareStatement("SELECT count(*) FROM folder WHERE fold_name = '" + folderName + "'")
-					.executeQuery();
-			while (queryTbl.next()) {
-				size = queryTbl.getInt(1);
-				break;
+			rs = getConnection().prepareStatement("SELECT * FROM folder WHERE fold_name = '" + folderName + "'").executeQuery();
+			while (rs.next()) {
+				folderList.add(new UserFolder(rs.getInt(1), Mailer.getFolder(rs.getString(2))));
+				return false;
 			}
 		} catch (SQLException e1) {
 			e1.printStackTrace();
 		}
-		return size >= 1;
+		return true;
 	}
 	
 	private boolean emailAddressExists(String emailAddress) {
@@ -155,7 +153,7 @@ public class Database {
 			Folder[] folders = Mailer.getStorage().getDefaultFolder().list("*");
 			
 			for (Folder f : folders) {
-				if (!folderExists(f.getFullName()) && !f.getFullName().equals("[Gmail]") && !f.getFullName().equals("CSC480_19F") && !f.getFullName().equals("[Gmail]/All Mail")) {
+				if (!folderExists(f.getFullName(), folderList) && !f.getFullName().equals("[Gmail]") && !f.getFullName().equals("CSC480_19F") && !f.getFullName().equals("[Gmail]/All Mail")) {
 					PreparedStatement ps = getConnection().prepareStatement(
 							"INSERT INTO folder (fold_name) VALUE ('" + f.getFullName() + "')",
 							Statement.RETURN_GENERATED_KEYS);
@@ -226,6 +224,7 @@ public class Database {
 		} catch (MessagingException e) {
 			e.printStackTrace();
 		}
+		
 		return emailId;
 	}
 
@@ -301,33 +300,6 @@ public class Database {
 		return size;
 	}
 
-	private void insertRecipientList(int emailId, Address[] recipients) {
-		
-		List<EmailAddress> recipientList = insertEmailAddress(recipients);
-		for (EmailAddress ea: recipientList) {
-			if (recipientListExists(ea, emailId)) {
-				query("INSERT INTO recipient_list (email_id, email_addr_id) VALUE ('" + emailId + "', " + ea.getId() + ");");
-			}
-		}
-	}
-	
-	private boolean recipientListExists(EmailAddress emailAddr, int emailId) {
-		PreparedStatement ps;
-		try {
-			ps = getConnection().prepareStatement("SELECT * FROM recipient_list WHERE email_id = " + emailId + " AND email_addr_id = " + emailAddr.getId() + ";", Statement.RETURN_GENERATED_KEYS);
-			if (ps.executeUpdate() == 0)
-				throw new SQLException("Could not insert into folder, no rows affected");
-
-			ResultSet generatedKeys = ps.getGeneratedKeys();
-			if (generatedKeys.next())
-				return true;
-			
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-		return false;
-	}
-	
 	// WIP
 	// SQL DATE // filter on attachment? // need attachment name
 	// private void getEmailByFilters(String email, String folder,
