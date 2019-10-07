@@ -1,26 +1,36 @@
 package edu.oswego.model;
 
+import javax.mail.Folder;
+
 public class UserFolder {
-	
+
 	private int id;
-	private String name;
-	
-	public UserFolder(int id, String name) {
-		super();
+	private Folder folder;
+
+	public UserFolder(int id, Folder folder) {
 		this.id = id;
-		this.name = name;
+		this.folder = folder;
 	}
+
 	public int getId() {
 		return id;
 	}
+
 	public void setId(int id) {
 		this.id = id;
 	}
-	public String getName() {
-		return name;
+
+	public Folder getFolder() {
+		return folder;
 	}
-	public void setName(String name) {
-		this.name = name;
+
+	public void setFolder(Folder folder) {
+		this.folder = folder;
+	}
+
+	@Override
+	public String toString() {
+		return "UserFolder [id=" + id + ", folder=" + folder + "]";
 	}
 	
 }

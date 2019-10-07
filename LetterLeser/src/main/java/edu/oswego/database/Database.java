@@ -8,9 +8,11 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import javax.mail.Address;
+import javax.mail.Flags;
 import javax.mail.Folder;
 import javax.mail.Message;
 import javax.mail.MessagingException;
@@ -18,8 +20,8 @@ import javax.mail.NoSuchProviderException;
 
 import SentimentAnalyzer.SentimentScore;
 import edu.oswego.mail.Mailer;
+import edu.oswego.model.Email;
 import edu.oswego.model.Label;
-import edu.oswego.model.UserFavourites;
 import edu.oswego.model.UserFolder;
 import edu.oswego.props.Settings;
 
@@ -33,41 +35,92 @@ import edu.oswego.props.Settings;
 public class Database {
 
 	private static Connection connection;
-	private static List<Address> addrList = new ArrayList<>();
-	private static List<UserFolder> folderList = new ArrayList<>();
+	private static List<Address> addrList = new ArrayList<>(); // address change
+	private static List<Email> emailList = new ArrayList<>();
 	
-//	private static void insertFolder(Folder[] folder) {
-//		for (int i = 0; i < addresses.length; i++) {
-//			PreparedStatement ps;
-//			try {
-//				if (!addrList.contains(addresses[i])) {
-//					addrList.add(addresses[i]);
-//					System.out.println("THIS ONE: " + addresses[i]);
-//					ps = getConnection().prepareStatement("INSERT INTO email_addr (email_address) VALUE ('" + addresses[i].toString().replace("'", "`") + "');");
-//					ps.execute();
-//				}
-//			} catch (SQLException e) {
-//				e.printStackTrace();
-//			}
-//		}
-//	}
+	public static List<UserFolder> importFolders() {
+		List<UserFolder> folderList = new ArrayList<>();
+		ResultSet queryTbl;
+		try {
+			queryTbl = getConnection().prepareStatement("SELECT * FROM folder").executeQuery();
+			
+			Folder[] folders = Mailer.getStorage().getDefaultFolder().list("*");
+			
+			while (queryTbl.next()) {
+				for (Folder f : folders) {
+					if (!folderList.contains(f) && !f.getFullName().equals(queryTbl.getString(2))) {
+						folderList.add(new UserFolder(queryTbl.getInt(1), f));
+						break;
+					}
+				}
+			}
+		} catch (SQLException | MessagingException e) {
+			e.printStackTrace();
+		}
+		
+		return folderList;
+	}
 
+	private static void insertEmail(Message m) {
+        PreparedStatement ps;
+        String statement;
+        boolean seen;
+        try {
+                if (m.getFlags().contains(Flags.Flag.SEEN)) {
+                    seen = true;
+                } else {
+                    seen = false;
+                }
+                System.out.println("EMAIL DATA BABY: " + m);
+                statement = ("INSERT INTO email (date_received, subject, size, seen)"
+                        + "VALUE (?, ?, ?, ?)");
+                ps = getConnection().prepareStatement(statement);
+                Date dateTime = new java.util.Date();
+                dateTime = m.getReceivedDate();
+                ps.setObject(1, dateTime);
+                ps.setString(2, m.getSubject());
+                ps.setDouble(3, m.getSize());
+                ps.setBoolean(4, seen);
+                ps.execute();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } catch (MessagingException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+}
+	
 	/*
 	 * Pulls all emails from IMAP server and separates meta-data
 	 */
 	public static void pull(String folderName) {
+		
+		//List<Folder> folders = insertFolders();
+		// need to do an initial load... check folders
+	
 		// should pull for all known folders
 		Message[] msgs = Mailer.pullEmails(folderName); // "[Gmail]/All Mail");
+		List<UserFolder> folders;
 		
+		System.out.println(msgs.length);
 		for (Message m : msgs) {
 			try {
-//				insertEmailAddress(m.getFrom());
+				// folder first
+				insertEmailAddress(m.getFrom());
+//				System.out.println(Mailer.processAttachment(m));
+				System.out.println(m.getReceivedDate().toString());
+				
+				
+				
+				
+				
+				
 //				insertFolder(m.getFolder().list());
-				Folder[] folders = m.getFolder().list();		// NESTED FOLDER
-				for (Folder f : folders) {
-					System.out.println(f.getFullName());
-				}
-				System.out.println(m.getFolder().getFullName() + "\t:: trying");
+//				Folder[] folders = m.getFolder().list();		// NESTED FOLDER
+//				for (Folder f : folders) {
+//					System.out.println(f.getFullName());
+//				}
+//				System.out.println(m.getFolder().getFullName() + "\t:: trying");
 //				System.out.println(m.getFolder().list());
 			} catch (MessagingException e) {
 				e.printStackTrace();
@@ -109,6 +162,8 @@ public class Database {
 	// }
 	// }
 
+	
+	// size of attachment needed? YUMKIPPER NOPE?
 	/*
 	 * Displays all INBOX folder messages through console output.
 	 */
@@ -173,7 +228,8 @@ public class Database {
 				if (!addrList.contains(addresses[i])) {
 					addrList.add(addresses[i]);
 					System.out.println("THIS ONE: " + addresses[i]);
-					ps = getConnection().prepareStatement("INSERT INTO email_addr (email_address) VALUE ('" + addresses[i].toString().replace("'", "`") + "');");
+					ps = getConnection().prepareStatement(
+							"INSERT INTO email_addr (email_address) VALUE ('" + addresses[i].toString().replace("'", "`") + "');");
 					ps.execute();
 				}
 			} catch (SQLException e) {
@@ -206,16 +262,16 @@ public class Database {
 	 * 
 	 * @return new Folder object if it doesn't exist.
 	 */
-	public static UserFolder getFolder(int id, String name) {
-		for (UserFolder folder : folderList)
-			if (folder.getId() == id)
-				return folder;
-
-		UserFolder fold = new UserFolder(id, name);
-		folderList.add(fold);
-
-		return fold;
-	}
+//	public static UserFolder getFolder(int id, String name) {
+//		for (UserFolder folder : folderList)
+//			if (folder.getId() == id)
+//				return folder;
+//
+//		UserFolder fold = new UserFolder(id, name);
+//		folderList.add(fold);
+//
+//		return fold;
+//	}
 
 	// needs return list of emails
 	// public static void getRecipientList(int emailId) {
@@ -344,43 +400,43 @@ public class Database {
 		return null;
 	}
 
-	/*
-	 * Fetches all attributes of user_favourites table.
-	 * 
-	 * @param user email address to be queried.
-	 * 
-	 * @return List of UserFavourites objects.
-	 */
-	public static List<UserFavourites> fetchFavourites(String emailAddress) {
-		List<UserFavourites> favsList = new ArrayList<>(); // HMMM CLASS LIST MAYBE?
-
-		System.out.println("FETCHING FAVOURITES FOR :" + emailAddress + "\n----------------------");
-		String query = "SELECT user_favourites.id, filter_settings.fav_name, filter_settings.start_date, filter_settings.end_date, filter_settings.interval_range, folder.id, folder.fold_name FROM user JOIN user_favourites ON user.id = user_favourites.user_id JOIN filter_settings ON user_favourites.filter_settings_id = filter_settings.id JOIN folder ON filter_settings.folder_id = folder.id WHERE email_address = '"
-				+ emailAddress + "';";
-
-		try {
-			ResultSet rs = getConnection().prepareStatement(query).executeQuery();
-			while (rs.next()) {
-				ResultSetMetaData md = rs.getMetaData();
-
-				// CHECK FOR FOLDER DUPLICATES.
-				UserFolder folder = getFolder(rs.getInt(6), rs.getString(7));
-
-				favsList.add(new UserFavourites(1, rs.getString(2), rs.getDate(3), rs.getDate(4), 5, folder));
-
-				// SHOWS ALL ATTR FOR CONSOLE PURPOSE
-				for (int i = 1; i < md.getColumnCount() + 1; i++) {
-					System.out.println(md.getColumnName(i) + "_" + md.getColumnTypeName(i) + " :: " + rs.getString(i)); // create
-				}
-				System.out.println("....................");
-			}
-
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-
-		return favsList;
-	}
+//	/*
+//	 * Fetches all attributes of user_favourites table.
+//	 * 
+//	 * @param user email address to be queried.
+//	 * 
+//	 * @return List of UserFavourites objects.
+//	 */
+//	public static List<UserFavourites> fetchFavourites(String emailAddress) {
+//		List<UserFavourites> favsList = new ArrayList<>(); // HMMM CLASS LIST MAYBE?
+//
+//		System.out.println("FETCHING FAVOURITES FOR :" + emailAddress + "\n----------------------");
+//		String query = "SELECT user_favourites.id, filter_settings.fav_name, filter_settings.start_date, filter_settings.end_date, filter_settings.interval_range, folder.id, folder.fold_name FROM user JOIN user_favourites ON user.id = user_favourites.user_id JOIN filter_settings ON user_favourites.filter_settings_id = filter_settings.id JOIN folder ON filter_settings.folder_id = folder.id WHERE email_address = '"
+//				+ emailAddress + "';";
+//
+//		try {
+//			ResultSet rs = getConnection().prepareStatement(query).executeQuery();
+//			while (rs.next()) {
+//				ResultSetMetaData md = rs.getMetaData();
+//
+//				// CHECK FOR FOLDER DUPLICATES.
+//				UserFolder folder = getFolder(rs.getInt(6), rs.getString(7));
+//
+//				favsList.add(new UserFavourites(1, rs.getString(2), rs.getDate(3), rs.getDate(4), 5, folder));
+//
+//				// SHOWS ALL ATTR FOR CONSOLE PURPOSE
+//				for (int i = 1; i < md.getColumnCount() + 1; i++) {
+//					System.out.println(md.getColumnName(i) + "_" + md.getColumnTypeName(i) + " :: " + rs.getString(i)); // create
+//				}
+//				System.out.println("....................");
+//			}
+//
+//		} catch (SQLException e) {
+//			e.printStackTrace();
+//		}
+//
+//		return favsList;
+//	}
 
 	/*
 	 * Calculates and inserts sentiment score.
