@@ -8,6 +8,7 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import javax.mail.Address;
@@ -206,8 +207,9 @@ public class Database {
 		for (int i = 0; i < addresses.length; i++) {
 			PreparedStatement ps;
 			try {
-				
 				String address = addresses[i].toString().replace("'", "`");
+				
+				
 				if (!emailAddressExists(address)) {
 					ps = getConnection().prepareStatement("INSERT INTO email_addr (email_address) VALUE ('" + address + "');", Statement.RETURN_GENERATED_KEYS);
 
@@ -222,7 +224,13 @@ public class Database {
 					}
 					
 					emailAddrList.add(new EmailAddress(emailAddressId, address));
-					emailIdList.add(emailAddressId);
+					//emailIdList.add(emailAddressId);
+				} else {
+					ResultSet rs = getConnection().prepareStatement("SELECT * FROM email_addr WHERE email_address = '" + address + "';").executeQuery();
+					while (rs.next()) {
+						emailAddrList.add(new EmailAddress(rs.getInt(1), rs.getString(2)));
+					}
+					rs.close();
 				}
 			} catch (SQLException e) {
 				e.printStackTrace();
@@ -230,6 +238,8 @@ public class Database {
 		}
 		return emailAddrList;
 	}
+	
+	
 
 	public static void pull() {
 		// order matters. Folders must come first so labels don't import folders.
@@ -243,12 +253,15 @@ public class Database {
 			Message[] msgs = Mailer.pullEmails(f.getFolder().getFullName()); // "[Gmail]/All Mail");
 			for (Message m : msgs) {
 				try {
-					List<EmailAddress> fromList = insertEmailAddress(m.getFrom());// get this list and return for
-																					// user_email table
-					int emailId = insertEmail(m);	// must tag it with CSC480_19f label
-														// how to set label?					// Mailer.setMarked at end
-					for (EmailAddress ea : fromList)
+					List<EmailAddress> fromList = insertEmailAddress(m.getFrom());// get this list and return for user_email table
+					System.out.println(fromList.size());
+					int emailId = insertEmail(m);
+					for (EmailAddress ea : fromList) {
 						insertUserEmail(ea, emailId);
+						insertReceivedEmails(emailId, ea.getId());
+					}
+//					insertUserLabel(m, emailId);
+					// If we insert label... how do we know if it's in there? Creat efunction that looks at folder and sees if this email is inside? Then label? CANCER!
 					
 					i++;
 					if (i > stopper)
@@ -259,9 +272,31 @@ public class Database {
 				}
 			}
 			
+			// If not already in folder, copy it over.
 			Mailer.markEmailsInFolder(f.getFolder().getFullName(), msgs);
 		}
 	}
+	
+	// error here.
+	private static void insertReceivedEmails(int emailId, int emailAddrId) {
+		// if not already there
+		query("INSERT INTO received_email (email_id, email_addr_id) VALUE ('" + emailId + "', " + emailAddrId + ");");
+		System.out.println("DONE IT");
+	}
+
+	// WIP
+//	private static void insertUserLabel(Message m, int emailId) {
+//		for (Label l: labelList) {
+//			Folder f = Mailer.getFolder(l.getFolder().getFullName());
+//			try {
+//				if (Arrays.asList(f.getMessages()).contains(m)) {
+//					query("INSERT INTO ")
+//				}
+//			} catch (MessagingException e) {
+//				e.printStackTrace();
+//			}
+//		}
+//	}
 
 	private static void insertUserEmail(EmailAddress addr, int emailId) {
 		query("INSERT INTO user_email (user_id, email_id) VALUE ('" + addr.getId() + "', " + emailId + ");");

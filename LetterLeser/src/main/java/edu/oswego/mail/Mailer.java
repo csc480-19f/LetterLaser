@@ -77,6 +77,17 @@ public class Mailer {
 		return storage;
 	}
 	
+	public static Folder getFolder(String folderName) {
+		Store store = getStorage();
+		Folder folder = null;
+		try {
+			folder = store.getFolder(folderName);
+		} catch (MessagingException e) {
+			e.printStackTrace();
+		}
+		return folder;
+	}
+	
 	public static void markEmailsInFolder(String originFolderName, Message[] msgs) {
 		// MAKE HIDDEN FOLDER... maybe subscribed?
 		Folder folder = null;
@@ -94,22 +105,12 @@ public class Mailer {
 			
 			Folder originFolder = getStorage().getFolder(originFolderName);
 			originFolder.open(Folder.READ_WRITE);
+			// MUST CHECK IF MESSAGE ALREADY EXISTS IN FOLDER OR NOT. ONLY COPY IF NOT. DID NOT DO YET.
 			originFolder.copyMessages(msgs, folder);
 			originFolder.close();
 		} catch (MessagingException e) {
 			e.printStackTrace();
 		}
-	}
-
-	public static Folder getFolder(String folderName) {
-		Store store = getStorage();
-		Folder folder = null;
-		try {
-			folder = store.getFolder(folderName);
-		} catch (MessagingException e) {
-			e.printStackTrace();
-		}
-		return folder;
 	}
 
 	/*
@@ -167,24 +168,6 @@ public class Mailer {
 		return "";
 	}
 	
-
-	// public static String processAttachment(Message m) {
-	// String disposition;
-	// try {
-	// disposition = m.getDisposition();
-	// if (hasAttachment(disposition) && disposition.equals(Part.ATTACHMENT)) {
-	// System.out.println("This part is an attachment");
-	// String fileName = m.getFileName();
-	// System.out.println("The file name of this attachment is " + fileName);
-	// return fileName;
-	// }
-	// } catch (MessagingException e) {
-	// e.printStackTrace();
-	// }
-	//
-	// return null;
-	// }
-
 	// SELECT * FROM filter_settings
 	// JOIN folder
 	// on folder.id=filter_settings.folder_id
