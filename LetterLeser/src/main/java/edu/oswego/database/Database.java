@@ -38,24 +38,43 @@ public class Database {
 	private static List<Email> emailList = new ArrayList<>();
 	private static List<UserFolder> folderList = new ArrayList<>();
 
+	private static boolean folderExists(String folderName) {
+		ResultSet queryTbl;
+		try {
+			queryTbl = getConnection().prepareStatement("SELECT count(*) FROM folder WHERE fold_name = '" + folderName + "'").executeQuery();
+			while (queryTbl.next()) {
+				return queryTbl.getInt(1) >= 1;
+			}
+		} catch (SQLException e1) {
+			e1.printStackTrace();
+		}
+		
+		return false;
+	}
+	
 	public static void importFolders() {
 		ResultSet queryTbl;
 		try {
-			queryTbl = getConnection().prepareStatement("SELECT * FROM folder").executeQuery();
 
 			Folder[] folders = Mailer.getStorage().getDefaultFolder().list("*");
-			for (Folder f : folders) {
-				System.out.println(f.getFullName());
-			}
-
-			while (queryTbl.next()) {
-				for (Folder f : folders) {
-					if (!folderList.contains(f) && !f.getFullName().equals(queryTbl.getString(2))) {
-						folderList.add(new UserFolder(queryTbl.getInt(1), f));
-						break;
+			
+			for (Folder f: folders) {
+//				System.out.println(f.getFullName());
+				
+				if (!folderExists(f.getFullName())) {
+					PreparedStatement ps = getConnection().prepareStatement("INSERT INTO folder (fold_name) VALUE ('" + f.getFullName() + "')", Statement.RETURN_GENERATED_KEYS);
+					int affectedRows = ps.executeUpdate();
+					
+					ResultSet generatedKeys = ps.getGeneratedKeys();
+					
+					if (generatedKeys.next()) {
+						folderList.add(new UserFolder(generatedKeys.getInt(1), f));
+						System.out.println("ADDED " + f.getFullName());
 					}
 				}
 			}
+			
+			
 		} catch (SQLException | MessagingException e) {
 			e.printStackTrace();
 		}
@@ -81,7 +100,7 @@ public class Database {
 
 			int folderId = -1;
 			for (UserFolder f : folderList) {
-				System.out.println(f.getFolder().getFullName() + "\t::\t" + m.getFolder().getFullName());
+//				System.out.println(f.getFolder().getFullName() + "\t::\t" + m.getFolder().getFullName());
 				if (f.getFolder().getFullName().equals(m.getFolder().getFullName())) {
 					folderId = f.getId();
 					break;
@@ -107,14 +126,11 @@ public class Database {
 
 		// should pull for all known folders
 		importFolders();
-		
-		System.out.println(folderList.size());
-		
+
+		int i = 0;
+
 		for (UserFolder f : folderList) {
 			Message[] msgs = Mailer.pullEmails(f.getFolder().getFullName()); // "[Gmail]/All Mail");
-			System.out.println("JIME " + f.getFolder().getFullName());
-
-			System.out.println(msgs.length);
 			for (Message m : msgs) {
 				try {
 
@@ -124,6 +140,10 @@ public class Database {
 					insertEmail(m);
 					// System.out.println(Mailer.processAttachment(m));
 					System.out.println(m.getReceivedDate().toString());
+					
+					i++;
+					if (i > 100)
+						return;
 
 					// insertFolder(m.getFolder().list());
 					// Folder[] folders = m.getFolder().list(); // NESTED FOLDER
