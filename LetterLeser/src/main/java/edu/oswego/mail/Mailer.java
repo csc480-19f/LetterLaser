@@ -31,7 +31,7 @@ public class Mailer {
 	private final static int PORT = 995;
 	private final static boolean TLS_ENABLED = true;
 
-	private Mailer() {
+	public Mailer() {
 		// blank cause singleton
 	}
 
