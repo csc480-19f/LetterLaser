@@ -212,7 +212,7 @@ public class AnalyzeThis {
     /**
      * Feed me the results please.
      * @param results Results from a processResults(sentimize(emails)) call.
-     * @return The list of compound scores.
+     * @return The a list of sentiment scores associated with each email.
      */
     public static SentimentScore[] getScoresObjects(double[][][] results){
         SentimentScore[] retVal = new SentimentScore[results.length];
