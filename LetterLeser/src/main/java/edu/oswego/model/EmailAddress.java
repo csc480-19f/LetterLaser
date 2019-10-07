@@ -26,5 +26,10 @@ public class EmailAddress {
 	public void setEmailAddress(String emailAddress) {
 		this.emailAddress = emailAddress;
 	}
+
+	@Override
+	public String toString() {
+		return "EmailAddress [id=" + id + ", emailAddress=" + emailAddress + "]";
+	}
 	
 }

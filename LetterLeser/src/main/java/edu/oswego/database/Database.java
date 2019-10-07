@@ -208,8 +208,6 @@ public class Database {
 			PreparedStatement ps;
 			try {
 				String address = addresses[i].toString().replace("'", "`");
-				
-				
 				if (!emailAddressExists(address)) {
 					ps = getConnection().prepareStatement("INSERT INTO email_addr (email_address) VALUE ('" + address + "');", Statement.RETURN_GENERATED_KEYS);
 
@@ -220,21 +218,25 @@ public class Database {
 					ResultSet generatedKeys = ps.getGeneratedKeys();
 					if (generatedKeys.next()) {
 						emailAddressId = generatedKeys.getInt(1);
-						break;
 					}
 					
 					emailAddrList.add(new EmailAddress(emailAddressId, address));
-					//emailIdList.add(emailAddressId);
+					//emailIdList.add(emailAddressId); // why did i do this?
 				} else {
 					ResultSet rs = getConnection().prepareStatement("SELECT * FROM email_addr WHERE email_address = '" + address + "';").executeQuery();
 					while (rs.next()) {
 						emailAddrList.add(new EmailAddress(rs.getInt(1), rs.getString(2)));
+						System.out.println("DUPE");
 					}
 					rs.close();
 				}
 			} catch (SQLException e) {
 				e.printStackTrace();
 			}
+		}
+		
+		for (EmailAddress ea: emailAddrList) {
+			System.out.println(ea);
 		}
 		return emailAddrList;
 	}
@@ -254,7 +256,6 @@ public class Database {
 			for (Message m : msgs) {
 				try {
 					List<EmailAddress> fromList = insertEmailAddress(m.getFrom());// get this list and return for user_email table
-					System.out.println(fromList.size());
 					int emailId = insertEmail(m);
 					for (EmailAddress ea : fromList) {
 						insertUserEmail(ea, emailId);
@@ -279,7 +280,7 @@ public class Database {
 	
 	// error here.
 	private static void insertReceivedEmails(int emailId, int emailAddrId) {
-		// if not already there
+		// if not already there. UGH GOTTA DO CHEKS 4 EVRYTHANG
 		query("INSERT INTO received_email (email_id, email_addr_id) VALUE ('" + emailId + "', " + emailAddrId + ");");
 		System.out.println("DONE IT");
 	}
