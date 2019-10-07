@@ -196,7 +196,35 @@ public class Database {
 		return emailAddrList;
 	}
 	
+//	private static EmailAddress getUser(String emailAddress) {
+//		ResultSet rs = getConnection().prepareStatement("SELECT * FROM email_addr WHERE email_address = '" + emailAddress + "';", Statement.RETURN_GENERATED_KEYS).executeQuery();
+//		
+//		if (count > 0)
+//			return new EmailAddress("")
+//		
+//		rs.close();
+//	}
+//	
+//	private static int insertUser() {
+//		PreparedStatement ps = getConnection().prepareStatement(
+//				"INSERT INTO folder (fold_name) VALUE ('" + f.getFullName() + "')",
+//				Statement.RETURN_GENERATED_KEYS);
+//		if (ps.executeUpdate() == 0)
+//			throw new SQLException("Could not insert into folder, no rows affected");
+//
+//		ResultSet generatedKeys = ps.getGeneratedKeys();
+//
+//		if (generatedKeys.next()) {
+//			folderList.add(new UserFolder(generatedKeys.getInt(1), f));
+//			System.out.println("ADDED FOLDER:\t" + f.getFullName());
+//		}
+//	}
+	
 	public static void pull() {
+		//EmailAddress loggedUser;
+		//getUser("");
+		
+		
 		importFolders(); // make function not static. Lets change this so pass as param to menthods so take list?
 
 		int i = 0;
