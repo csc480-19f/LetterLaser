@@ -61,23 +61,6 @@ public class Database {
 		return size >= 1;
 	}
 	
-	private static boolean labelExists(String labelName) {
-		ResultSet queryTbl;
-		int size = -1;
-		try {
-			queryTbl = getConnection()
-					.prepareStatement("SELECT count(*) FROM label WHERE lb_name = '" + labelName + "'")
-					.executeQuery();
-			while (queryTbl.next()) {
-				size = queryTbl.getInt(1);
-				break;
-			}
-		} catch (SQLException e1) {
-			e1.printStackTrace();
-		}
-		return size >= 1;
-	}
-
 	private static boolean emailAddressExists(String emailAddress) {
 		ResultSet queryTbl;
 		int size = -1;
@@ -121,34 +104,6 @@ public class Database {
 		}
 	}
 	
-	public static void importLabels() {
-		try {
-			Folder[] folders = Mailer.getStorage().getDefaultFolder().list("*");
-			
-			for (Folder f : folders) {
-				if (f.getFullName().equals("[Gmail]"))
-					break;
-				else if (!labelExists(f.getFullName()) && !folderExists(f.getFullName()) && !f.getFullName().equals("CSC480_19F")) {
-					PreparedStatement ps = getConnection().prepareStatement(
-							"INSERT INTO label (lb_name) VALUE ('" + f.getFullName() + "')",
-							Statement.RETURN_GENERATED_KEYS);
-					if (ps.executeUpdate() == 0)
-						throw new SQLException("Could not insert into folder, no rows affected");
-
-					ResultSet generatedKeys = ps.getGeneratedKeys();
-
-					if (generatedKeys.next()) {
-						labelList.add(new Label(generatedKeys.getInt(1), f));
-						System.out.println("ADDED LBL:\t" + f.getFullName());
-					}
-				}
-			}
-
-		} catch (SQLException | MessagingException e) {
-			e.printStackTrace();
-		}
-	}
-
 	private static int insertEmail(Message m) {
 		// no duplicates in case in multiple folders? CHECK DATE RECEIVED AT SAME TIME
 		// AND OTHER SHET?
@@ -226,7 +181,7 @@ public class Database {
 						emailAddressId = generatedKeys.getInt(1);
 					}
 					
-					emailAddrList.add(new EmailAddress(emailAddressId, address));
+					emailAddrList.add(new EmailAddress(emailAddressId, address)); // why is all 1?
 				} else {
 					ResultSet rs = getConnection().prepareStatement("SELECT * FROM email_addr WHERE email_address = '" + address + "';").executeQuery();
 					while (rs.next())
@@ -241,14 +196,11 @@ public class Database {
 	}
 	
 	public static void pull() {
-		// order matters. Folders must come first so labels don't import folders.
 		importFolders(); // make function not static. Lets change this so pass as param to menthods so take list?
-		importLabels();
 
 		int i = 0;
-		int stopper = 25; // limit our pull for testing
+		int stopper = 5; // limit our pull for testing
 
-		// take a folder as parent and do this for labels? since labels and folders don't cross one another.
 		for (UserFolder f : folderList) {
 			Message[] msgs = Mailer.pullEmails(f.getFolder().getFullName()); // Do not use "[Gmail]/All Mail");
 			for (Message m : msgs) {
@@ -256,9 +208,9 @@ public class Database {
 					List<EmailAddress> fromList = insertEmailAddress(m.getFrom());// get this list and return for user_email table
 					int emailId = insertEmail(m);
 					for (EmailAddress ea : fromList) {
-						insertUserEmail(ea, emailId);
 						insertReceivedEmails(emailId, ea.getId());
 					}
+					insertUserEmail(new EmailAddress(1, "first@gmail.com"), emailId); // NO BELONG HERE. MUST BE USER EMAILADDRESS
 					emailIdList.add(emailId);
 //					insertUserLabelList(emailId, m); // not working?
 					
@@ -270,9 +222,9 @@ public class Database {
 					e.printStackTrace();
 				}
 			}
-			
 			// If not already in folder, copy it over.
-			Mailer.markEmailsInFolder(f.getFolder().getFullName(), msgs);
+			// NULL POINTER EXCEPTION. FIX DIS yo.
+//			Mailer.markEmailsInFolder(f.getFolder().getFullName(), msgs);
 		}
 	}
 	
@@ -299,6 +251,7 @@ public class Database {
 //		}
 //	}
 
+	// shit this is OUR ID
 	private static void insertUserEmail(EmailAddress addr, int emailId) {
 		query("INSERT INTO user_email (user_id, email_id) VALUE ('" + addr.getId() + "', " + emailId + ");");
 	}
