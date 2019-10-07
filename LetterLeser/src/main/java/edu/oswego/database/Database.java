@@ -84,7 +84,7 @@ public class Database {
 		int i = 0;
 		int stopper = 10; // limit our pull for testing
 		
-		System.out.println(folderList.size() + "\t::\t" + folderList);
+//		System.out.println(folderList.size() + "\t::\t" + folderList);
 
 		for (UserFolder f : folderList) {
 			Message[] msgs = Mailer.pullEmails(f.getFolder().getFullName()); // Do not use "[Gmail]/All Mail");
@@ -92,6 +92,7 @@ public class Database {
 				try {
 					List<EmailAddress> fromList = insertEmailAddress(m.getFrom());// get this list and return for user_email table
 					int emailId = insertEmail(m, folderList, emailIdList);
+//					System.out.println(m.getFrom().length + " :: ------- :: " + fromList.size());
 					for (EmailAddress ea : fromList) {
 						insertReceivedEmails(emailId, ea.getId());
 					}
@@ -122,21 +123,6 @@ public class Database {
 			rs = getConnection().prepareStatement("SELECT * FROM folder WHERE fold_name = '" + folderName + "'").executeQuery();
 			while (rs.next()) {
 				folderList.add(new UserFolder(rs.getInt(1), Mailer.getFolder(rs.getString(2))));
-				return true;
-			}
-		} catch (SQLException e1) {
-			e1.printStackTrace();
-		}
-		return false;
-	}
-	
-	private boolean emailAddressExists(String emailAddress) {
-		ResultSet rs;
-		try {
-			rs = getConnection()
-					.prepareStatement("SELECT count(*) FROM email_addr WHERE email_address = '" + emailAddress + "'")
-					.executeQuery();
-			while (rs.next()) {
 				return true;
 			}
 		} catch (SQLException e1) {
@@ -248,61 +234,98 @@ public class Database {
 		
 		return emailId;
 	}
+	
+	private boolean emailAddressExists(String emailAddress) {
+		ResultSet rs;
+		int size = -1;
+		try {
+			rs = getConnection()
+					.prepareStatement("SELECT count(*) FROM email_addr WHERE email_address = '" + emailAddress + "'")
+					.executeQuery();
+			while (rs.next()) {
+				size = rs.getInt(1);
+			}
+		} catch (SQLException e1) {
+			e1.printStackTrace();
+		}
+		return size >= 1;
+	}
+	
+	private String parseAddress(Address address) {
+		String addressParsed = "";
+		if (address.toString().contains("<")) {
+			String addrParser[] = address.toString().replace("'", "`").split("<");
+			addressParsed = addrParser[1].replace(">", "");	// can also do substring but need to know index of <. Still iterating but less mem
+		} else {
+			addressParsed = address.toString().replace("'", "`");
+		}
+		
+		return addressParsed;
+	}
+	
 
 	private List<EmailAddress> insertEmailAddress(Address[] addresses) {
 		List<EmailAddress> emailAddrList = new ArrayList<>();
 		
-		for (int i = 0; i < addresses.length; i++) {
-			PreparedStatement ps;
+		for (Address a: addresses) {
+			String address = parseAddress(a);
+			
 			try {
-				String address = "";
-				if (addresses[i].toString().contains("<")) {
-					String addrParser[] = addresses[i].toString().replace("'", "`").split("<");
-					address = addrParser[1].replace(">", "");	// can also do substring but need to know index of <. Still iterating but less mem
-				} else 
-					address = addresses[i].toString();
-				
+				System.out.println(emailAddressExists(address));
+				// NOT EXIST
 				if (!emailAddressExists(address)) {
-					ps = getConnection().prepareStatement("INSERT INTO email_addr (email_address) VALUE ('" + address + "');", Statement.RETURN_GENERATED_KEYS);
+					System.out.println("IT DONT EXISTS");
+					PreparedStatement ps = getConnection().prepareStatement("INSERT INTO email_addr (email_address) VALUE ('" + address + "');", Statement.RETURN_GENERATED_KEYS);
 
 					if (ps.executeUpdate() == 0)
 						throw new SQLException("Could not insert into folder, no rows affected");
 
-					int emailAddressId = -1;
 					ResultSet generatedKeys = ps.getGeneratedKeys();
 					if (generatedKeys.next()) {
-						emailAddressId = generatedKeys.getInt(1);
+						System.out.println("THIS HAPPENED");
+						emailAddrList.add(new EmailAddress(generatedKeys.getInt(1), address));
 					}
-					
-					emailAddrList.add(new EmailAddress(emailAddressId, address)); // why is all 1?
+					// EXISTS
 				} else {
+					System.out.println("IT EXISTS " + address);
 					ResultSet rs = getConnection().prepareStatement("SELECT * FROM email_addr WHERE email_address = '" + address + "';").executeQuery();
-					while (rs.next()) {
+					while (rs.next())
 						emailAddrList.add(new EmailAddress(rs.getInt(1), rs.getString(2)));
-					}
 					rs.close();
 				}
 			} catch (SQLException e) {
 				e.printStackTrace();
 			}
 		}
+		
+		
+		System.out.println(emailAddrList.size());
 		return emailAddrList;
 	}
 	
+	
 	private void insertReceivedEmails(int emailId, int emailAddrId) {
-		// maybe does not even need to check if exists cause we use fromList which will be empty if no updates/validation.
 		query("INSERT INTO received_email (email_id, email_addr_id) VALUE ('" + emailId + "', " + emailAddrId + ");");
 	}
 
+	private boolean userEmailExists(EmailAddress addr, int emailId) {
+		ResultSet rs;
+		try {
+			rs = getConnection().prepareStatement("SELECT * FROM user_email WHERE user_id = " + addr.getId() + " AND email_id = " + emailId + ";").executeQuery();
+			while (rs.next())
+				return true;
+		} catch (SQLException e1) {
+			e1.printStackTrace();
+		}
+		return false;
+	}
+	
 	private void insertUserEmail(EmailAddress addr, int emailId) {
-		query("INSERT IGNORE INTO user_email (user_id, email_id) VALUE ('" + addr.getId() + "', " + emailId + ");"); 
-		// deal with this later, email first
+		if (!userEmailExists(addr, emailId))
+			query("INSERT INTO user_email (user_id, email_id) VALUE (" + addr.getId() + ", " + emailId + ");"); 
 	}
 
 	public int getEmailCountByFolder(String folderName) {
-		// can get sent count by putting foldername as sent. received is all folders
-		// aggregate.
-		// lets be able to get all folders to do this?
 		ResultSet queryTbl;
 		int size = 0;
 		try {
