@@ -2,6 +2,7 @@ package edu.oswego.database;
 
 import javax.mail.Folder;
 
+import edu.oswego.mail.Mailer;
 import edu.oswego.props.Settings;
 
 public class DBdemo {
@@ -72,6 +73,7 @@ public class DBdemo {
 //	});
 		
 		
+//		Mailer.moveToMarkedFolder();
 		Database.pull();
 //		Database.pull("Inbox");
 		Database.showTables();

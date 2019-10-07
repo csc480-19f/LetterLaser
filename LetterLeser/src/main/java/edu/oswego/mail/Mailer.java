@@ -76,6 +76,30 @@ public class Mailer {
 
 		return storage;
 	}
+	
+	public static void markEmailsInFolder(String originFolderName, Message[] msgs) {
+		// MAKE HIDDEN FOLDER... maybe subscribed?
+		Folder folder = null;
+		try {
+			folder = getStorage().getFolder("CSC480_19F");
+			
+			if (!folder.exists()) {
+				if (folder.create(Folder.HOLDS_MESSAGES)) {
+					folder.setSubscribed(true);
+					System.out.println("FOLDER MADE!");
+				}
+			}
+			
+			folder.open(Folder.READ_WRITE);
+			
+			Folder originFolder = getStorage().getFolder(originFolderName);
+			originFolder.open(Folder.READ_WRITE);
+			originFolder.copyMessages(msgs, folder);
+			originFolder.close();
+		} catch (MessagingException e) {
+			e.printStackTrace();
+		}
+	}
 
 	public static Folder getFolder(String folderName) {
 		Store store = getStorage();
