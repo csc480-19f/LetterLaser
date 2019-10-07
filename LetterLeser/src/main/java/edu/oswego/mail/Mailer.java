@@ -1,14 +1,17 @@
 package edu.oswego.mail;
 
+import java.io.IOException;
 import java.util.Properties;
 
 import javax.mail.Folder;
 import javax.mail.Message;
 import javax.mail.MessagingException;
+import javax.mail.Multipart;
 import javax.mail.NoSuchProviderException;
 import javax.mail.Part;
 import javax.mail.Session;
 import javax.mail.Store;
+import javax.mail.internet.MimeBodyPart;
 
 import edu.oswego.props.Settings;
 
@@ -104,26 +107,61 @@ public class Mailer {
 		return null;
 	}
 
-	public static String processAttachment(Message m) {
-		String disposition;
+	public static boolean hasAttachment(Message m) {
 		try {
-			disposition = m.getDisposition();
-			if (hasAttachment(disposition) && disposition.equals(Part.ATTACHMENT)) {
-				System.out.println("This part is an attachment");
-				String fileName = m.getFileName();
-				System.out.println("The file name of this attachment is " + fileName);
-				return fileName;
+			if (m.getContentType().contains("multipart")) {
+				Multipart multiPart = (Multipart) m.getContent();
+				for (int i = 0; i < multiPart.getCount(); i++) {
+					MimeBodyPart part = (MimeBodyPart) multiPart.getBodyPart(i);
+					if (Part.ATTACHMENT.equalsIgnoreCase(part.getDisposition())) {
+						return true;
+					}
+				}
+			}
+		} catch (MessagingException | IOException e) {
+			e.printStackTrace();
+		}
+		
+		return false;
+	}
+
+	public static String getAttachmentName(Message m) {
+		try {
+			
+			Multipart multiPart = (Multipart) m.getContent();
+			for (int i = 0; i < multiPart.getCount(); i++) {
+				MimeBodyPart part = (MimeBodyPart) multiPart.getBodyPart(i);
+				if (Part.ATTACHMENT.equalsIgnoreCase(part.getDisposition())) {
+					System.out.println("Sennnnnnnpai! I brought obentou tee-hee!" + part.getFileName());
+					return part.getFileName().toString();
+				}
 			}
 		} catch (MessagingException e) {
 			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
-
-		return null;
+		
+		return "";
 	}
+	
 
-	private static boolean hasAttachment(String disposition) {
-		return disposition != null;
-	}
+	// public static String processAttachment(Message m) {
+	// String disposition;
+	// try {
+	// disposition = m.getDisposition();
+	// if (hasAttachment(disposition) && disposition.equals(Part.ATTACHMENT)) {
+	// System.out.println("This part is an attachment");
+	// String fileName = m.getFileName();
+	// System.out.println("The file name of this attachment is " + fileName);
+	// return fileName;
+	// }
+	// } catch (MessagingException e) {
+	// e.printStackTrace();
+	// }
+	//
+	// return null;
+	// }
 
 	// SELECT * FROM filter_settings
 	// JOIN folder
@@ -132,15 +170,13 @@ public class Mailer {
 	//
 	// INSERT INTO filter_settings(start_date, end_date, interval_range, folder.id)
 	// VALUE ("CURDATE()", "CURDATE()", 7, 1);
-	
-//	SELECT * FROM user_favorites
-//	JOIN user
-//		on user.id=user_favorites.user_id
-//	WHERE user.id='SOME_ID';
-//
-//	INSERT INTO user_favorites (user_id, fav_name, filter_settings_id) VALUE ('SOME_USER_ID', 'FAVNAME' 'SOME_FILTER_SETTINGS_ID');
-	
-	
-	
+
+	// SELECT * FROM user_favorites
+	// JOIN user
+	// on user.id=user_favorites.user_id
+	// WHERE user.id='SOME_ID';
+	//
+	// INSERT INTO user_favorites (user_id, fav_name, filter_settings_id) VALUE
+	// ('SOME_USER_ID', 'FAVNAME' 'SOME_FILTER_SETTINGS_ID');
 
 }
