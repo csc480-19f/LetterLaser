@@ -1,26 +1,31 @@
 package edu.oswego.model;
 
+import javax.mail.Folder;
+
 public class Label {
 	
 	private int id;
-	private String name;
+	private Folder folder;
 	
-	public Label(int id, String name) {
-		super();
+	public Label(int id, Folder folder) {
 		this.id = id;
-		this.name = name;
+		this.folder = folder;
 	}
+	
 	public int getId() {
 		return id;
 	}
+	
 	public void setId(int id) {
 		this.id = id;
 	}
-	public String getName() {
-		return name;
+	
+	public Folder getFolder() {
+		return folder;
 	}
-	public void setName(String name) {
-		this.name = name;
+	
+	public void setFolder(Folder folder) {
+		this.folder = folder;
 	}
-
+	
 }

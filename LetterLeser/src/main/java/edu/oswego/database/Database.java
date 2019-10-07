@@ -37,6 +37,7 @@ public class Database {
 	// private static List<Email> emailList = new ArrayList<>();
 	private static List<UserFolder> folderList = new ArrayList<>();
 	private static List<Integer> emailIdList = new ArrayList<>();
+	private static List<Label> labelList = new ArrayList<>();
 
 	public static void setValidatedEmailCount(String emailAddress, int count) {
 		query("UPDATE user SET validated_emails = " + count + " WHERE email_address = '" + emailAddress + "';");
@@ -56,16 +57,33 @@ public class Database {
 		} catch (SQLException e1) {
 			e1.printStackTrace();
 		}
-
+		return size >= 1;
+	}
+	
+	private static boolean labelExists(String labelName) {
+		ResultSet queryTbl;
+		int size = -1;
+		try {
+			queryTbl = getConnection()
+					.prepareStatement("SELECT count(*) FROM label WHERE lb_name = '" + labelName + "'")
+					.executeQuery();
+			while (queryTbl.next()) {
+				size = queryTbl.getInt(1);
+				break;
+			}
+		} catch (SQLException e1) {
+			e1.printStackTrace();
+		}
 		return size >= 1;
 	}
 
 	public static void importFolders() {
 		try {
+			System.out.println("TRYING FOLDERS");
 			Folder[] folders = Mailer.getStorage().getDefaultFolder().list("%");
 			
 			for (Folder f : folders) {
-				if (!folderExists(f.getFullName()) && !f.getFullName().equals("[Gmail]") && !f.getFullName().equals("CSC480_19F") ) {
+				if (!folderExists(f.getFullName()) && !f.getFullName().equals("[Gmail]") && !f.getFullName().equals("CSC480_19F")) {
 					PreparedStatement ps = getConnection().prepareStatement(
 							"INSERT INTO folder (fold_name) VALUE ('" + f.getFullName() + "')",
 							Statement.RETURN_GENERATED_KEYS);
@@ -76,7 +94,35 @@ public class Database {
 
 					if (generatedKeys.next()) {
 						folderList.add(new UserFolder(generatedKeys.getInt(1), f));
-						System.out.println("ADDED " + f.getFullName());
+						System.out.println("ADDED FOLDER:\t" + f.getFullName());
+					}
+				}
+			}
+
+		} catch (SQLException | MessagingException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public static void importLabels() {
+		try {
+			Folder[] folders = Mailer.getStorage().getDefaultFolder().list("*");
+			
+			for (Folder f : folders) {
+				if (f.getFullName().equals("[Gmail]"))
+					break;
+				else if (!labelExists(f.getFullName()) && !folderExists(f.getFullName()) && !f.getFullName().equals("CSC480_19F")) {
+					PreparedStatement ps = getConnection().prepareStatement(
+							"INSERT INTO label (lb_name) VALUE ('" + f.getFullName() + "')",
+							Statement.RETURN_GENERATED_KEYS);
+					if (ps.executeUpdate() == 0)
+						throw new SQLException("Could not insert into folder, no rows affected");
+
+					ResultSet generatedKeys = ps.getGeneratedKeys();
+
+					if (generatedKeys.next()) {
+						labelList.add(new Label(generatedKeys.getInt(1), f));
+						System.out.println("ADDED LBL:\t" + f.getFullName());
 					}
 				}
 			}
@@ -143,6 +189,9 @@ public class Database {
 		for (int i = 0; i < addresses.length; i++) {
 			PreparedStatement ps;
 			try {
+				
+				// THIS BROKE
+				
 				if (!addrList.contains(addresses[i])) {
 					String address = addresses[i].toString().replace("'", "`");
 					addrList.add(new EmailAddress(1, address));
@@ -171,10 +220,12 @@ public class Database {
 	}
 
 	public static void pull() {
+		// order matters. Folders must come first.
 		importFolders(); // make not static. Lets change this so pass as param to menthods
+		importLabels();
 
 		int i = 0;
-		int stopper = 70; // limit our pull for testing
+		int stopper = 10; // limit our pull for testing
 
 		for (UserFolder f : folderList) {
 			Message[] msgs = Mailer.pullEmails(f.getFolder().getFullName()); // "[Gmail]/All Mail");
