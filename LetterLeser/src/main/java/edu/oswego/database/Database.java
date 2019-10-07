@@ -207,15 +207,13 @@ public class Database {
 		for (int i = 0; i < addresses.length; i++) {
 			PreparedStatement ps;
 			try {
-//				 this one bugs out if i run on 100 emails? one of them formatted weird? Maybe split by space and trim and grab between "<e>" there.
 				String address = "";
 				if (addresses[i].toString().contains("<")) {
 					String addrParser[] = addresses[i].toString().replace("'", "`").split("<");
-					address = addrParser[1].replace(">", "");
+					address = addrParser[1].replace(">", "");	// can also do substring but need to know index of <. Still iterating but less mem
 				} else 
 					address = addresses[i].toString();
 				
-//				String address = addresses[i].toString().replace("'", "`");
 				if (!emailAddressExists(address)) {
 					ps = getConnection().prepareStatement("INSERT INTO email_addr (email_address) VALUE ('" + address + "');", Statement.RETURN_GENERATED_KEYS);
 
@@ -248,10 +246,11 @@ public class Database {
 		importLabels();
 
 		int i = 0;
-		int stopper = 100; // limit our pull for testing
+		int stopper = 300; // limit our pull for testing
 
+		// take a folder as parent and do this for labels? since labels and folders don't cross one another.
 		for (UserFolder f : folderList) {
-			Message[] msgs = Mailer.pullEmails(f.getFolder().getFullName()); // "[Gmail]/All Mail");
+			Message[] msgs = Mailer.pullEmails(f.getFolder().getFullName()); // Do not use "[Gmail]/All Mail");
 			for (Message m : msgs) {
 				try {
 					List<EmailAddress> fromList = insertEmailAddress(m.getFrom());// get this list and return for user_email table
@@ -261,8 +260,7 @@ public class Database {
 						insertReceivedEmails(emailId, ea.getId());
 					}
 					emailIdList.add(emailId);
-					insertUserLabelList(emailId, m);
-					// If we insert label... how do we know if it's in there? Creat efunction that looks at folder and sees if this email is inside? Then label? CANCER!
+					insertUserLabelList(emailId, m); // not working?
 					
 					i++;
 					if (i > stopper)
@@ -290,13 +288,9 @@ public class Database {
 			Folder f = Mailer.getFolder(l.getFolder().getFullName());
 			try {
 				f.open(Folder.READ_WRITE);
-				Message[] msgs = f.getMessages();
-				// same email
-				for (Message m2 : msgs) {
-					if (m.equals(m2)) {
-						System.out.println("SAME");
-						query("INSERT INTO label_list (email_id, label_id) VALUE ('" + emailId + "', " + l.getId() + ");");
-					}
+				if (Arrays.asList(f.getMessages()).contains(m)) {
+					System.out.println("SAME");
+					query("INSERT INTO label_list (email_id, label_id) VALUE ('" + emailId + "', " + l.getId() + ");");
 				}
 				f.close();
 			} catch (MessagingException e) {
