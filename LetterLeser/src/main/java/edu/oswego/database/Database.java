@@ -38,7 +38,7 @@ public class Database {
 
 	private Connection connection;
 	private EmailAddress user;
-	
+
 	private List<UserFolder> folderList;
 	// private Mailer mailer;
 
@@ -83,20 +83,22 @@ public class Database {
 		return -1;
 	}
 
-	public int insertFilter(Date startDate, Date endDate, int intervalRange, int folderId) {
+	private int insertFilter(java.util.Date utilDate, java.util.Date utilDate2, int intervalRange, String folderName) {
+		int folderId = getFolderId(folderName);
+
 		PreparedStatement ps;
 		try {
 			ps = getConnection().prepareStatement(
-					"INSERT INTO filter (start_date, end_date, interval_range, folder_id) VALUE (?, ?, ?, ?);",
+					"INSERT INTO filter_settings (start_date, end_date, interval_range, folder_id) VALUE (?, ?, ?, ?);",
 					Statement.RETURN_GENERATED_KEYS);
-			ps.setObject(1, startDate);
-			ps.setObject(2, endDate);
+			ps.setObject(1, utilDate);
+			ps.setObject(2, utilDate2);
 			ps.setInt(3, intervalRange);
 			ps.setInt(4, folderId);
 
 			if (ps.executeUpdate() == 0)
 				throw new SQLException("Could not insert into folder, no rows affected");
-			
+
 			ResultSet generatedKeys = ps.getGeneratedKeys();
 
 			if (generatedKeys.next())
@@ -108,28 +110,30 @@ public class Database {
 		return -1;
 	}
 
-	public boolean insertUserFavourites(String favName, Date startDate, Date endDate, int intervalRange, String folderName) {
-		// find folderId first
-		int folderId = -1;
-		for (UserFolder f: folderList) {
+	private int getFolderId(String folderName) {
+		for (UserFolder f : folderList) {
 			if (f.getFolder().getFullName().equals(folderName)) {
-				folderId = f.getId();
-				break;
+				return f.getId();
 			}
 		}
-		
+		return -1;
+	}
+
+	public boolean insertUserFavourites(String favName, java.util.Date utilDate, java.util.Date utilDate2,
+			int intervalRange, String folderName) {
+		int folderId = getFolderId(folderName);
 		if (folderId == -1)
 			return false;
-		
-		int filterId = insertFilter(startDate, endDate, intervalRange, folderId);
-		query("INSERT INTO user_favourites (filter_settings_id, user_id, fav_name) VALUE (" + filterId + ", " + user.getId() + ", " + favName + ");");
-		
+
+		int filterId = insertFilter(utilDate, utilDate2, intervalRange, folderName);
+		query("INSERT INTO user_favourites (filter_settings_id, user_id, fav_name) VALUE (" + filterId + ", "
+				+ user.getId() + ", '" + favName + "');");
+
 		return true;
 	}
 
 	public void pull() {
-		folderList = importFolders(); // make function not static. Lets change this so pass as param to
-														// menthods so take list?
+		folderList = importFolders();
 		List<Integer> emailIdList = new ArrayList<>();
 
 		int i = 0;
@@ -156,7 +160,7 @@ public class Database {
 					e.printStackTrace();
 				}
 			}
-			
+
 			// If not already in folder, copy it over.
 			// NULL POINTER EXCEPTION. FIX DIS yo.
 			// Mailer.markEmailsInFolder(f.getFolder().getFullName(), msgs);

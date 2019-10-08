@@ -1,5 +1,8 @@
 package edu.oswego.database;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 import edu.oswego.props.Settings;
 
 public class DBdemo {
@@ -10,16 +13,17 @@ public class DBdemo {
 
 		Database db = new Database("csc344testacc@gmail.com", "KEY_HERE");
 		
+		
 //		db.pull();
 		
-//		String lastCrawlDate = "2014-01-28";
-//		Date utilDate;
-//		try {
-//			utilDate = (Date) new SimpleDateFormat("yyyy-MM-dd").parse(lastCrawlDate);
-//			insertFilter(new Filter(utilDate, utilDate, 5, f));
-//		} catch (ParseException e) {
-//			e.printStackTrace();
-//		}
+		String lastCrawlDate = "2014-01-28";
+		Date utilDate;
+		try {
+			utilDate = (Date) new SimpleDateFormat("yyyy-MM-dd").parse(lastCrawlDate);
+			db.insertUserFavourites("Awesome favs", utilDate, utilDate, 5, "INBOX");
+		} catch (java.text.ParseException e) {
+			e.printStackTrace();
+		}
 		
 		
 		db.showTables();
