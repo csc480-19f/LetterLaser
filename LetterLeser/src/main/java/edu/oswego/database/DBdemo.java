@@ -25,6 +25,8 @@ public class DBdemo {
 			e.printStackTrace();
 		}
 		
+		db.removeUserFavourite("Awesome favs");
+		
 		
 		db.showTables();
 //		db.truncateTables();
