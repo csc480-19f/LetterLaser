@@ -1,7 +1,6 @@
 /**
  * @author Phoenix Boisnier
  */
-package edu.oswego.sentiment;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -22,33 +21,8 @@ public class AnalyzeThis {
     public static double[][][] sentimize(String[] emails){
         ArrayList<ArrayList<ArrayList<Double>>> retVal = new ArrayList<>();
 
-        //This section creates the file and enciphers it.
-
-        File pyIn = new File("pythonInput.txt");
-        try{
-            pyIn.createNewFile();
-            FileWriter write = new FileWriter(pyIn);
-            for (String email : emails) {
-                //What we really do first is fix the string.
-                String fixedEmail = fix(email);
-                //First we apply a caesar shift of 10 to our email.
-                String[] param1 = {fixedEmail, "10"};
-                String ciph1 = Cipherer.encipher(0, param1);
-                //Then we apply a vignere cipher with keyword systemic to the caesar shifted text.
-                String[] param2 = {ciph1, "systemic"};
-                String ciph2 = Cipherer.encipher(2, param2);
-                write.write(ciph2 + "\n");
-                write.flush();
-            }
-            write.close();
-        }
-        catch(IOException e) {
-            System.out.println("Oh no!");
-        }
-
         //This section feeds the python code the enciphered .txt file and demands the sentiment results.
-
-        String filePath = pyIn.getPath();
+        String filePath = AnalyzeThis.encipher(emails);
         File input = new File("output.txt");
 
         try {
@@ -85,6 +59,79 @@ public class AnalyzeThis {
         //Get your fresh, hot results here.
 
         return AnalyzeThis.processResults(retVal);
+    }
+
+    /**
+     * This returns the results from the sentiment analysis of the list of emails.
+     * @param emails The list of emails to be analyzed.
+     * @return An array of emails' corresponding sentiment score objects.
+     */
+    public static SentimentScore[] singleScoreSentimize(String[] emails){
+        SentimentScore[] scores = new SentimentScore[emails.length];
+
+        //This section feeds the python code the enciphered .txt file and demands the sentiment results.
+        String filePath = AnalyzeThis.encipher(emails);
+
+        try {
+            //TODO Replace the command string with the final pathname for the whole sentiment analyzer, SentimentByEmail.py.
+            Process p = Runtime.getRuntime().exec("python C:/Users/pbois/PycharmProjects/Sentiment/SentimentByEmail.py "
+                    + filePath);
+            BufferedReader in = new BufferedReader(new InputStreamReader(p.getInputStream()), 8);
+            String vals = in.readLine();
+            //TODO This will need to be changed to reflect the path the python file spits out, unless python puts it here.
+            File input = new File(vals);
+            Scanner scone = new Scanner(input);
+            for(int q = 0; q < emails.length; q++){
+                String line = scone.nextLine();
+                Scanner scune = new Scanner(line);
+                SentimentScore s = new SentimentScore(Double.parseDouble(scune.next()),
+                        Double.parseDouble(scune.next()),
+                        Double.parseDouble(scune.next()),
+                        Double.parseDouble(scune.next()));
+                scores[q] = s;
+            }
+            p.destroy();
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+            System.out.println("Oh no.");
+        }
+        //Get your fresh, hot results here.
+        return scores;
+
+    }
+
+    /**
+     * This enciphers and writes the input string array to a text file.
+     * @param emails The strings to be enciphered.
+     * @return The path name of the file.
+     */
+    private static String encipher(String[] emails){
+        //This section creates the file and enciphers it.
+
+        File pyIn = new File("pythonInput.txt");
+        try{
+            pyIn.createNewFile();
+            FileWriter write = new FileWriter(pyIn);
+            for (String email : emails) {
+                //What we really do first is fix the string.
+                String fixedEmail = fix(email);
+                //First we apply a caesar shift of 10 to our email.
+                String[] param1 = {fixedEmail, "10"};
+                String ciph1 = Cipherer.encipher(0, param1);
+                //Then we apply a vignere cipher with keyword systemic to the caesar shifted text.
+                String[] param2 = {ciph1, "systemic"};
+                String ciph2 = Cipherer.encipher(2, param2);
+                write.write(ciph2 + "\n");
+                write.flush();
+            }
+            write.close();
+        }
+        catch(IOException e) {
+            System.out.println("Oh no!");
+        }
+
+        return pyIn.getPath();
     }
 
     /**
@@ -208,11 +255,11 @@ public class AnalyzeThis {
         }
         return retVal;
     }
-    
+
     /**
      * Feed me the results please.
      * @param results Results from a processResults(sentimize(emails)) call.
-     * @return The a list of sentiment scores associated with each email.
+     * @return The list of compound scores.
      */
     public static SentimentScore[] getScoresObjects(double[][][] results){
         SentimentScore[] retVal = new SentimentScore[results.length];
@@ -236,4 +283,18 @@ public class AnalyzeThis {
         }
         return retVal;
     }
+
+    /**
+     * This method evaluates the sentiment score into three categories based on it's compound score.
+     * The ranges for what is considered positive, negative, and neutral is based on evaluation testing.
+     * @param s The sentiment score to be evaluated.
+     * @return 0, 1, or 2 for either negative, neutral, or positive, respectively.
+     */
+    public static int evaluateSentiment(SentimentScore s){
+        if(s.getCompound() <= -0.05) return 0;
+        if(s.getCompound() > -0.05) return 1;
+        if(s.getCompound() >= 5.0/12.0) return 2;
+        return -1;
+    }
+
 }
