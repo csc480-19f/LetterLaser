@@ -5,10 +5,10 @@ import java.io.FileNotFoundException;
 import java.util.Scanner;
 
 /**
- * Simple static class to access credentials through other classes.
+ * Simple static class to access credentials from other classes.
  * 
  * @author Jimmy Nguyen
- * @since 09/18/2019
+ * @since 10/08/2019
  */
 
 public class Settings {

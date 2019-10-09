@@ -8,6 +8,7 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import javax.mail.Address;
@@ -17,19 +18,19 @@ import javax.mail.Message;
 import javax.mail.MessagingException;
 import javax.mail.NoSuchProviderException;
 
-import SentimentAnalyzer.SentimentScore;
 import edu.oswego.mail.Mailer;
 import edu.oswego.model.EmailAddress;
 import edu.oswego.model.Label;
 import edu.oswego.model.UserFavourites;
 import edu.oswego.model.UserFolder;
 import edu.oswego.props.Settings;
+import edu.oswego.sentiment.SentimentScore;
 
 /**
  * Database class to get connection, push/pull data, and submit queries.
  * 
  * @author Jimmy
- * @since 10/04/2019
+ * @since 10/08/2019
  */
 
 public class Database {
@@ -38,12 +39,49 @@ public class Database {
 	private EmailAddress user;
 
 	private List<UserFolder> folderList;
-	// private Mailer mailer;
+	private Mailer mailer;
 
-	public Database(String emailAddress, String oauth2) {
+	public Database(String emailAddress, String accessKey) {
 		user = getUser(emailAddress);
-		// mailer = new Mailer();
+		mailer = new Mailer(accessKey);
 		pull();
+	}
+
+	// WIP
+	// SQL DATE // filter on attachment? // need attachment name
+	// private void getEmailByFilters(String email, String folder,
+	// String label, boolean byAttachment,
+	// boolean bySeen, Date startDate, Date endDate, int interval) {
+	// if (startDate != null || endDate != null) { // same with label
+	// // concat dates into query
+	// }
+	// }
+
+	private void getEmailByFilter(boolean hasAttachment, String fileName, boolean seen, Date startDate, Date endDate, int interval, String folderName) {
+		String selectionStatement = "SELECT * FROM email WHERE ";
+		List<String> filterStatements = new ArrayList<>();
+		
+		if (hasAttachment) {
+			filterStatements.add("has_attachment = 1");
+			if (fileName != null)
+				filterStatements.add("file_name = " + fileName);
+		}
+		
+		if (seen)
+			filterStatements.add("seen = 1");
+		if (startDate != null)
+			filterStatements.add("date_received >= " + startDate); // must convert this!!! Hmmm Prepared statement? How....
+		
+		if (endDate != null)
+			filterStatements.add("date_received <= " + endDate); // must convert this!!! Hmmm Prepared statement? How....
+		
+		if (interval != 0)
+			filterStatements.add("interval = " + interval);
+		
+		if (seen)
+			filterStatements.add("folder_id = " + getFolderId(folderName));
+		
+		// Or can do this from our arraylist decide....
 	}
 
 	private EmailAddress getUser(String emailAddress) {
@@ -114,22 +152,20 @@ public class Database {
 				return f.getId();
 		return -1;
 	}
-	
+
 	private String getFolderName(int id) {
 		for (UserFolder f : folderList)
 			if (f.getId() == id)
 				return f.getFolder().getFullName();
 		return null;
 	}
-	
+
 	private UserFolder getFolderById(int id) {
 		for (UserFolder f : folderList)
 			if (f.getId() == id)
 				return f;
 		return null;
 	}
-	
-	
 
 	public boolean insertUserFavourites(String favName, java.util.Date utilDate, java.util.Date utilDate2,
 			int intervalRange, String folderName) {
@@ -138,52 +174,58 @@ public class Database {
 			return false;
 
 		int filterId = insertFilter(utilDate, utilDate2, intervalRange, folderName);
-		
+
 		query("INSERT INTO user_favourites (filter_settings_id, user_id, fav_name) VALUE (" + filterId + ", "
 				+ user.getId() + ", '" + favName + "');");
 
 		return true;
 	}
-	
+
 	public List<UserFavourites> fetchInitializeLoad() {
 		// if need length of emails, folders use mailer
-		
+
 		List<UserFavourites> ufList = new ArrayList<>();
 		// LIST TO RETURN OF ALL USER FAVS
 		try {
-			ResultSet rs = getConnection().prepareStatement("SELECT * FROM user_favourites WHERE user_id = '" + user.getId() + "';", Statement.RETURN_GENERATED_KEYS).executeQuery();
-			
+			ResultSet rs = getConnection()
+					.prepareStatement("SELECT * FROM user_favourites WHERE user_id = '" + user.getId() + "';",
+							Statement.RETURN_GENERATED_KEYS)
+					.executeQuery();
+
 			while (rs.next()) {
-				ResultSet rs2 = getConnection().prepareStatement("SELECT * FROM filter_settings WHERE id = '" + rs.getInt(1) + "';", Statement.RETURN_GENERATED_KEYS).executeQuery();
+				ResultSet rs2 = getConnection()
+						.prepareStatement("SELECT * FROM filter_settings WHERE id = '" + rs.getInt(1) + "';",
+								Statement.RETURN_GENERATED_KEYS)
+						.executeQuery();
 				while (rs2.next())
-					ufList.add(new UserFavourites(rs.getInt(1), rs.getString(2), rs2.getDate(2), rs2.getDate(3), rs2.getInt(4), getFolderById(rs2.getInt(5))));
+					ufList.add(new UserFavourites(rs.getInt(1), rs.getString(2), rs2.getDate(2), rs2.getDate(3),
+							rs2.getInt(4), getFolderById(rs2.getInt(5))));
 				rs2.close();
 			}
 			rs.close();
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
-		
+
 		return ufList;
 	}
-	
+
 	// change existing
-//	public void updateUserFavourites() {
-//		
-//	}
-	
+	// public void updateUserFavourites() {
+	//
+	// }
+
 	public boolean removeUserFavourite(String favName) {
 		try {
-			PreparedStatement ps = getConnection().prepareStatement(
-					"DELETE FROM user_favourites WHERE fav_name = '" + favName + "' AND user_id = " + user.getId() + ";",
-					Statement.RETURN_GENERATED_KEYS);
+			PreparedStatement ps = getConnection().prepareStatement("DELETE FROM user_favourites WHERE fav_name = '"
+					+ favName + "' AND user_id = " + user.getId() + ";", Statement.RETURN_GENERATED_KEYS);
 
 			if (ps.executeUpdate() == 0)
 				return false;
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
-		
+
 		return true;
 	}
 
@@ -195,7 +237,7 @@ public class Database {
 		int stopper = 10; // limit our pull for testing
 
 		for (UserFolder f : folderList) {
-			Message[] msgs = Mailer.pullEmails(f.getFolder().getFullName()); // Do not use "[Gmail]/All Mail");
+			Message[] msgs = mailer.pullEmails(f.getFolder().getFullName()); // Do not use "[Gmail]/All Mail");
 			for (Message m : msgs) {
 				try {
 					List<EmailAddress> fromList = insertEmailAddress(m.getFrom());// get this list and return for
@@ -232,7 +274,7 @@ public class Database {
 			rs = getConnection().prepareStatement("SELECT * FROM folder WHERE fold_name = '" + folderName + "'")
 					.executeQuery();
 			while (rs.next()) {
-				folderList.add(new UserFolder(rs.getInt(1), Mailer.getFolder(rs.getString(2))));
+				folderList.add(new UserFolder(rs.getInt(1), mailer.getFolder(rs.getString(2))));
 				return true;
 			}
 		} catch (SQLException e1) {
@@ -244,11 +286,16 @@ public class Database {
 	public List<UserFolder> importFolders() {
 		List<UserFolder> folderList = new ArrayList<>();
 		try {
-			Folder[] folders = Mailer.getStorage().getDefaultFolder().list("*");
+			Folder[] folders = mailer.getStorage().getDefaultFolder().list("*");
 
 			for (Folder f : folders) {
 				if (!folderExists(f.getFullName(), folderList) && !f.getFullName().equals("[Gmail]")
-						&& !f.getFullName().equals("CSC480_19F") && !f.getFullName().equals("[Gmail]/All Mail")) {
+						&& !f.getFullName().equals("CSC480_19F") && !f.getFullName().equals("[Gmail]/All Mail")) { // NOT
+																													// DOES
+																													// TAKE
+																													// ALL
+																													// MAIL
+																													// FOLDER
 					PreparedStatement ps = getConnection().prepareStatement(
 							"INSERT INTO folder (fold_name) VALUE ('" + f.getFullName() + "')",
 							Statement.RETURN_GENERATED_KEYS);
@@ -308,12 +355,12 @@ public class Database {
 			ps.setDouble(3, m.getSize());
 			ps.setBoolean(4, m.getFlags().contains(Flags.Flag.SEEN));
 
-			boolean hasAttachment = Mailer.hasAttachment(m);
+			boolean hasAttachment = mailer.hasAttachment(m);
 			ps.setBoolean(5, hasAttachment);
 
 			String fileName = null;
 			if (hasAttachment) {
-				fileName = Mailer.getAttachmentName(m);
+				fileName = mailer.getAttachmentName(m);
 			}
 			ps.setString(6, fileName);
 
@@ -470,16 +517,6 @@ public class Database {
 		return size;
 	}
 
-	// WIP
-	// SQL DATE // filter on attachment? // need attachment name
-	// private void getEmailByFilters(String email, String folder,
-	// String label, boolean byAttachment,
-	// boolean bySeen, Date startDate, Date endDate, int interval) {
-	// if (startDate != null || endDate != null) { // same with label
-	// // concat dates into query
-	// }
-	// }
-
 	public void showTables() {
 		ResultSet queryTbl;
 		try {
@@ -599,7 +636,7 @@ public class Database {
 
 	public List<Label> getLabels() {
 		try {
-			Folder[] f = Mailer.getStorage().getDefaultFolder().list();
+			Folder[] f = mailer.getStorage().getDefaultFolder().list();
 			for (Folder fd : f) {
 				System.out.println(">> " + fd.getName());
 				System.out.println(fd.getFolder("Alumni").exists());
@@ -611,52 +648,6 @@ public class Database {
 		}
 		return null;
 	}
-
-	// /*
-	// * Fetches all attributes of user_favourites table.
-	// *
-	// * @param user email address to be queried.
-	// *
-	// * @return List of UserFavourites objects.
-	// */
-	// public List<UserFavourites> fetchFavourites(String emailAddress) {
-	// List<UserFavourites> favsList = new ArrayList<>(); // HMMM CLASS LIST MAYBE?
-	//
-	// System.out.println("FETCHING FAVOURITES FOR :" + emailAddress +
-	// "\n----------------------");
-	// String query = "SELECT user_favourites.id, filter_settings.fav_name,
-	// filter_settings.start_date, filter_settings.end_date,
-	// filter_settings.interval_range, folder.id, folder.fold_name FROM user JOIN
-	// user_favourites ON user.id = user_favourites.user_id JOIN filter_settings ON
-	// user_favourites.filter_settings_id = filter_settings.id JOIN folder ON
-	// filter_settings.folder_id = folder.id WHERE email_address = '"
-	// + emailAddress + "';";
-	//
-	// try {
-	// ResultSet rs = getConnection().prepareStatement(query).executeQuery();
-	// while (rs.next()) {
-	// ResultSetMetaData md = rs.getMetaData();
-	//
-	// // CHECK FOR FOLDER DUPLICATES.
-	// UserFolder folder = getFolder(rs.getInt(6), rs.getString(7));
-	//
-	// favsList.add(new UserFavourites(1, rs.getString(2), rs.getDate(3),
-	// rs.getDate(4), 5, folder));
-	//
-	// // SHOWS ALL ATTR FOR CONSOLE PURPOSE
-	// for (int i = 1; i < md.getColumnCount() + 1; i++) {
-	// System.out.println(md.getColumnName(i) + "_" + md.getColumnTypeName(i) + " ::
-	// " + rs.getString(i)); // create
-	// }
-	// System.out.println("....................");
-	// }
-	//
-	// } catch (SQLException e) {
-	// e.printStackTrace();
-	// }
-	//
-	// return favsList;
-	// }
 
 	public void calculateSentimentScore(int emailId, SentimentScore score) {
 		int sentimentId = insertSentimentScore(score);

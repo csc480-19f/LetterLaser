@@ -1,7 +1,7 @@
 /**
  * @author Phoenix Boisnier
  */
-package SentimentAnalyzer;
+package edu.oswego.sentiment;
 
 /**
  * This class is used to encipher text.
