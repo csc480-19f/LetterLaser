@@ -1,7 +1,7 @@
 /**
  * @author Phoenix Boisnier
  */
-package SentimentAnalyzer;
+package edu.oswego.sentiment;
 
 import java.io.*;
 import java.util.ArrayList;

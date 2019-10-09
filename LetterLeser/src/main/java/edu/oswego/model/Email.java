@@ -2,7 +2,7 @@ package edu.oswego.model;
 
 import java.sql.Date;
 
-import SentimentAnalyzer.SentimentScore;
+import edu.oswego.sentiment.SentimentScore;
 
 public class Email {
 	
