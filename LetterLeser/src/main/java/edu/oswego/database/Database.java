@@ -1,15 +1,12 @@
 package edu.oswego.database;
 
 import java.sql.Connection;
-import java.sql.Date;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -24,6 +21,7 @@ import SentimentAnalyzer.SentimentScore;
 import edu.oswego.mail.Mailer;
 import edu.oswego.model.EmailAddress;
 import edu.oswego.model.Label;
+import edu.oswego.model.UserFavourites;
 import edu.oswego.model.UserFolder;
 import edu.oswego.props.Settings;
 
@@ -111,13 +109,27 @@ public class Database {
 	}
 
 	private int getFolderId(String folderName) {
-		for (UserFolder f : folderList) {
-			if (f.getFolder().getFullName().equals(folderName)) {
+		for (UserFolder f : folderList)
+			if (f.getFolder().getFullName().equals(folderName))
 				return f.getId();
-			}
-		}
 		return -1;
 	}
+	
+	private String getFolderName(int id) {
+		for (UserFolder f : folderList)
+			if (f.getId() == id)
+				return f.getFolder().getFullName();
+		return null;
+	}
+	
+	private UserFolder getFolderById(int id) {
+		for (UserFolder f : folderList)
+			if (f.getId() == id)
+				return f;
+		return null;
+	}
+	
+	
 
 	public boolean insertUserFavourites(String favName, java.util.Date utilDate, java.util.Date utilDate2,
 			int intervalRange, String folderName) {
@@ -126,10 +138,34 @@ public class Database {
 			return false;
 
 		int filterId = insertFilter(utilDate, utilDate2, intervalRange, folderName);
+		
 		query("INSERT INTO user_favourites (filter_settings_id, user_id, fav_name) VALUE (" + filterId + ", "
 				+ user.getId() + ", '" + favName + "');");
 
 		return true;
+	}
+	
+	public List<UserFavourites> fetchInitializeLoad() {
+		
+		// if need length of emails, folders use mailer
+		
+		List<UserFavourites> ufList = new ArrayList<>();
+		// LIST TO RETURN OF ALL USER FAVS
+		try {
+			ResultSet rs = getConnection().prepareStatement("SELECT * FROM user_favourites WHERE user_id = '" + user.getId() + "';", Statement.RETURN_GENERATED_KEYS).executeQuery();
+			
+			while (rs.next()) {
+				ResultSet rs2 = getConnection().prepareStatement("SELECT * FROM filter_settings WHERE id = '" + rs.getInt(1) + "';", Statement.RETURN_GENERATED_KEYS).executeQuery();
+				while (rs2.next())
+					ufList.add(new UserFavourites(rs.getInt(1), rs.getString(2), rs2.getDate(2), rs2.getDate(3), rs2.getInt(4), getFolderById(rs2.getInt(5))));
+				rs2.close();
+			}
+			rs.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		
+		return ufList;
 	}
 
 	public void pull() {
