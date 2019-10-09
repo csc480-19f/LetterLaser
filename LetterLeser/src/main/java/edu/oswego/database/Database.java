@@ -146,7 +146,6 @@ public class Database {
 	}
 	
 	public List<UserFavourites> fetchInitializeLoad() {
-		
 		// if need length of emails, folders use mailer
 		
 		List<UserFavourites> ufList = new ArrayList<>();
@@ -166,6 +165,26 @@ public class Database {
 		}
 		
 		return ufList;
+	}
+	
+	// change existing
+//	public void updateUserFavourites() {
+//		
+//	}
+	
+	public boolean removeUserFavourite(String favName) {
+		try {
+			PreparedStatement ps = getConnection().prepareStatement(
+					"DELETE FROM user_favourites WHERE fav_name = '" + favName + "' AND user_id = " + user.getId() + ";",
+					Statement.RETURN_GENERATED_KEYS);
+
+			if (ps.executeUpdate() == 0)
+				return false;
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		
+		return true;
 	}
 
 	public void pull() {
