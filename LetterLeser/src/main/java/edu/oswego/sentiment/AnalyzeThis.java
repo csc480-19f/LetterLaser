@@ -1,6 +1,7 @@
 /**
  * @author Phoenix Boisnier
  */
+package edu.oswego.sentiment;
 
 import java.io.*;
 import java.util.ArrayList;
