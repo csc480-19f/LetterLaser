@@ -21,6 +21,7 @@ public class DBdemo {
 		try {
 			utilDate = (Date) new SimpleDateFormat("yyyy-MM-dd").parse(lastCrawlDate);
 			db.insertUserFavourites("Awesome favs", utilDate, utilDate, 5, "INBOX");
+			db.insertUserFavourites("Poop sac favourites", utilDate, utilDate, 5, "INBOX");
 		} catch (java.text.ParseException e) {
 			e.printStackTrace();
 		}
