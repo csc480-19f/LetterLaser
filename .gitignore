@@ -1,0 +1,5 @@
+/target/
+
+# MacOS sys files
+.DS_STORE
+.DS_Store
