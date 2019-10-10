@@ -1,4 +1,6 @@
-/target/
+.github
+.github/
+/github
 
 # MacOS sys files
 .DS_STORE
