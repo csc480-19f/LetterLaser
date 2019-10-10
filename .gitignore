@@ -1,6 +1,11 @@
-/.github/
-CODE_OF_CONDUCT.md
-CONTRIBUTING.md
-LICENSE
-README.md
 /target/
+
+# Find it on the Discord.
+credentials.txt
+
+# MacOS sys files
+.DS_STORE
+
+# IDE configs
+.idea
+.settings/
