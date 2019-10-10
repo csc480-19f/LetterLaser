@@ -9,3 +9,5 @@ credentials.txt
 # IDE configs
 .idea
 .settings
+./settings
+/settings/
