@@ -5,3 +5,4 @@ credentials.txt
 
 # MacOS sys files
 .DS_STORE
+.idea
