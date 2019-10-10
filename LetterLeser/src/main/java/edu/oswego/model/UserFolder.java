@@ -2,7 +2,7 @@ package edu.oswego.model;
 
 import javax.mail.Folder;
 
-public class UserFolder implements MailFolder {
+public class UserFolder {
 
 	private int id;
 	private Folder folder;

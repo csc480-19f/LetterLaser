@@ -16,11 +16,9 @@ import javax.mail.Flags;
 import javax.mail.Folder;
 import javax.mail.Message;
 import javax.mail.MessagingException;
-import javax.mail.NoSuchProviderException;
 
 import edu.oswego.mail.Mailer;
 import edu.oswego.model.EmailAddress;
-import edu.oswego.model.Label;
 import edu.oswego.model.UserFavourites;
 import edu.oswego.model.UserFolder;
 import edu.oswego.props.Settings;
@@ -632,21 +630,6 @@ public class Database {
 			e.printStackTrace();
 		}
 		return false;
-	}
-
-	public List<Label> getLabels() {
-		try {
-			Folder[] f = mailer.getStorage().getDefaultFolder().list();
-			for (Folder fd : f) {
-				System.out.println(">> " + fd.getName());
-				System.out.println(fd.getFolder("Alumni").exists());
-			}
-		} catch (NoSuchProviderException e) {
-			e.printStackTrace();
-		} catch (MessagingException e) {
-			e.printStackTrace();
-		}
-		return null;
 	}
 
 	public void calculateSentimentScore(int emailId, SentimentScore score) {
