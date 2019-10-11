@@ -39,10 +39,13 @@ public class Database {
 	private List<UserFolder> folderList;
 	private Mailer mailer;
 
+	/*
+	 * @param Email address, access key
+	 */
 	public Database(String emailAddress, String accessKey) {
 		user = getUser(emailAddress);
 		mailer = new Mailer(accessKey);
-		pull();
+		// pull();
 	}
 
 	// WIP
@@ -55,30 +58,33 @@ public class Database {
 	// }
 	// }
 
-	private void getEmailByFilter(boolean hasAttachment, String fileName, boolean seen, Date startDate, Date endDate, int interval, String folderName) {
+	private void getEmailByFilter(boolean hasAttachment, String fileName, boolean seen, Date startDate, Date endDate,
+			int interval, String folderName) {
 		String selectionStatement = "SELECT * FROM email WHERE ";
 		List<String> filterStatements = new ArrayList<>();
-		
+
 		if (hasAttachment) {
 			filterStatements.add("has_attachment = 1");
 			if (fileName != null)
 				filterStatements.add("file_name = " + fileName);
 		}
-		
+
 		if (seen)
 			filterStatements.add("seen = 1");
 		if (startDate != null)
-			filterStatements.add("date_received >= " + startDate); // must convert this!!! Hmmm Prepared statement? How....
-		
+			filterStatements.add("date_received >= " + startDate); // must convert this!!! Hmmm Prepared statement?
+																	// How....
+
 		if (endDate != null)
-			filterStatements.add("date_received <= " + endDate); // must convert this!!! Hmmm Prepared statement? How....
-		
+			filterStatements.add("date_received <= " + endDate); // must convert this!!! Hmmm Prepared statement?
+																	// How....
+
 		if (interval != 0)
 			filterStatements.add("interval = " + interval);
-		
+
 		if (seen)
 			filterStatements.add("folder_id = " + getFolderId(folderName));
-		
+
 		// Or can do this from our arraylist decide....
 	}
 
@@ -288,12 +294,7 @@ public class Database {
 
 			for (Folder f : folders) {
 				if (!folderExists(f.getFullName(), folderList) && !f.getFullName().equals("[Gmail]")
-						&& !f.getFullName().equals("CSC480_19F") && !f.getFullName().equals("[Gmail]/All Mail")) { // NOT
-																													// DOES
-																													// TAKE
-																													// ALL
-																													// MAIL
-																													// FOLDER
+						&& !f.getFullName().equals("CSC480_19F") && !f.getFullName().equals("[Gmail]/All Mail")) {
 					PreparedStatement ps = getConnection().prepareStatement(
 							"INSERT INTO folder (fold_name) VALUE ('" + f.getFullName() + "')",
 							Statement.RETURN_GENERATED_KEYS);
@@ -564,7 +565,7 @@ public class Database {
 		}
 	}
 
-	private Connection getConnection() {
+	public Connection getConnection() {
 		try {
 			if (connection == null || connection.isClosed())
 				connection = DriverManager.getConnection("jdbc:mysql://" + Settings.DATABASE_HOST + ":"
