@@ -12,6 +12,7 @@ public class DBdemo {
 		Settings.loadCredentials();
 
 		Database db = new Database("csc344testacc@gmail.com", "KEY_HERE");
+		db.pull();
 		
 		
 //		db.pull();
