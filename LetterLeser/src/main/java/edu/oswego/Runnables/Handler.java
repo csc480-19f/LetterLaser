@@ -105,6 +105,7 @@ public class Handler implements Runnable {
         }
         //get all the emails
         ArrayList<Email> emails = database.get().getMetaDataWithAppliedFilters(filters[0],filters[1],filters[2],attachment,seen);
+        ArrayList<UserFolder> folders = database.get().getFolders(googleAccessToken.get().getAsJsonObject("profileObj").get("email").getAsString());
         //this will store the final data
         if(Thread.interrupted()){
             throw new InterruptedException();
@@ -112,7 +113,7 @@ public class Handler implements Runnable {
         //Making all the callables and futures and executing them in threads
         DomainCallable dc = new DomainCallable(emails);
         SentimentScoreCallable ssc = new SentimentScoreCallable(emails);
-        FolderCallable fc = new FolderCallable(emails);
+        FolderCallable fc = new FolderCallable(folders);
         NumOfEmailsCallable noec = new NumOfEmailsCallable(emails);
         SnRCallable src = new SnRCallable(emails);
         TimeBetweenRepliesCallable tbrc = new TimeBetweenRepliesCallable(emails);
