@@ -17,11 +17,11 @@ import javax.mail.Folder;
 import javax.mail.Message;
 import javax.mail.MessagingException;
 
-import SentimentAnalyzer.SentimentScore;
+//import SentimentAnalyzer.SentimentScore;
 import com.google.gson.JsonObject;
 import edu.oswego.mail.Mailer;
 import edu.oswego.model.Email;
-import edu.oswego.model.Label;
+//import edu.oswego.model.Label;
 import edu.oswego.model.EmailAddress;
 import edu.oswego.model.UserFavourites;
 import edu.oswego.model.UserFolder;
@@ -59,10 +59,10 @@ public class Database {
 
 
 
-	public boolean hasEmails(String email){//only called validation thread
+	/*public boolean hasEmails(String email){//only called validation thread
 		//TODO method that takes an email and checks if db has any data on it
 		return true;
-	}
+	}*/
 
 	public ArrayList<Email> getMetaDataWithAppliedFilters(String folder, String date, String interval, boolean attachment, boolean seen){//only called in handler
 		//TODO make a method that returns all my emails unsorted
@@ -83,6 +83,10 @@ public class Database {
 		user = getUser(emailAddress);
 		mailer = new Mailer(accessKey);
 		// pull();
+	}
+
+	public Database() {//TODO this is so my code doesnt freak out, this will probably need to be removed at a later date -Alex
+
 	}
 
 	// WIP
