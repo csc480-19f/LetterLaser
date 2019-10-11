@@ -21,7 +21,6 @@ import javax.mail.MessagingException;
 import com.google.gson.JsonObject;
 import edu.oswego.mail.Mailer;
 import edu.oswego.model.Email;
-//import edu.oswego.model.Label;
 import edu.oswego.model.EmailAddress;
 import edu.oswego.model.UserFavourites;
 import edu.oswego.model.UserFolder;

@@ -58,7 +58,7 @@ public class MailDemo {
 				System.out.println("Subject: " + m.getSubject());
 				System.out.println("Headers: " + m.getAllHeaders().toString());
 				System.out.println("Recipients: " + m.getAllRecipients().toString());
-				System.out.println("Data Handler: " + m.getDataHandler().toString());
+				System.out.println("Data edu.oswego.Runnables.Handler: " + m.getDataHandler().toString());
 				System.out.println("Flags: " + m.getFlags());
 				System.out.println("From: " + m.getFrom().toString());
 				System.out.println("Folder: " + m.getFolder());

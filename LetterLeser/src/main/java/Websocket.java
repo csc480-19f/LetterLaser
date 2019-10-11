@@ -1,8 +1,10 @@
-import Runnables.ValidationRunnable;
+import edu.oswego.Runnables.Handler;
+import edu.oswego.Runnables.ValidationRunnable;
+
+import edu.oswego.database.Database;
+
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import edu.oswego.database.Database;
-import edu.oswego.model.Email;
 
 import javax.websocket.*;
 import javax.websocket.server.ServerEndpoint;
@@ -14,7 +16,7 @@ import java.util.concurrent.atomic.AtomicReference;
 @ServerEndpoint("/engine")
 public class Websocket {
     //this is to manage all current/last active threads for each unique sessions
-    //the format of the object array is as such [Thread, Handler, int, string]
+    //the format of the object array is as such [Thread, edu.oswego.Runnables.Handler, int, string]
     ConcurrentHashMap<String,Object[]> sessionThreadMapper = new ConcurrentHashMap<>();
     //TODO add a CHM ^^^ to account for handling validation threads
 
