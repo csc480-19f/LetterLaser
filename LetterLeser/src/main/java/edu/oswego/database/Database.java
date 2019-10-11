@@ -35,27 +35,35 @@ import edu.oswego.sentiment.SentimentScore;
  */
 
 public class Database {
-/*
-	private volatile Connection connection;
-	private volatile List<Address> addrList = new ArrayList<>();
-	private volatile List<UserFolder> folderList = new ArrayList<>();
-*/
+    private Connection connection;
+    private EmailAddress user;
 
-	/*
-	done by Alex:
-	I'm gonna add blank methods with what they should return.
-	I'll put comments in the methods for you so you know what they should do
-	 */
-	public List<UserFolder> getFolders(String email){
-		//TODO get all the folders
-		return null;
+    private List<UserFolder> folderList;
+    private Mailer mailer;
+
+	public Database() {//TODO this is so my code doesnt freak out, this will probably need to be removed at a later date -Alex
+
 	}
 
-	public boolean populateDatabase(String email){//only called in validation thread
+
+	/*
+	 * @param Email address, access key
+	 */
+	public Database(String emailAddress, String accessKey) {
+		user = getUser(emailAddress);
+		mailer = new Mailer(accessKey);
+		// pull();
+	}
+
+	public boolean populateDatabase(JsonObject auth0){//only called in validation thread
 		//TODO This method passes an email and will populate all db with emails from that inbox
 		return true;
 	}
 
+	public ArrayList<UserFolder> getFolders(String email){
+        //TODO get all the folders
+	    return null;
+    }
 
 
 	/*public boolean hasEmails(String email){//only called validation thread
@@ -68,25 +76,32 @@ public class Database {
 		return new ArrayList<>();
 	}
 
+    public boolean hasEmails(String emailAddress) {
+        ResultSet queryTbl;
+        try {
+            queryTbl = getConnection()
+                    .prepareStatement("SELECT * from user " + "JOIN user_email ON user.id = user_email.id "
+                            + "JOIN email ON email.id = user_email.email_id WHERE email = " + emailAddress + ";")
+                    .executeQuery();
+            int size = 0;
 
-	private Connection connection;
-	private EmailAddress user;
+            while (queryTbl.next()) {
+                size++;
+                if (size > 0)
+                    return true;
+            }
 
-	private List<UserFolder> folderList;
-	private Mailer mailer;
+            queryTbl.close();
 
-	/*
-	 * @param Email address, access key
-	 */
-	public Database(String emailAddress, String accessKey) {
-		user = getUser(emailAddress);
-		mailer = new Mailer(accessKey);
-		// pull();
-	}
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
 
-	public Database() {//TODO this is so my code doesnt freak out, this will probably need to be removed at a later date -Alex
 
-	}
+    //TODO all the methods above is what I call, Everything else should be private and be submethods to achieve these upper messages. -Alex
+
 
 	// WIP
 	// SQL DATE // filter on attachment? // need attachment name
@@ -668,28 +683,7 @@ public class Database {
 		}
 	}
 
-	public boolean hasEmails(String emailAddress) {
-		ResultSet queryTbl;
-		try {
-			queryTbl = getConnection()
-					.prepareStatement("SELECT * from user " + "JOIN user_email ON user.id = user_email.id "
-							+ "JOIN email ON email.id = user_email.email_id WHERE email = " + emailAddress + ";")
-					.executeQuery();
-			int size = 0;
 
-			while (queryTbl.next()) {
-				size++;
-				if (size > 0)
-					return true;
-			}
-
-			queryTbl.close();
-
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-		return false;
-	}
 
 	public void calculateSentimentScore(int emailId, SentimentScore score) {
 		int sentimentId = insertSentimentScore(score);

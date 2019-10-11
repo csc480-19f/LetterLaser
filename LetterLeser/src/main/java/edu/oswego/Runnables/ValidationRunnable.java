@@ -36,8 +36,9 @@ public class ValidationRunnable implements Runnable{
         if(db.hasEmails(email)){
             emailStored.compareAndSet(false,true);
             //TODO validate DB
+
         }else{
-            db.populateDatabase(email);
+            db.populateDatabase(googleAccessToken.get());
         }
     }
 }
