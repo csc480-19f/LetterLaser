@@ -6,7 +6,6 @@ import edu.oswego.model.UserFolder;
 
 import javax.websocket.Session;
 import java.io.IOException;
-import java.io.InterruptedIOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -54,7 +53,7 @@ public class Handler implements Runnable {
         }else{
             try {
                 handleMessage(message.get());
-            } catch (InterruptedIOException e) {
+            } catch (InterruptedException e) {
 
             }
         }
@@ -69,13 +68,13 @@ public class Handler implements Runnable {
 
 
 
-    private void handleMessage(String message) throws InterruptedIOException {
+    private void handleMessage(String message) throws InterruptedException {
         //waiting to know if db has data or not: look at ValidationRunnable
         while(!hasEmails.get()){
             try {
                 Thread.sleep(50);
             } catch (InterruptedException e) {
-                throw new InterruptedIOException();
+                throw new InterruptedException();
             }
         }
         //TODO make sure gui sends comma seperators
@@ -87,7 +86,7 @@ public class Handler implements Runnable {
         //Waiting for the oldThread to terminate
         while(oldThread.get().isAlive()){
             if(Thread.interrupted()){
-                throw new InterruptedIOException();
+                throw new InterruptedException();
             }
         }
         //parse the booleans
@@ -107,15 +106,15 @@ public class Handler implements Runnable {
         ArrayList<Email> emails = database.get().getMetaDataWithAppliedFilters(filters[0],filters[1],filters[2],attachment,seen);
         //this will store the final data
         if(Thread.interrupted()){
-            throw new InterruptedIOException();
+            throw new InterruptedException();
         }
         //Making all the callables and futures and executing them in threads
-        DomainCallable dc = new DomainCallable();
-        SentimentScoreCallable ssc = new SentimentScoreCallable();
-        FolderCallable fc = new FolderCallable();
-        NumOfEmailsCallable noec = new NumOfEmailsCallable();
-        SnRCallable src = new SnRCallable();
-        TimeBetweenRepliesCallable tbrc = new TimeBetweenRepliesCallable();
+        DomainCallable dc = new DomainCallable(emails);
+        SentimentScoreCallable ssc = new SentimentScoreCallable(emails);
+        FolderCallable fc = new FolderCallable(emails);
+        NumOfEmailsCallable noec = new NumOfEmailsCallable(emails);
+        SnRCallable src = new SnRCallable(emails);
+        TimeBetweenRepliesCallable tbrc = new TimeBetweenRepliesCallable(emails);
 
         FutureTask sscTask = new FutureTask<>(ssc);
         FutureTask dcTask = new FutureTask<>(dc);
@@ -126,7 +125,7 @@ public class Handler implements Runnable {
 
 
         if(Thread.interrupted()){
-            throw new InterruptedIOException();
+            throw new InterruptedException();
         }
 
         new Thread(sscTask).start();
@@ -142,7 +141,7 @@ public class Handler implements Runnable {
         Object noecData;
         Object srcData;
         Object tbrcData;
-
+        //todo add the calculations for each callable
         try {
             sscData = sscTask.get();
             dcData = dcTask.get();
@@ -157,7 +156,7 @@ public class Handler implements Runnable {
         }
 
         JsonObject dataSet = new JsonObject();
-
+        //todo, combine all the data into final jsonobject and send it over to gui
 
 
     }

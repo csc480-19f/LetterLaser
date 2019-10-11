@@ -17,7 +17,7 @@ public class Websocket {
     //this is to manage all current/last active threads for each unique sessions
     //the format of the object array is as such [Thread, Handler, int, string]
     ConcurrentHashMap<String,Object[]> sessionThreadMapper = new ConcurrentHashMap<>();
-
+    //TODO add a CHM ^^^ to account for handling validation threads
 
     @OnOpen
     public void onOpen(Session session) {
