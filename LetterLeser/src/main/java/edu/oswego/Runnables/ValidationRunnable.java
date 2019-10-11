@@ -1,4 +1,4 @@
-package Runnables;
+package edu.oswego.Runnables;
 
 import edu.oswego.database.Database;
 
