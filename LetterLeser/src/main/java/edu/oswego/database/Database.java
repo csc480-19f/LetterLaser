@@ -38,26 +38,91 @@ public class Database {
 
 	private List<UserFolder> folderList;
 	private Mailer mailer;
+	
+	// Experimental only.
+	public void showTables() {
+		ResultSet queryTbl;
+		try {
+			// show all tables
+			queryTbl = getConnection().prepareStatement("show tables").executeQuery();
 
-	/*
-	 * @param Email address, access key
-	 */
+			while (queryTbl.next()) {
+				String tbl = queryTbl.getString(1);
+				System.out.println("[INBOX] Table: " + tbl + "\n-------------------");
+
+				// show all attributes from the tables
+				ResultSet queryAttr = getConnection().prepareStatement("select * from " + tbl).executeQuery();
+				while (queryAttr.next()) {
+					ResultSetMetaData md = queryAttr.getMetaData();
+					for (int i = 1; i < md.getColumnCount() + 1; i++)
+						System.out.println(
+								md.getColumnName(i) + "_" + md.getColumnTypeName(i) + " :: " + queryAttr.getString(i));
+					System.out.println();
+				}
+				System.out.println();
+				queryAttr.close();
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
+
 	public Database(String emailAddress, String accessKey) {
 		user = getUser(emailAddress);
 		mailer = new Mailer(accessKey);
 		// pull();
 	}
+	
+	public Connection getConnection() {
+		try {
+			if (connection == null || connection.isClosed())
+				connection = DriverManager.getConnection("jdbc:mysql://" + Settings.DATABASE_HOST + ":"
+						+ Settings.DATABASE_PORT + "/" + Settings.DATABASE_SCHEMA
+						+ "?useUnicode=true&characterEncoding=UTF-8&serverTimezone=UTC&user="
+						+ Settings.DATABASE_USERNAME + "&password=" + Settings.DATABASE_PASSWORD);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
 
-	// WIP
-	// SQL DATE // filter on attachment? // need attachment name
-	// private void getEmailByFilters(String email, String folder,
-	// String label, boolean byAttachment,
-	// boolean bySeen, Date startDate, Date endDate, int interval) {
-	// if (startDate != null || endDate != null) { // same with label
-	// // concat dates into query
-	// }
-	// }
+		return connection;
+	}
+	
+	public void pull() {
+		folderList = importFolders();
+		List<Integer> emailIdList = new ArrayList<>();
 
+		int i = 0;
+		int stopper = 10; // limit our pull for testing
+
+		for (UserFolder f : folderList) {
+			Message[] msgs = mailer.pullEmails(f.getFolder().getFullName()); // Do not use "[Gmail]/All Mail");
+			for (Message m : msgs) {
+				try {
+					List<EmailAddress> fromList = insertEmailAddress(m.getFrom());// get this list and return for
+																					// user_email table
+					int emailId = insertEmail(m, folderList, emailIdList);
+					for (EmailAddress ea : fromList) {
+						insertReceivedEmails(emailId, ea.getId());
+					}
+					insertUserEmail(user, emailId);
+					emailIdList.add(emailId);
+
+					i++;
+					if (i > stopper)
+						return;
+
+				} catch (MessagingException e) {
+					e.printStackTrace();
+				}
+			}
+
+			// If not already in folder, copy it over.
+			// NULL POINTER EXCEPTION. FIX DIS yo.
+			// Mailer.markEmailsInFolder(f.getFolder().getFullName(), msgs);
+		}
+	}
+
+	// Should ret emails in colelctions
 	private void getEmailByFilter(boolean hasAttachment, String fileName, boolean seen, Date startDate, Date endDate,
 			int interval, String folderName) {
 		String selectionStatement = "SELECT * FROM email WHERE ";
@@ -88,22 +153,6 @@ public class Database {
 		// Or can do this from our arraylist decide....
 	}
 
-	private EmailAddress getUser(String emailAddress) {
-		ResultSet rs;
-		try {
-			rs = getConnection().prepareStatement("SELECT * FROM user WHERE email_address = '" + emailAddress + "';",
-					Statement.RETURN_GENERATED_KEYS).executeQuery();
-			while (rs.next())
-				return new EmailAddress(rs.getInt(1), rs.getString(2));
-
-			rs.close();
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-
-		return new EmailAddress(insertUser(emailAddress), emailAddress);
-	}
-
 	private int insertUser(String emailAddress) {
 		PreparedStatement ps;
 		try {
@@ -121,6 +170,22 @@ public class Database {
 			e.printStackTrace();
 		}
 		return -1;
+	}
+	
+	private EmailAddress getUser(String emailAddress) {
+		ResultSet rs;
+		try {
+			rs = getConnection().prepareStatement("SELECT * FROM user WHERE email_address = '" + emailAddress + "';",
+					Statement.RETURN_GENERATED_KEYS).executeQuery();
+			while (rs.next())
+				return new EmailAddress(rs.getInt(1), rs.getString(2));
+
+			rs.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+
+		return new EmailAddress(insertUser(emailAddress), emailAddress);
 	}
 
 	private int insertFilter(java.util.Date utilDate, java.util.Date utilDate2, int intervalRange, String folderName) {
@@ -171,20 +236,6 @@ public class Database {
 		return null;
 	}
 
-	public boolean insertUserFavourites(String favName, java.util.Date utilDate, java.util.Date utilDate2,
-			int intervalRange, String folderName) {
-		int folderId = getFolderId(folderName);
-		if (folderId == -1)
-			return false;
-
-		int filterId = insertFilter(utilDate, utilDate2, intervalRange, folderName);
-
-		query("INSERT INTO user_favourites (filter_settings_id, user_id, fav_name) VALUE (" + filterId + ", "
-				+ user.getId() + ", '" + favName + "');");
-
-		return true;
-	}
-
 	public List<UserFavourites> fetchInitializeLoad() {
 		// if need length of emails, folders use mailer
 
@@ -214,6 +265,20 @@ public class Database {
 		return ufList;
 	}
 
+	public boolean insertUserFavourites(String favName, java.util.Date utilDate, java.util.Date utilDate2,
+			int intervalRange, String folderName) {
+		int folderId = getFolderId(folderName);
+		if (folderId == -1)
+			return false;
+
+		int filterId = insertFilter(utilDate, utilDate2, intervalRange, folderName);
+
+		query("INSERT INTO user_favourites (filter_settings_id, user_id, fav_name) VALUE (" + filterId + ", "
+				+ user.getId() + ", '" + favName + "');");
+
+		return true;
+	}
+	
 	// change existing
 	// public void updateUserFavourites() {
 	//
@@ -231,41 +296,6 @@ public class Database {
 		}
 
 		return true;
-	}
-
-	public void pull() {
-		folderList = importFolders();
-		List<Integer> emailIdList = new ArrayList<>();
-
-		int i = 0;
-		int stopper = 10; // limit our pull for testing
-
-		for (UserFolder f : folderList) {
-			Message[] msgs = mailer.pullEmails(f.getFolder().getFullName()); // Do not use "[Gmail]/All Mail");
-			for (Message m : msgs) {
-				try {
-					List<EmailAddress> fromList = insertEmailAddress(m.getFrom());// get this list and return for
-																					// user_email table
-					int emailId = insertEmail(m, folderList, emailIdList);
-					for (EmailAddress ea : fromList) {
-						insertReceivedEmails(emailId, ea.getId());
-					}
-					insertUserEmail(user, emailId);
-					emailIdList.add(emailId);
-
-					i++;
-					if (i > stopper)
-						return;
-
-				} catch (MessagingException e) {
-					e.printStackTrace();
-				}
-			}
-
-			// If not already in folder, copy it over.
-			// NULL POINTER EXCEPTION. FIX DIS yo.
-			// Mailer.markEmailsInFolder(f.getFolder().getFullName(), msgs);
-		}
 	}
 
 	public void setValidatedEmailCount(String emailAddress, int count) {
@@ -516,69 +546,6 @@ public class Database {
 		return size;
 	}
 
-	public void showTables() {
-		ResultSet queryTbl;
-		try {
-			// show all tables
-			queryTbl = getConnection().prepareStatement("show tables").executeQuery();
-
-			while (queryTbl.next()) {
-				String tbl = queryTbl.getString(1);
-				System.out.println("[INBOX] Table: " + tbl + "\n-------------------");
-
-				// show all attributes from the tables
-				ResultSet queryAttr = getConnection().prepareStatement("select * from " + tbl).executeQuery();
-				while (queryAttr.next()) {
-					ResultSetMetaData md = queryAttr.getMetaData();
-					for (int i = 1; i < md.getColumnCount() + 1; i++)
-						System.out.println(
-								md.getColumnName(i) + "_" + md.getColumnTypeName(i) + " :: " + queryAttr.getString(i));
-					System.out.println();
-				}
-				System.out.println();
-				queryAttr.close();
-			}
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-	}
-
-	public void query(String statement) {
-		PreparedStatement ps;
-		try {
-			ps = getConnection().prepareStatement(statement);
-			ps.execute();
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-	}
-
-	public void insertDummyData(String[] dummyStatements) {
-		PreparedStatement ps;
-		try {
-			for (String statement : dummyStatements) {
-				ps = getConnection().prepareStatement(statement);
-				ps.execute();
-			}
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-	}
-
-	public Connection getConnection() {
-		try {
-			if (connection == null || connection.isClosed())
-				connection = DriverManager.getConnection("jdbc:mysql://" + Settings.DATABASE_HOST + ":"
-						+ Settings.DATABASE_PORT + "/" + Settings.DATABASE_SCHEMA
-						+ "?useUnicode=true&characterEncoding=UTF-8&serverTimezone=UTC&user="
-						+ Settings.DATABASE_USERNAME + "&password=" + Settings.DATABASE_PASSWORD);
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-
-		return connection;
-	}
-
 	public int getValidatedEmails(String emailAddress) {
 		int validatedEmails = 0;
 		ResultSet queryTbl;
@@ -593,6 +560,21 @@ public class Database {
 			e.printStackTrace();
 		}
 		return validatedEmails;
+	}
+	
+	public void query(String statement) {
+		PreparedStatement ps;
+		try {
+			ps = getConnection().prepareStatement(statement);
+			ps.execute();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
+
+	public void query(String[] statements) {
+		for (String statement : statements)
+			query(statement);
 	}
 
 	public void truncateTables() {
@@ -632,7 +614,8 @@ public class Database {
 		}
 		return false;
 	}
-
+	
+	// NEEDS THIS IMPLEMENTATION
 	public void calculateSentimentScore(int emailId, SentimentScore score) {
 		int sentimentId = insertSentimentScore(score);
 
