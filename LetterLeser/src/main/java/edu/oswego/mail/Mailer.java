@@ -32,7 +32,7 @@ public class Mailer {
 	private final boolean TLS_ENABLED = true;
 
 	public Mailer(String accessKey) {
-
+		
 	}
 
 	/*
