@@ -1,31 +1,29 @@
-import Runnables.ValidationRunnable;
+import edu.oswego.Runnables.Handler;
+import edu.oswego.Runnables.ValidationRunnable;
+
+import edu.oswego.database.Database;
+
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 
 import javax.websocket.*;
 import javax.websocket.server.ServerEndpoint;
 import java.io.IOException;
-import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 @ServerEndpoint("/engine")
 public class Websocket {
     //this is to manage all current/last active threads for each unique sessions
-    //the format of the object array is as such [Thread, Handler, int, string]
-    HashMap<String,Object[]> sessionThreadMapper = new HashMap<>();
-
+    //the format of the object array is as such [Thread, edu.oswego.Runnables.Handler, int, string]
+    ConcurrentHashMap<String,Object[]> sessionThreadMapper = new ConcurrentHashMap<>();
+    //TODO add a CHM ^^^ to account for handling validation threads
 
     @OnOpen
     public void onOpen(Session session) {
-
-
         System.out.println("Session "+session.getId()+" been established");
-        Handler handler = new Handler(session);
-        ValidationRunnable vr = new ValidationRunnable(handler.getAtomicBoolean());
-        Thread sessionThread = new Thread(handler);//this is technically not needed but prevents null checks later in the code
-        Thread dbValidThread = new Thread(vr);
-        /*
-        validThread needs a runnable to handle database validation thread.
-        once a correct runnable has been added, delete this comment
-         */
-        Object[] threadNrunnable = {sessionThread,handler,-1,dbValidThread, vr};
+        Object[] threadNrunnable = {null,null,-1,null, null};
         sessionThreadMapper.put(session.getId(),threadNrunnable);
     }
 
@@ -37,17 +35,45 @@ public class Websocket {
     public void onMessage(String message, Session session) {
         Object[] array = sessionThreadMapper.get(session.getId());
         array[2] =(int) array[2]+1;
-        //The first message that must be sent to the websocket is a valid googlejsonobject
+        //The first message that must be sent to the websocket is a valid googlejsonobject which will construct everything
         if((int) array[2]==0){
-            if(((Handler) array[1]).setGoogleAccessToken(message)){
-                databaseValidation(session);
-            }else {
+
+            JsonObject oAuth2 = makeJsonObject(message);
+            if(oAuth2 == null){
                 try {
+                    session.getBasicRemote().sendText("m:invalid_jsonObject: you've been disconnected");
                     session.close();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
             }
+
+            Database db = new Database();
+            AtomicBoolean emailsExist = new AtomicBoolean(false);
+            AtomicReference<Database> database = new AtomicReference<>(db);
+            AtomicReference<JsonObject> googleOauth2 = new AtomicReference<>(oAuth2);
+
+            AtomicReference<Session> atomicSession = new AtomicReference<>(session);
+
+            message = "folders";
+            AtomicReference<String> atomicMessage = new AtomicReference<>(message);
+
+            Handler handler = new Handler(atomicSession,atomicMessage,googleOauth2,database,emailsExist);
+            ValidationRunnable validationRunnable = new ValidationRunnable(atomicSession,googleOauth2,database,emailsExist);
+
+            Thread handlerThread = new Thread(handler);
+            Thread validationThread = new Thread(validationRunnable);
+
+            validationThread.start();
+            handlerThread.start();
+
+
+            array[0] = handlerThread;
+            array[1] = handler;
+            array[3] = validationThread;
+            array[4] = validationRunnable;
+
+
         }else if(message.equals("refresh")){
             databaseValidation(session);
         }else{
@@ -56,15 +82,15 @@ public class Websocket {
 
     }
 
-    @OnClose //method to disconnect from a session
+    @OnClose //method to disconnect from a session : this also interrupts everything and stops everything
     public void onClose(Session session) {
         System.out.println("onClose");
+        ((Thread) sessionThreadMapper.get(session.getId())[0]).interrupt();
         sessionThreadMapper.remove(session.getId());
     }
 
     @OnError
     public void onError(Throwable t, Session session) {
-        ((Thread) sessionThreadMapper.get(session.getId())[0]).interrupt();
         System.out.println("onError::");
     }
 
@@ -74,33 +100,48 @@ public class Websocket {
 
     private void databaseValidation(Session session){
         Object[] array = sessionThreadMapper.get(session.getId());
-        Handler handler = (Handler) array[1];
         Thread dv = (Thread) array[3];
-        ValidationRunnable vr = (ValidationRunnable) array[4];
-        if(dv.getState().equals(Thread.State.NEW)){
-            vr.setGoogleAccessToken(handler.getGoogleAccessToken());
-            dv.start();
-        }else if(dv.getState().equals(Thread.State.TERMINATED)){
-            vr = new ValidationRunnable(handler.getAtomicBoolean());
-            dv = new Thread(vr);
-            dv.start();
-            array[3] = dv;
-            array[4] = vr;
+
+        if(dv.getState().equals(Thread.State.TERMINATED)){//any state is possible except start
+            ValidationRunnable oldValidationRunnable = (ValidationRunnable) array[4];
+            ValidationRunnable validationRunnable = new ValidationRunnable(oldValidationRunnable);
+            Thread validationThread = new Thread(validationRunnable);
+            validationThread.start();
+
+            array[3]=validationThread;
+            array[4]=validationRunnable;
+        }
+        try {
+            session.getBasicRemote().sendText("m:incomplete request");
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
     private void newRequest(Session session, String message, Object[] array){
-        Thread thread = (Thread) array[0];
-        Handler newHandler = new Handler(session,message);
-        Thread newThread = new Thread(newHandler);
-        if(!thread.getState().equals(Thread.State.TERMINATED)|| !thread.getState().equals(Thread.State.NEW)){
-            thread.interrupt();
+        Thread oldHandlerThread = (Thread) array[0];
+
+        if(!oldHandlerThread.getState().equals(Thread.State.TERMINATED)){
+            oldHandlerThread.interrupt();
         }
-        newThread.start();
-        array[0]=newThread;
+
+        Handler oldHandler = (Handler) array[1];
+        Handler newHandler = new Handler(oldHandler,message,oldHandlerThread);
+        Thread newHandlerThread = new Thread(newHandler);
+
+        array[0]=newHandlerThread;
         array[1]=newHandler;
+
         sessionThreadMapper.put(session.getId(),array);
     }
 
+    //new JsonParser().parse(message).getAsJsonObject();
+    private JsonObject makeJsonObject(String message){
+        try {
+            return new JsonParser().parse(message).getAsJsonObject();
+        }catch(Exception e){
 
+        }
+        return null;
+    }
 }
