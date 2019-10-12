@@ -39,6 +39,7 @@ public class ValidationRunnable implements Runnable{
 
         }else{
             db.populateDatabase(googleAccessToken.get());
+            emailStored.compareAndSet(false,true);
         }
     }
 }

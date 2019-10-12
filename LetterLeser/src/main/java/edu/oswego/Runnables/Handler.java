@@ -63,6 +63,7 @@ public class Handler implements Runnable {
 
     private void sendFolders() throws IOException {
         List<UserFolder> folders =  database.get().getFolders(googleAccessToken.get().getAsJsonObject("").get("email").getAsString());
+        //TODO make this shit into a json before sending
         session.get().getBasicRemote().sendText(folders.toString());
     }
 
