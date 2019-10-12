@@ -17,10 +17,8 @@ import javax.mail.Folder;
 import javax.mail.Message;
 import javax.mail.MessagingException;
 
-//import SentimentAnalyzer.SentimentScore;
 import com.google.gson.JsonObject;
 import edu.oswego.mail.Mailer;
-import edu.oswego.model.Email;
 import edu.oswego.model.EmailAddress;
 import edu.oswego.model.UserFavourites;
 import edu.oswego.model.UserFolder;
@@ -41,10 +39,6 @@ public class Database {
     private List<UserFolder> folderList;
     private Mailer mailer;
 
-	public Database() {//TODO this is so my code doesnt freak out, this will probably need to be removed at a later date -Alex
-
-	}
-
 
 	/*
 	 * @param Email address, access key
@@ -52,29 +46,72 @@ public class Database {
 	public Database(String emailAddress, String accessKey) {
 		user = getUser(emailAddress);
 		mailer = new Mailer(accessKey);
-		// pull();
 	}
 
-	public boolean populateDatabase(JsonObject auth0){//only called in validation thread
-		//TODO This method passes an email and will populate all db with emails from that inbox
-		return true;
+	public void pull() {
+		folderList = importFolders();
+		List<Integer> emailIdList = new ArrayList<>();
+
+		int i = 0;
+		int stopper = 10; // limit our pull for testing
+
+		for (UserFolder f : folderList) {
+			Message[] msgs = mailer.pullEmails(f.getFolder().getFullName()); // Do not use "[Gmail]/All Mail");
+			for (Message m : msgs) {
+				try {
+					List<EmailAddress> fromList = insertEmailAddress(m.getFrom());// get this list and return for
+					// user_email table
+					int emailId = insertEmail(m, folderList, emailIdList);
+					for (EmailAddress ea : fromList) {
+						insertReceivedEmails(emailId, ea.getId());
+					}
+					insertUserEmail(user, emailId);
+					emailIdList.add(emailId);
+
+					i++;
+					if (i > stopper)
+						return;
+
+				} catch (MessagingException e) {
+					e.printStackTrace();
+				}
+			}
+
+			// If not already in folder, copy it over.
+			// NULL POINTER EXCEPTION. FIX DIS yo.
+			// Mailer.markEmailsInFolder(f.getFolder().getFullName(), msgs);
+		}
 	}
 
-	public ArrayList<UserFolder> getFolders(String email){
-        //TODO get all the folders
-	    return null;
-    }
+	public List<UserFolder> importFolders() {
+		List<UserFolder> folderList = new ArrayList<>();
+		try {
+			Folder[] folders = mailer.getStorage().getDefaultFolder().list("*");
 
+			for (Folder f : folders) {
+				if (!folderExists(f.getFullName(), folderList) && !f.getFullName().equals("[Gmail]")
+						&& !f.getFullName().equals("CSC480_19F") && !f.getFullName().equals("[Gmail]/All Mail")) {
+					PreparedStatement ps = getConnection().prepareStatement(
+							"INSERT INTO folder (fold_name) VALUE ('" + f.getFullName() + "')",
+							Statement.RETURN_GENERATED_KEYS);
+					if (ps.executeUpdate() == 0)
+						throw new SQLException("Could not insert into folder, no rows affected");
 
-	/*public boolean hasEmails(String email){//only called validation thread
-		//TODO method that takes an email and checks if db has any data on it
-		return true;
-	}*/
+					ResultSet generatedKeys = ps.getGeneratedKeys();
 
-	public ArrayList<Email> getMetaDataWithAppliedFilters(String folder, String date, String interval, boolean attachment, boolean seen){//only called in handler
-		//TODO make a method that returns all my emails unsorted
-		return new ArrayList<>();
+					if (generatedKeys.next()) {
+						folderList.add(new UserFolder(generatedKeys.getInt(1), f));
+						System.out.println("ADDED FOLDER:\t" + f.getFullName());
+					}
+				}
+			}
+
+		} catch (SQLException | MessagingException e) {
+			e.printStackTrace();
+		}
+		return folderList;
 	}
+
 
     public boolean hasEmails(String emailAddress) {
         ResultSet queryTbl;
@@ -113,8 +150,7 @@ public class Database {
 	// }
 	// }
 
-	private void getEmailByFilter(boolean hasAttachment, String fileName, boolean seen, Date startDate, Date endDate,
-			int interval, String folderName) {
+	private void getEmailByFilter(boolean hasAttachment, String fileName, boolean seen, Date startDate, Date endDate, String folderName) {
 		String selectionStatement = "SELECT * FROM email WHERE ";
 		List<String> filterStatements = new ArrayList<>();
 
@@ -133,9 +169,6 @@ public class Database {
 		if (endDate != null)
 			filterStatements.add("date_received <= " + endDate); // must convert this!!! Hmmm Prepared statement?
 																	// How....
-
-		if (interval != 0)
-			filterStatements.add("interval = " + interval);
 
 		if (seen)
 			filterStatements.add("folder_id = " + getFolderId(folderName));
@@ -306,41 +339,6 @@ public class Database {
 		return true;
 	}
 
-	public void pull() {
-		folderList = importFolders();
-		List<Integer> emailIdList = new ArrayList<>();
-
-		int i = 0;
-		int stopper = 10; // limit our pull for testing
-
-		for (UserFolder f : folderList) {
-			Message[] msgs = mailer.pullEmails(f.getFolder().getFullName()); // Do not use "[Gmail]/All Mail");
-			for (Message m : msgs) {
-				try {
-					List<EmailAddress> fromList = insertEmailAddress(m.getFrom());// get this list and return for
-																					// user_email table
-					int emailId = insertEmail(m, folderList, emailIdList);
-					for (EmailAddress ea : fromList) {
-						insertReceivedEmails(emailId, ea.getId());
-					}
-					insertUserEmail(user, emailId);
-					emailIdList.add(emailId);
-
-					i++;
-					if (i > stopper)
-						return;
-
-				} catch (MessagingException e) {
-					e.printStackTrace();
-				}
-			}
-
-			// If not already in folder, copy it over.
-			// NULL POINTER EXCEPTION. FIX DIS yo.
-			// Mailer.markEmailsInFolder(f.getFolder().getFullName(), msgs);
-		}
-	}
-
 	public void setValidatedEmailCount(String emailAddress, int count) {
 		query("UPDATE user SET validated_emails = " + count + " WHERE email_address = '" + emailAddress + "';");
 	}
@@ -360,34 +358,6 @@ public class Database {
 		return false;
 	}
 
-	public List<UserFolder> importFolders() {
-		List<UserFolder> folderList = new ArrayList<>();
-		try {
-			Folder[] folders = mailer.getStorage().getDefaultFolder().list("*");
-
-			for (Folder f : folders) {
-				if (!folderExists(f.getFullName(), folderList) && !f.getFullName().equals("[Gmail]")
-						&& !f.getFullName().equals("CSC480_19F") && !f.getFullName().equals("[Gmail]/All Mail")) {
-					PreparedStatement ps = getConnection().prepareStatement(
-							"INSERT INTO folder (fold_name) VALUE ('" + f.getFullName() + "')",
-							Statement.RETURN_GENERATED_KEYS);
-					if (ps.executeUpdate() == 0)
-						throw new SQLException("Could not insert into folder, no rows affected");
-
-					ResultSet generatedKeys = ps.getGeneratedKeys();
-
-					if (generatedKeys.next()) {
-						folderList.add(new UserFolder(generatedKeys.getInt(1), f));
-						System.out.println("ADDED FOLDER:\t" + f.getFullName());
-					}
-				}
-			}
-
-		} catch (SQLException | MessagingException e) {
-			e.printStackTrace();
-		}
-		return folderList;
-	}
 
 	private int getEmailId(Message m) {
 		try {

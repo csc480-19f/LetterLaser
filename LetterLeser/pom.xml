@@ -120,9 +120,61 @@
           <configuration>
             <uriEncoding>UTF-8</uriEncoding>
             <path>/MailLeser</path> <!-- This is where the server will host our webapp-->
+			<port>5287</port>
             <update>true</update>
           </configuration>
         </plugin>
+
+        <plugin>
+          <groupId>com.github.eirslett</groupId>
+          <artifactId>frontend-maven-plugin</artifactId>
+          <!-- Use the latest released version:
+          https://repo1.maven.org/maven2/com/github/eirslett/frontend-maven-plugin/ -->
+          <version>LATEST_VERSION</version>
+          <executions>
+            <execution>
+              <!-- optional: you don't really need execution ids, but it looks nice in your build log. -->
+              <id>install node and npm</id>
+              <goals>
+                <goal>install-node-and-npm</goal>
+              </goals>
+              <!-- optional: default phase is "generate-resources" -->
+              <phase>generate-resources</phase>
+            </execution>
+            <execution>
+              <id>npm install</id>
+              <goals>
+                <goal>npm</goal>
+              </goals>
+
+              <!-- optional: default phase is "generate-resources" -->
+              <phase>generate-resources</phase>
+
+              <configuration>
+                <!-- optional: The default argument is actually
+                "install", so unless you need to run some other npm command,
+                you can remove this whole <configuration> section.
+                -->
+                <arguments>install</arguments>
+              </configuration>
+            </execution>
+
+          </executions>
+          <configuration>
+            <installDirectory>target</installDirectory>
+            <nodeVersion>v4.6.0</nodeVersion>
+
+            <!-- optional: with node version greater than 4.0.0 will use npm provided by node distribution -->
+            <npmVersion>2.15.9</npmVersion>
+
+            <!-- optional: where to download node and npm from. Defaults to https://nodejs.org/dist/ -->
+            <downloadRoot>http://myproxy.example.org/nodejs/</downloadRoot>
+          </configuration>
+        </plugin>
+
+
+
+
 
       </plugins>
     </pluginManagement>
