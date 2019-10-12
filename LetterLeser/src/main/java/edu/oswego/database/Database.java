@@ -73,7 +73,7 @@ public class Database {
 		// pull();
 	}
 	
-	public Connection getConnection() {
+	public Connection getConnection() {// return DriverManaget.getconnection
 		try {
 			if (connection == null || connection.isClosed())
 				connection = DriverManager.getConnection("jdbc:mysql://" + Settings.DATABASE_HOST + ":"
@@ -123,8 +123,7 @@ public class Database {
 	}
 
 	// Should ret emails in colelctions
-	private void getEmailByFilter(boolean hasAttachment, String fileName, boolean seen, Date startDate, Date endDate,
-			int interval, String folderName) {
+	private void getEmailByFilter(boolean hasAttachment, String fileName, boolean seen, Date startDate, Date endDate, String folderName) {
 		String selectionStatement = "SELECT * FROM email WHERE ";
 		List<String> filterStatements = new ArrayList<>();
 
@@ -139,13 +138,13 @@ public class Database {
 		if (startDate != null)
 			filterStatements.add("date_received >= " + startDate); // must convert this!!! Hmmm Prepared statement?
 																	// How....
-
+		// add interval to endDate to get this.
 		if (endDate != null)
 			filterStatements.add("date_received <= " + endDate); // must convert this!!! Hmmm Prepared statement?
 																	// How....
-
-		if (interval != 0)
-			filterStatements.add("interval = " + interval);
+		// change to text
+//		if (interval != 0)
+//			filterStatements.add("interval = " + interval);
 
 		if (seen)
 			filterStatements.add("folder_id = " + getFolderId(folderName));
@@ -154,9 +153,8 @@ public class Database {
 	}
 
 	private int insertUser(String emailAddress) {
-		PreparedStatement ps;
 		try {
-			ps = getConnection().prepareStatement("INSERT INTO user (email_address) VALUE ('" + emailAddress + "')",
+			PreparedStatement ps = getConnection().prepareStatement("INSERT INTO user (email_address) VALUE ('" + emailAddress + "')",
 					Statement.RETURN_GENERATED_KEYS);
 			if (ps.executeUpdate() == 0)
 				throw new SQLException("Could not insert into folder, no rows affected");
@@ -303,10 +301,8 @@ public class Database {
 	}
 
 	private boolean folderExists(String folderName, List<UserFolder> folderList) {
-		ResultSet rs;
 		try {
-			rs = getConnection().prepareStatement("SELECT * FROM folder WHERE fold_name = '" + folderName + "'")
-					.executeQuery();
+			ResultSet rs = getConnection().prepareStatement("SELECT * FROM folder WHERE fold_name = '" + folderName + "'").executeQuery();
 			while (rs.next()) {
 				folderList.add(new UserFolder(rs.getInt(1), mailer.getFolder(rs.getString(2))));
 				return true;
@@ -548,9 +544,8 @@ public class Database {
 
 	public int getValidatedEmails(String emailAddress) {
 		int validatedEmails = 0;
-		ResultSet queryTbl;
 		try {
-			queryTbl = getConnection()
+			ResultSet queryTbl = getConnection()
 					.prepareStatement("SELECT * FROM user WHERE user.email_address = '" + emailAddress + "'")
 					.executeQuery();
 			while (queryTbl.next())
