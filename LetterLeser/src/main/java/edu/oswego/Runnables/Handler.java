@@ -117,7 +117,7 @@ public class Handler implements Runnable {
         }
 
 
-        //todo, combine all the data into final jsonobject and send it over to gui
+
 
     }
 
@@ -224,6 +224,8 @@ public class Handler implements Runnable {
         }
 
         JsonObject dataSet = new JsonObject();
+
+        //todo, combine all the data into final jsonobject and send it over to gui
     }
 
 

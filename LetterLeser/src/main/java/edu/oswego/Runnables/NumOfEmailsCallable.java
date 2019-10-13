@@ -2,11 +2,11 @@ package edu.oswego.Runnables;
 
 import edu.oswego.model.Email;
 
-import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.Callable;
 
 public class NumOfEmailsCallable implements Callable {
-    private static ArrayList<Email> emails;
+    private static List<Email> emails;
 
     private static final int oneDay = 86400000;
     private static final int fourHours = 14400000;
@@ -19,7 +19,7 @@ public class NumOfEmailsCallable implements Callable {
      * 14400000 milliseconds in four hours.
      * @param emails The list of email objects.
      */
-    public NumOfEmailsCallable(ArrayList<Email> emails){
+    public NumOfEmailsCallable(List<Email> emails){
         this.emails = emails;
     }
     @Override

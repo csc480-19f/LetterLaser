@@ -17,10 +17,8 @@ import java.util.concurrent.atomic.AtomicReference;
 @ServerEndpoint("/engine")
 public class Websocket {
     //this is to manage all current/last active threads for each unique sessions
-    //the format of the object array is as such [Thread, edu.oswego.Runnables.Handler, int, string]
     ConcurrentHashMap<String,StorageObject> sessionThreadMapper = new ConcurrentHashMap<>();
     ConcurrentHashMap<String,StorageObject> validationManager = new ConcurrentHashMap<>();
-    //TODO add a CHM ^^^ to account for handling validation threads
 
     @OnOpen
     public void onOpen(Session session) {
