@@ -112,6 +112,7 @@ public class Cipherer {
                 break;
             }
         }
+        
         return result;
     }
 
@@ -130,4 +131,5 @@ public class Cipherer {
         return -1;
     }
 
+    
 }
