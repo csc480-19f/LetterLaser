@@ -3,6 +3,7 @@ package edu.oswego.database;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import edu.oswego.props.Interval;
 import edu.oswego.props.Settings;
 
 public class DBdemo {
@@ -12,6 +13,7 @@ public class DBdemo {
 		Settings.loadCredentials();
 
 		Database db = new Database("csc344testacc@gmail.com", "KEY_HERE");
+		db.truncateTables();
 		db.pull();
 		
 		
@@ -21,13 +23,13 @@ public class DBdemo {
 		Date utilDate;
 		try {
 			utilDate = (Date) new SimpleDateFormat("yyyy-MM-dd").parse(lastCrawlDate);
-			db.insertUserFavourites("Awesome favs", utilDate, utilDate, 5, "INBOX");
-			db.insertUserFavourites("Poop sac favourites", utilDate, utilDate, 5, "INBOX");
+			db.insertUserFavourites("Awesome favs", utilDate, Interval.WEEK, false, false, "INBOX");
+			db.insertUserFavourites("Poop sac favourites", utilDate, Interval.YEAR, true, true, "INBOX");
 		} catch (java.text.ParseException e) {
 			e.printStackTrace();
 		}
 		
-		db.removeUserFavourite("Awesome favs");
+//		db.removeUserFavourite("Awesome favs");
 		
 		
 		db.showTables();

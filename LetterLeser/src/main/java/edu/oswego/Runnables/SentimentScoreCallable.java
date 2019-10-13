@@ -18,6 +18,6 @@ public class SentimentScoreCallable implements Callable {
         for(int i=0;i<emails.size();i++){
             score = score + emails.get(i).getSentimentScore().getCompound();
         }
-        return score/emails.size();
-    }
+		return score / emails.size();
+	}
 }

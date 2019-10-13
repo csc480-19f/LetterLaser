@@ -18,9 +18,11 @@ import javax.mail.Message;
 import javax.mail.MessagingException;
 
 import edu.oswego.mail.Mailer;
+import edu.oswego.model.Email;
 import edu.oswego.model.EmailAddress;
 import edu.oswego.model.UserFavourites;
 import edu.oswego.model.UserFolder;
+import edu.oswego.props.Interval;
 import edu.oswego.props.Settings;
 import edu.oswego.sentiment.SentimentScore;
 
@@ -36,9 +38,10 @@ public class Database {
 	private Connection connection;
 	private EmailAddress user;
 
+	// TODO remove global userfolder
 	private List<UserFolder> folderList;
 	private Mailer mailer;
-	
+
 	// Experimental only.
 	public void showTables() {
 		ResultSet queryTbl;
@@ -70,10 +73,9 @@ public class Database {
 	public Database(String emailAddress, String accessKey) {
 		user = getUser(emailAddress);
 		mailer = new Mailer(accessKey);
-		// pull();
 	}
-	
-	public Connection getConnection() {// return DriverManaget.getconnection
+
+	public Connection getConnection() {
 		try {
 			if (connection == null || connection.isClosed())
 				connection = DriverManager.getConnection("jdbc:mysql://" + Settings.DATABASE_HOST + ":"
@@ -83,10 +85,9 @@ public class Database {
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
-
 		return connection;
 	}
-	
+
 	public void pull() {
 		folderList = importFolders();
 		List<Integer> emailIdList = new ArrayList<>();
@@ -116,43 +117,39 @@ public class Database {
 				}
 			}
 
+			// TODO Mark emails by validation
 			// If not already in folder, copy it over.
 			// NULL POINTER EXCEPTION. FIX DIS yo.
 			// Mailer.markEmailsInFolder(f.getFolder().getFullName(), msgs);
 		}
 	}
 
-	// Should ret emails in colelctions
-	public void getEmailByFilter(String fileName, boolean seen, Date startDate, Date endDate, String folderName) {
-		String selectionStatement = "SELECT * FROM email WHERE ";
+	// TODO query on this
+	public List<Email> getEmailByFilter(String fileName, Date startDate, Date endDate, boolean seen, String folderName) {
+		List<Email> emailList = new ArrayList<>();
 		List<String> filterStatements = new ArrayList<>();
+		String selectionStatement = "SELECT * FROM email WHERE ";
 
-        if (fileName != null)
-            filterStatements.add("file_name = " + fileName);
-
+		if (fileName != null) {
+			filterStatements.add("has_attachment = 1");
+			filterStatements.add("file_name = " + fileName);
+		}
 		if (seen)
 			filterStatements.add("seen = 1");
 		if (startDate != null)
-			filterStatements.add("date_received >= " + startDate); // must convert this!!! Hmmm Prepared statement?
-																	// How....
-		// add interval to endDate to get this.
-		if (endDate != null)
-			filterStatements.add("date_received <= " + endDate); // must convert this!!! Hmmm Prepared statement?
-																	// How....
-		// change to text
-//		if (interval != 0)
-//			filterStatements.add("interval = " + interval);
-
+			filterStatements.add("date_received >= " + startDate);
+		if (endDate != null) // engine will calculate endDate with interval given to them.
+			filterStatements.add("date_received <= " + endDate);
 		if (seen)
 			filterStatements.add("folder_id = " + getFolderId(folderName));
 
-		// Or can do this from our arraylist decide....
+		return null;
 	}
 
 	private int insertUser(String emailAddress) {
 		try {
-			PreparedStatement ps = getConnection().prepareStatement("INSERT INTO user (email_address) VALUE ('" + emailAddress + "')",
-					Statement.RETURN_GENERATED_KEYS);
+			PreparedStatement ps = getConnection().prepareStatement(
+					"INSERT INTO user (email_address) VALUE ('" + emailAddress + "')", Statement.RETURN_GENERATED_KEYS);
 			if (ps.executeUpdate() == 0)
 				throw new SQLException("Could not insert into folder, no rows affected");
 
@@ -166,7 +163,7 @@ public class Database {
 		}
 		return -1;
 	}
-	
+
 	private EmailAddress getUser(String emailAddress) {
 		ResultSet rs;
 		try {
@@ -181,33 +178,6 @@ public class Database {
 		}
 
 		return new EmailAddress(insertUser(emailAddress), emailAddress);
-	}
-    //TODO please change the parms here to match what I have in the handler class
-	private int insertFilter(java.util.Date utilDate, java.util.Date utilDate2, int intervalRange, String folderName) {
-		int folderId = getFolderId(folderName);
-
-		PreparedStatement ps;
-		try {
-			ps = getConnection().prepareStatement(
-					"INSERT INTO filter_settings (start_date, end_date, interval_range, folder_id) VALUE (?, ?, ?, ?);",
-					Statement.RETURN_GENERATED_KEYS);
-			ps.setObject(1, utilDate);
-			ps.setObject(2, utilDate2);
-			ps.setInt(3, intervalRange);
-			ps.setInt(4, folderId);
-
-			if (ps.executeUpdate() == 0)
-				throw new SQLException("Could not insert into folder, no rows affected");
-
-			ResultSet generatedKeys = ps.getGeneratedKeys();
-
-			if (generatedKeys.next())
-				return generatedKeys.getInt(1);
-
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-		return -1;
 	}
 
 	private int getFolderId(String folderName) {
@@ -235,7 +205,6 @@ public class Database {
 		// if need length of emails, folders use mailer
 
 		List<UserFavourites> ufList = new ArrayList<>();
-		// LIST TO RETURN OF ALL USER FAVS
 		try {
 			ResultSet rs = getConnection()
 					.prepareStatement("SELECT * FROM user_favourites WHERE user_id = '" + user.getId() + "';",
@@ -259,14 +228,16 @@ public class Database {
 
 		return ufList;
 	}
-    //TODO I need the end date removed, and (boolean)seen,(String)attachment added to this method. To know you did it right, check in handler addFavorites and see if thats not red.
-	public boolean insertUserFavourites(String favName, java.util.Date utilDate, java.util.Date utilDate2,
-			int intervalRange, String folderName) {
+
+	// TODO I need the end date removed, and (boolean)seen,(String)attachment added
+	// to this method. To know you did it right, check in handler addFavorites and
+	// see if thats not red.
+	public boolean insertUserFavourites(String favName, java.util.Date utilDate, Interval intervalRange, boolean hasAttachment, boolean isSeen, String folderName) {
 		int folderId = getFolderId(folderName);
 		if (folderId == -1)
 			return false;
 
-		int filterId = insertFilter(utilDate, utilDate2, intervalRange, folderName);
+		int filterId = insertFilter(utilDate, intervalRange.toString(), hasAttachment, isSeen, folderId);
 
 		query("INSERT INTO user_favourites (filter_settings_id, user_id, fav_name) VALUE (" + filterId + ", "
 				+ user.getId() + ", '" + favName + "');");
@@ -274,10 +245,39 @@ public class Database {
 		return true;
 	}
 	
-	// change existing
-	// public void updateUserFavourites() {
-	//
-	// }
+	// TODO please change the parms here to match what I have in the handler class
+	private int insertFilter(java.util.Date utilDate, String intervalRange, boolean hasAttachment, boolean isSeen, int folderId) {
+		PreparedStatement ps;
+		try {
+			ps = getConnection().prepareStatement(
+					"INSERT INTO filter_settings (start_date, interval_range, has_attachment, is_seen, folder_id) VALUE (?, ?, ?, ?, ?);",
+					Statement.RETURN_GENERATED_KEYS);
+			
+			ps.setObject(1, utilDate);
+			ps.setString(2, intervalRange);
+			ps.setBoolean(3, hasAttachment);
+			ps.setBoolean(4, isSeen);
+			ps.setInt(5, folderId);
+
+			if (ps.executeUpdate() == 0) {
+				System.out.println("NOPE");
+				throw new SQLException("Could not insert into folder, no rows affected");
+			}
+
+			ResultSet generatedKeys = ps.getGeneratedKeys();
+
+			if (generatedKeys.next()) {
+				System.out.println(generatedKeys.getInt(1));
+				return generatedKeys.getInt(1);
+			}
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return -1;
+	}
+
+	// TODO public void updateUserFavourites() {}
 
 	public boolean removeUserFavourite(String favName) {
 		try {
@@ -299,7 +299,8 @@ public class Database {
 
 	private boolean folderExists(String folderName, List<UserFolder> folderList) {
 		try {
-			ResultSet rs = getConnection().prepareStatement("SELECT * FROM folder WHERE fold_name = '" + folderName + "'").executeQuery();
+			ResultSet rs = getConnection()
+					.prepareStatement("SELECT * FROM folder WHERE fold_name = '" + folderName + "'").executeQuery();
 			while (rs.next()) {
 				folderList.add(new UserFolder(rs.getInt(1), mailer.getFolder(rs.getString(2))));
 				return true;
@@ -553,7 +554,7 @@ public class Database {
 		}
 		return validatedEmails;
 	}
-	
+
 	public void query(String statement) {
 		PreparedStatement ps;
 		try {
@@ -606,8 +607,8 @@ public class Database {
 		}
 		return false;
 	}
-	
-	// NEEDS THIS IMPLEMENTATION
+
+	// TODO NEEDS THIS IMPLEMENTATION OF SENTIMENT ANALYZER TO SCORE
 	public void calculateSentimentScore(int emailId, SentimentScore score) {
 		int sentimentId = insertSentimentScore(score);
 
