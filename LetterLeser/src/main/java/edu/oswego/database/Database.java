@@ -123,15 +123,12 @@ public class Database {
 	}
 
 	// Should ret emails in colelctions
-	private void getEmailByFilter(boolean hasAttachment, String fileName, boolean seen, Date startDate, Date endDate, String folderName) {
+	public void getEmailByFilter(String fileName, boolean seen, Date startDate, Date endDate, String folderName) {
 		String selectionStatement = "SELECT * FROM email WHERE ";
 		List<String> filterStatements = new ArrayList<>();
 
-		if (hasAttachment) {
-			filterStatements.add("has_attachment = 1");
-			if (fileName != null)
-				filterStatements.add("file_name = " + fileName);
-		}
+        if (fileName != null)
+            filterStatements.add("file_name = " + fileName);
 
 		if (seen)
 			filterStatements.add("seen = 1");
@@ -185,7 +182,7 @@ public class Database {
 
 		return new EmailAddress(insertUser(emailAddress), emailAddress);
 	}
-
+    //TODO please change the parms here to match what I have in the handler class
 	private int insertFilter(java.util.Date utilDate, java.util.Date utilDate2, int intervalRange, String folderName) {
 		int folderId = getFolderId(folderName);
 
@@ -262,7 +259,7 @@ public class Database {
 
 		return ufList;
 	}
-
+    //TODO I need the end date removed, and (boolean)seen,(String)attachment added to this method. To know you did it right, check in handler addFavorites and see if thats not red.
 	public boolean insertUserFavourites(String favName, java.util.Date utilDate, java.util.Date utilDate2,
 			int intervalRange, String folderName) {
 		int folderId = getFolderId(folderName);

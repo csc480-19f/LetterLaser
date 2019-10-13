@@ -5,6 +5,7 @@ import edu.oswego.database.Database;
 import com.google.gson.JsonObject;
 
 import javax.websocket.Session;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -12,13 +13,16 @@ public class ValidationRunnable implements Runnable{
     private volatile AtomicReference<Session> session;
     private volatile AtomicReference<JsonObject> googleAccessToken;
     private volatile AtomicReference<Database> atomicDatabase;
-    public volatile AtomicBoolean emailStored;
+    private volatile AtomicBoolean emailStored;
+    private volatile ConcurrentHashMap<String, Websocket.StorageObject> validationManager;
 
-    public ValidationRunnable(AtomicReference<Session> session,AtomicReference<JsonObject> googleAccessToken, AtomicReference<Database> atomicDatabase,AtomicBoolean emailStored){
+    public ValidationRunnable(AtomicReference<Session> session,AtomicReference<JsonObject> googleAccessToken,
+                              AtomicReference<Database> atomicDatabase,AtomicBoolean emailStored, ConcurrentHashMap<String,Websocket.StorageObject> validationManager){
         this.emailStored=emailStored;
         this.atomicDatabase = atomicDatabase;
         this.googleAccessToken = googleAccessToken;
         this.session = session;
+        this.validationManager = validationManager;
     }
 
     public ValidationRunnable(ValidationRunnable validationRunnable){
@@ -26,6 +30,7 @@ public class ValidationRunnable implements Runnable{
         this.atomicDatabase = validationRunnable.atomicDatabase;
         this.googleAccessToken = validationRunnable.googleAccessToken;
         this.session = validationRunnable.session;
+        this.validationManager = validationRunnable.validationManager;
     }
 
     @Override
@@ -38,8 +43,14 @@ public class ValidationRunnable implements Runnable{
             //TODO validate DB
 
         }else{
-            db.populateDatabase(googleAccessToken.get());
+            db.pull();
             emailStored.compareAndSet(false,true);
         }
+
+        validationManager.remove(email);
+    }
+
+    public AtomicBoolean getEmailStored(){
+        return emailStored;
     }
 }

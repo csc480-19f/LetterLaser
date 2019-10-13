@@ -2,13 +2,13 @@ package edu.oswego.Runnables;
 
 import edu.oswego.model.UserFolder;
 
-import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.Callable;
 
 public class FolderCallable implements Callable {
-    private static ArrayList<UserFolder> folders;
+    private static List<UserFolder> folders;
 
-    public FolderCallable(ArrayList<UserFolder> folders){
+    public FolderCallable(List<UserFolder> folders){
         this.folders = folders;
     }
 

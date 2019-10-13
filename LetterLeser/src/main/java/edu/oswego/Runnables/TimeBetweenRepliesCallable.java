@@ -2,13 +2,13 @@ package edu.oswego.Runnables;
 
 import edu.oswego.model.Email;
 
-import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.Callable;
 
 public class TimeBetweenRepliesCallable implements Callable {
-    private static ArrayList<Email> emails;
+    private static List<Email> emails;
 
-    public TimeBetweenRepliesCallable(ArrayList<Email> emails){
+    public TimeBetweenRepliesCallable(List<Email> emails){
         this.emails = emails;
     }
     @Override
