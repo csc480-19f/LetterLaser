@@ -1,5 +1,6 @@
 package edu.oswego.database;
 
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -24,6 +25,7 @@ import edu.oswego.model.UserFavourites;
 import edu.oswego.model.UserFolder;
 import edu.oswego.props.Interval;
 import edu.oswego.props.Settings;
+import edu.oswego.sentiment.AnalyzeThis;
 import edu.oswego.sentiment.SentimentScore;
 
 /**
@@ -90,8 +92,9 @@ public class Database {
 	public void pull() {
 		List<UserFolder> folderList = importFolders();
 		List<Integer> emailIdList = new ArrayList<>();
+		List<String> messageList = new ArrayList<>();
 
-		int i = 0;
+		int s = 0;
 		int stopper = 10; // limit our pull for testing
 
 		for (UserFolder f : folderList) {
@@ -106,21 +109,37 @@ public class Database {
 					}
 					insertUserEmail(user, emailId);
 					emailIdList.add(emailId);
-
-					i++;
-					if (i > stopper)
-						return;
+					
+					messageList.add(mailer.getTextFromMessage(m));
+//					System.out.println(m.getContent());
+//					messageList.add(m.getContent().toString());
+					
+					s++;
+					if (s > stopper)
+						break;
 
 				} catch (MessagingException e) {
 					e.printStackTrace();
 				}
 			}
-
+			break;
 			// TODO Mark emails by validation
 			// If not already in folder, copy it over.
 			// NULL POINTER EXCEPTION. FIX DIS yo.
 			// Mailer.markEmailsInFolder(f.getFolder().getFullName(), msgs);
 		}
+		
+		// TODO get working when phoenix fixes his ssa.
+//		String[] mArr = messageList.toArray(new String[messageList.size()]);
+//		for (String ss : mArr) {
+//			System.out.println("X - " + ss);
+//		}
+//		SentimentScore[] ss = AnalyzeThis.process(mArr);
+//		
+//		for (int i = 0; i < emailIdList.size(); i++) {
+//			System.out.println("SS CALC");
+//			calculateSentimentScore(emailIdList.get(i), ss[i]);
+//		}
 	}
 
 	public List<Email> getEmailByFilter(String fileName, String startDate, String endDate, boolean seen,
@@ -163,7 +182,7 @@ public class Database {
 			e1.printStackTrace();
 		}
 
-		System.out.println(selectionStatement);
+//		System.out.println(selectionStatement);
 
 		return emailList;
 	}

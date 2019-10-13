@@ -44,10 +44,6 @@ public class DBdemo {
 		String endDate = Time.parseDateTime(Time.getDate("2014-03-12"));
 		List<Email> emailList = db.getEmailByFilter(null, startDate, endDate, false, "Apple Developer");
 		
-		for (Email e: emailList) {
-			System.out.println(e);
-		}
-
 		double time = (double) ((System.currentTimeMillis() - ct) * .001);
 		System.out.println("Total runtime: " + time + " seconds\n");
 	}

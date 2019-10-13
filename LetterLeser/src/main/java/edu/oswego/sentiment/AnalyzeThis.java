@@ -13,6 +13,10 @@ import java.util.Scanner;
  * This class holds methods that execute python code.
  */
 public class AnalyzeThis {
+	
+	public static SentimentScore[] process(String[] emails) {
+		return getScoresObjects(sentimize(emails));
+	}
 
     /**
      * This returns the results from the sentiment analysis of the list of emails.

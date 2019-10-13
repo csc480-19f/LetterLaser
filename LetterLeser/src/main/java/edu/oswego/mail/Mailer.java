@@ -3,6 +3,7 @@ package edu.oswego.mail;
 import java.io.IOException;
 import java.util.Properties;
 
+import javax.mail.BodyPart;
 import javax.mail.Folder;
 import javax.mail.Message;
 import javax.mail.MessagingException;
@@ -12,6 +13,7 @@ import javax.mail.Part;
 import javax.mail.Session;
 import javax.mail.Store;
 import javax.mail.internet.MimeBodyPart;
+import javax.mail.internet.MimeMultipart;
 
 /**
  * Mailer class that has the Session/Store objects as well as host/port/tls
@@ -195,6 +197,45 @@ public class Mailer {
 		}
 
 		return "";
+	}
+	
+
+	public String getTextFromMessage(Message message) {
+		String text = "";
+		try {
+			if (message.isMimeType("text/plain"))
+				text = message.getContent().toString();
+			else if (message.isMimeType("multipart/*"))
+				text = getTextFromMimeMultipart((MimeMultipart) message.getContent());
+		} catch (MessagingException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return text;
+	}
+	
+	private String getTextFromMimeMultipart(MimeMultipart mmp) {
+		String text = "";
+		try {
+			for (int i = 0; i < mmp.getCount(); i++) {
+				BodyPart bodyPart = mmp.getBodyPart(i);
+				if (bodyPart.isMimeType("text/plain")) {
+					text += "\n" + bodyPart.getContent();
+					break;
+				} else if (bodyPart.isMimeType("text/html")) {
+					text += "\n" + org.jsoup.Jsoup.parse((String) bodyPart.getContent()).text();
+				} else if (bodyPart.getContent() instanceof MimeMultipart) {
+					text += getTextFromMimeMultipart((MimeMultipart)bodyPart.getContent());
+				}
+			}
+		} catch (MessagingException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+		return text;
 	}
 
 }
