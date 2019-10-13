@@ -7,6 +7,7 @@ import edu.oswego.model.Email;
 import edu.oswego.model.UserFavourites;
 import edu.oswego.model.UserFolder;
 import edu.oswego.props.Interval;
+import edu.oswego.props.Time;
 
 import org.joda.time.Days;
 import org.joda.time.LocalDate;
@@ -166,7 +167,7 @@ public class Handler implements Runnable {
 			return;
 		}
 
-		List<Email> emails = database.get().getEmailByFilter(attachment, date, endDate, seen, folderName);
+		List<Email> emails = database.get().getEmailByFilter(attachment, Time.parseDateTime(date), Time.parseDateTime(date), seen, folderName);
 		List<UserFolder> folders = database.get().importFolders();
 		// this will store the final data
 		if (Thread.interrupted()) {

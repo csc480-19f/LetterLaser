@@ -1,14 +1,18 @@
 package edu.oswego.database;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 
 import javax.mail.Folder;
 import javax.mail.MessagingException;
 
 import edu.oswego.mail.Mailer;
+import edu.oswego.model.Email;
 import edu.oswego.props.Interval;
 import edu.oswego.props.Settings;
+import edu.oswego.props.Time;
 
 public class DBdemo {
 
@@ -35,6 +39,14 @@ public class DBdemo {
 
 		db.showTables();
 		// db.truncateTables();
+		
+		String startDate = Time.parseDateTime(Time.getDate("2010-03-12"));
+		String endDate = Time.parseDateTime(Time.getDate("2014-03-12"));
+		List<Email> emailList = db.getEmailByFilter(null, startDate, endDate, false, "Apple Developer");
+		
+		for (Email e: emailList) {
+			System.out.println(e);
+		}
 
 		double time = (double) ((System.currentTimeMillis() - ct) * .001);
 		System.out.println("Total runtime: " + time + " seconds\n");

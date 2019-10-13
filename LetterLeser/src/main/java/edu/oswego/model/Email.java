@@ -36,72 +36,43 @@ public class Email {
 		return id;
 	}
 
-	public void setId(int id) {
-		this.id = id;
-	}
-
 	public Date getDateReceived() {
 		return dateReceived;
-	}
-
-	public void setDateReceived(Date dateReceived) {
-		this.dateReceived = dateReceived;
 	}
 
 	public String getSubject() {
 		return subject;
 	}
 
-	public void setSubject(String subject) {
-		this.subject = subject;
-	}
-
 	public double getSize() {
 		return size;
-	}
-
-	public void setSize(double size) {
-		this.size = size;
 	}
 
 	public boolean isSeen() {
 		return isSeen;
 	}
 
-	public void setSeen(boolean isSeen) {
-		this.isSeen = isSeen;
-	}
-
 	public String getFileName() {
 		return fileName;
-	}
-
-	public void setFileName(String fileName) {
-		this.fileName = fileName;
 	}
 
 	public boolean hasAttachment() {
 		return hasAttachment;
 	}
 
-	public void setAttachment(boolean hasAttachment) {
-		this.hasAttachment = hasAttachment;
-	}
-
 	public SentimentScore getSentimentScore() {
 		return sentimentScore;
-	}
-
-	public void setSentimentScore(SentimentScore sentimentScore) {
-		this.sentimentScore = sentimentScore;
 	}
 
 	public UserFolder getFolder() {
 		return folder;
 	}
 
-	public void setFolder(UserFolder folder) {
-		this.folder = folder;
+	@Override
+	public String toString() {
+		return "Email [id=" + id + ", dateReceived=" + dateReceived + ", subject=" + subject + ", size=" + size
+				+ ", isSeen=" + isSeen + ", fileName=" + fileName + ", hasAttachment=" + hasAttachment
+				+ ", sentimentScore=" + sentimentScore + ", folder=" + folder + "]";
 	}
-	
+
 }
