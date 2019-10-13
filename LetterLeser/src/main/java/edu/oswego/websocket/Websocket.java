@@ -1,21 +1,25 @@
 package edu.oswego.websocket;
 
-import edu.oswego.Runnables.Handler;
-import edu.oswego.Runnables.ValidationRunnable;
-
-import edu.oswego.database.Database;
-import edu.oswego.props.MessageType;
-
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-
-import javax.websocket.*;
-import javax.websocket.server.ServerEndpoint;
 import java.io.IOException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
+
+import javax.websocket.OnClose;
+import javax.websocket.OnError;
+import javax.websocket.OnMessage;
+import javax.websocket.OnOpen;
+import javax.websocket.Session;
+import javax.websocket.server.ServerEndpoint;
+
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+
+import edu.oswego.Runnables.Handler;
+import edu.oswego.Runnables.ValidationRunnable;
+import edu.oswego.database.Database;
+import edu.oswego.mail.Mailer;
+import edu.oswego.props.MessageType;
 
 @ServerEndpoint("/engine")
 public class Websocket {
@@ -50,7 +54,8 @@ public class Websocket {
 		// googlejsonobject which will construct everything
 		if (storageObject == null) {
 			String email = jsonMessage.getAsJsonObject("profileObj").get("email").getAsString();
-			Database db = new Database(email, jsonMessage.get("accessToken").getAsString());
+			Mailer mailer = new Mailer(jsonMessage.get("accessToken").getAsString());
+			Database db = new Database(email, mailer);
 
 			AtomicBoolean emailsExist = new AtomicBoolean(false);
 			AtomicReference<Database> database = new AtomicReference<>(db);

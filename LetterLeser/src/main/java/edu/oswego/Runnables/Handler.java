@@ -80,7 +80,7 @@ public class Handler implements Runnable {
 
 	private void sendFolders() throws IOException {
 		List<UserFolder> folders = database.get().importFolders();
-		List<UserFavourites> favourites = database.get().fetchInitializeLoad();
+		List<UserFavourites> favourites = database.get().getUserFavourites();
 		// TODO make the string into a json element
 
 		Gson g = new Gson();

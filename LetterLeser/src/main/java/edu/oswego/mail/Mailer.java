@@ -13,11 +13,9 @@ import javax.mail.Session;
 import javax.mail.Store;
 import javax.mail.internet.MimeBodyPart;
 
-import edu.oswego.props.Settings;
-
 /**
- * Mailer class that has the Session/Store objects as well as
- * host/port/tls settings.
+ * Mailer class that has the Session/Store objects as well as host/port/tls
+ * settings.
  * 
  * @author Jimmy Nguyen
  * @since 10/08/2019
@@ -27,12 +25,10 @@ public class Mailer {
 
 	private Session session;
 	private Store storage;
-	private final String HOST = "imap.gmail.com";
-	private final int PORT = 995;
-	private final boolean TLS_ENABLED = true;
+	private String accessKey;
 
 	public Mailer(String accessKey) {
-		
+		this.accessKey = accessKey; // TODO Gotta do getStorage() adjustment when auth key comes in
 	}
 
 	/*
@@ -44,9 +40,9 @@ public class Mailer {
 	public Session getConnection() {
 		if (session == null) {
 			Properties properties = new Properties();
-			properties.put("mail.imap.host", HOST);
-			properties.put("mail.imap.port", PORT);
-			properties.put("mail.imap.starttls.enable", TLS_ENABLED);
+			properties.put("mail.imap.host", Settings.HOST);
+			properties.put("mail.imap.port", Settings.PORT);
+			properties.put("mail.imap.starttls.enable", Settings.TLS_ENABLED);
 			session = Session.getDefaultInstance(properties);
 		}
 		return session;
@@ -68,7 +64,7 @@ public class Mailer {
 
 		if (!storage.isConnected()) {
 			try {
-				storage.connect(HOST, Settings.EMAIL_ADDRESS, Settings.EMAIL_PWD);
+				storage.connect(Settings.HOST, Settings.EMAIL_ADDRESS, Settings.EMAIL_PWD);
 			} catch (MessagingException e) {
 				e.printStackTrace();
 			}
@@ -80,9 +76,9 @@ public class Mailer {
 	/*
 	 * Fetches a gmail folder
 	 * 
-	 * @return javaxmail Folder object
+	 * @param folderName - name of folder
 	 * 
-	 * @param folder name
+	 * @return javaxmail Folder object
 	 */
 	public Folder getFolder(String folderName) {
 		Store store = getStorage();
@@ -99,9 +95,12 @@ public class Mailer {
 	 * Moves emails that were processed in the database to a new folder called
 	 * CSC480_19F (creates it if not exists). Used for validation.
 	 * 
-	 * @param Folder name that the email belongs to and an array of messages.
+	 * @param originFolderName - name of the folder that you want to copy messages
+	 * from
+	 * 
+	 * @param msgs - messages from the origin folder.
 	 */
-	public void markEmailsInFolder(String originFolderName, Message[] msgs) {
+	public void markEmailsInFolder(String originFolderName, Message[] msgs) { // TODO change this to javaxmail folder
 		// MAKE HIDDEN FOLDER... maybe subscribed?
 		Folder folder = null;
 		try {
@@ -130,9 +129,9 @@ public class Mailer {
 	/*
 	 * Uses DB connection and PreparedStatement to execute a query.
 	 * 
-	 * @return array of javaxmail Message object.
+	 * @param folderName - name of folder
 	 * 
-	 * @param folder name
+	 * @return array of javaxmail Message object.
 	 */
 	public Message[] pullEmails(String folderName) {
 		Store store = getStorage();
@@ -150,6 +149,8 @@ public class Mailer {
 
 	/*
 	 * Checks if a message has an attachment
+	 * 
+	 * @param m - javaxmail message object
 	 * 
 	 * @return boolean if message is multipart
 	 */
@@ -175,9 +176,9 @@ public class Mailer {
 	/*
 	 * Fetches attachment name based on message
 	 * 
-	 * @return name of attachment
+	 * @param m - javaxmail message object
 	 * 
-	 * @param javaxmail message object
+	 * @return name of attachment
 	 */
 	public String getAttachmentName(Message m) {
 		try {

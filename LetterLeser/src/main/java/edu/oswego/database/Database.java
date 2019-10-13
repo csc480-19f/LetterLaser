@@ -33,19 +33,21 @@ import edu.oswego.sentiment.SentimentScore;
  * @since 10/08/2019
  */
 
+// TODO NO APOSTROPHE IN ANY INSERTIONS
+
 public class Database {
 
 	private Connection connection;
 	private EmailAddress user;
 
 	private Mailer mailer;
+	
 
 	// Experimental only.
 	public void showTables() {
-		ResultSet queryTbl;
 		try {
 			// show all tables
-			queryTbl = getConnection().prepareStatement("show tables").executeQuery();
+			ResultSet queryTbl = getConnection().prepareStatement("show tables").executeQuery();
 
 			while (queryTbl.next()) {
 				String tbl = queryTbl.getString(1);
@@ -68,9 +70,9 @@ public class Database {
 		}
 	}
 
-	public Database(String emailAddress, String accessKey) {
+	public Database(String emailAddress, Mailer mailer) {
 		user = getUser(emailAddress);
-		mailer = new Mailer(accessKey);
+		this.mailer = mailer;
 	}
 
 	public Connection getConnection() {
@@ -205,7 +207,7 @@ public class Database {
 		return null;
 	}
 
-	public List<UserFavourites> fetchInitializeLoad() {
+	public List<UserFavourites> getUserFavourites() {
 		List<UserFavourites> ufList = new ArrayList<>();
 		try {
 			ResultSet rs = getConnection()
@@ -219,8 +221,8 @@ public class Database {
 								Statement.RETURN_GENERATED_KEYS)
 						.executeQuery();
 				while (rs2.next())
-					ufList.add(new UserFavourites(rs.getInt(1), rs.getString(2), rs2.getDate(2), rs2.getDate(3),
-							rs2.getInt(4), getFolderById(rs2.getInt(5))));
+					ufList.add(new UserFavourites(rs.getInt(1), rs.getString(2), rs2.getDate(2), Interval.parse(rs2.getString(3)), rs2.getBoolean(4), rs2.getBoolean(5), getFolderById(rs2.getInt(6))));
+				
 				rs2.close();
 			}
 			rs.close();
@@ -557,11 +559,11 @@ public class Database {
 		return size;
 	}
 
-	public int getValidatedEmails(String emailAddress) {
+	public int getValidatedEmails() {
 		int validatedEmails = 0;
 		try {
 			ResultSet queryTbl = getConnection()
-					.prepareStatement("SELECT * FROM user WHERE user.email_address = '" + emailAddress + "'")
+					.prepareStatement("SELECT * FROM user WHERE user.email_address = '" + user.getEmailAddress() + "'")
 					.executeQuery();
 			while (queryTbl.next())
 				validatedEmails = queryTbl.getInt(3);

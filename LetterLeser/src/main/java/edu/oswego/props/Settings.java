@@ -20,8 +20,8 @@ public class Settings {
 	public static String DATABASE_HOST = "";
 	public static String DATABASE_PORT = "";
 
-	public static String EMAIL_ADDRESS = "";
-	public static String EMAIL_PWD = "";
+//	public static String EMAIL_ADDRESS = "";
+//	public static String EMAIL_PWD = "";
 
 	public static final String[] DATABASE_TABLES = new String[] { "email", "email_addr", "filter_settings", "folder",
 			"received_email", "user", "user_email", "user_favourites", "sentiment_score" };
@@ -42,8 +42,8 @@ public class Settings {
 			DATABASE_PASSWORD = scanner.nextLine();
 			DATABASE_HOST = scanner.nextLine();
 			DATABASE_PORT = scanner.nextLine();
-			EMAIL_ADDRESS = scanner.nextLine();
-			EMAIL_PWD = scanner.nextLine();
+			edu.oswego.mail.Settings.EMAIL_ADDRESS = scanner.nextLine();
+			edu.oswego.mail.Settings.EMAIL_PWD = scanner.nextLine();
 
 			scanner.close();
 		} catch (FileNotFoundException e) {
