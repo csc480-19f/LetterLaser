@@ -23,7 +23,7 @@ public class AnalyzeThis {
      * @param emails The list of emails to be analyzed.
      * @return A double[][][] array of emails' sentences' doubles for neg, neu, pos, and compound for the list of emails.
      */
-    public static double[][][] sentimize(String[] emails){
+    private static double[][][] sentimize(String[] emails){
         ArrayList<ArrayList<ArrayList<Double>>> retVal = new ArrayList<>();
 
         //This section feeds the python code the enciphered .txt file and demands the sentiment results.
@@ -266,7 +266,7 @@ public class AnalyzeThis {
      * @param results Results from a processResults(sentimize(emails)) call.
      * @return The list of compound scores.
      */
-    public static SentimentScore[] getScoresObjects(double[][][] results){
+    private static SentimentScore[] getScoresObjects(double[][][] results){
         SentimentScore[] retVal = new SentimentScore[results.length];
         for(int q = 0; q < retVal.length; q++){
             double negAvg = 0.0;
