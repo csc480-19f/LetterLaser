@@ -51,6 +51,7 @@
          <artifactId>activation</artifactId>
          <version>1.1.1</version>
       </dependency>
+      <!-- https://mvnrepository.com/artifact/com.google.oauth-client/google-oauth-client -->
       <!-- connecting to a mysql server -->
       <!-- https://mvnrepository.com/artifact/mysql/mysql-connector-java -->
       <dependency>

@@ -1,6 +1,5 @@
 package edu.oswego.database;
 
-import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -9,7 +8,6 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 import javax.mail.Address;
@@ -35,7 +33,7 @@ import edu.oswego.sentiment.SentimentScore;
  * @since 10/08/2019
  */
 
-// TODO NO APOSTROPHE IN ANY INSERTIONS
+// TODO NO APOSTROPHE IN ANY INSERTIONS. MUST STRIP/PARSE
 
 public class Database {
 
@@ -131,11 +129,7 @@ public class Database {
 		
 		// TODO get working when phoenix fixes his ssa.
 //		String[] mArr = messageList.toArray(new String[messageList.size()]);
-//		for (String ss : mArr) {
-//			System.out.println("X - " + ss);
-//		}
-//		SentimentScore[] ss = AnalyzeThis.process(mArr);
-//		
+//		SentimentScore[] ss = AnalyzeThis.singleScoreSentimize(mArr);
 //		for (int i = 0; i < emailIdList.size(); i++) {
 //			System.out.println("SS CALC");
 //			calculateSentimentScore(emailIdList.get(i), ss[i]);
