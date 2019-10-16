@@ -17,16 +17,35 @@ public class MailTest {
 	public static void try2() {
 		
 		Properties props = new Properties();
-		props.put("mail.imap.ssl.enable", "true"); // required for Gmail
+		props.put("mail.imap.host", "imap.gmail.com");
+		props.put("mail.imap.port", "993");
+//		props.put("mail.imap.auth", "true");
+//		props.put("mail.imap.starttls.enable", "true"); //TLS
+		props.put("mail.imap.ssl.enable", "true");
 		props.put("mail.imap.auth.mechanisms", "XOAUTH2");
-		Session session = Session.getInstance(props);
+//		props.put("mail.smtp.ssl.enable", "true");
 		
-		try {
-			Store store = session.getStore("imap");
-			store.connect("imap.gmail.com", "csc344testacc@gmail.com", "ya29.Il-bB-TKj79dWENPnBkZfq2VCHIbKk3lmNJvq-yq8HyZlsW2iuS12oJFVeJdsPn5Vz70qDlXuzZJ8MSonAr6JaEdhBUKSKQJYxbHozxday2tS8IWGkl31cYDh9-3av45Lg");
+//		Session session = Session.getInstance(props,
+//                new javax.mail.Authenticator() {
+//                    protected PasswordAuthentication getPasswordAuthentication() {
+//                        return new PasswordAuthentication("csc344testacc@gmail.com", "ya29.ImCbB2mNL2dXDGicFe-GAydoDfbMrelbnqRXOAelTt0PZV6GnkxkIOlj5oHVxXrCsFKddg2Bg7_NkxSYoh4ED20xNV8lzOBDF3LTzbakwwToV-Fu028yUXivcBL3-7drCIs");
+//                    }
+//                });
+		Session session = Session.getInstance(props);
+         
+
+         try {
+        	 Store s = session.getStore("imap");
+        	 s.connect("imap.gmail.com", "csc344testacc@gmail.com", "ya29.ImGbB3ta1oTLhip9ML6ABlXuy5cD74nM9Gj1Ze9vMXIRdwYZKUrpw7e55fNqhVuohypgDu8EUGtB7V33S4eb3E3c7Tq58u0Dxt-yd2uKz_BGqVwdF3tztGSVClheeq94WUls");
+//        	 s.connect();
+			System.out.println("Done:: " + s.isConnected());
 		} catch (NoSuchProviderException e) {
+			// TODO Auto-generated catch block
 			e.printStackTrace();
-		} catch (MessagingException e) {
+		}
+//			store.connect("smtp.gmail.com", "csc344testacc@gmail.com", "ya29.ImCbB2mNL2dXDGicFe-GAydoDfbMrelbnqRXOAelTt0PZV6GnkxkIOlj5oHVxXrCsFKddg2Bg7_NkxSYoh4ED20xNV8lzOBDF3LTzbakwwToV-Fu028yUXivcBL3-7drCIs");
+ catch (MessagingException e) {
+			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
