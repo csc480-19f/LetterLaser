@@ -4,4 +4,18 @@
 
 <web-app>
   <display-name>Archetype Created Web Application</display-name>
+
+  <servlet>
+    <servlet-name>Engine</servlet-name>
+    <servlet-class>letterleser.servlets.Engine</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>Engine</servlet-name>
+    <url-pattern>/engine</url-pattern>
+  </servlet-mapping>
+
+  <error-page>
+    <error-code>404</error-code>
+    <location>/index.jsp</location>
+  </error-page>
 </web-app>
