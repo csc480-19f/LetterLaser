@@ -119,7 +119,7 @@
                <version>2.2</version>
                <configuration>
                   <uriEncoding>UTF-8</uriEncoding>
-                  <path>/MailLeser</path>
+                  <path>/LetterLeser</path>
                   <!-- This is where the server will host our webapp-->
                   <port>10120</port>
                   <update>true</update>

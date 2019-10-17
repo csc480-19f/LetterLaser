@@ -7,11 +7,11 @@
 
   <servlet>
     <servlet-name>Engine</servlet-name>
-    <servlet-class>letterleser.servlets.Engine</servlet-class>
+    <servlet-class>LetterLeser.servlets.Engine</servlet-class>
   </servlet>
   <servlet-mapping>
     <servlet-name>Engine</servlet-name>
-    <url-pattern>/engine</url-pattern>
+    <url-pattern>/LetterLeser/engine</url-pattern>
   </servlet-mapping>
 
   <error-page>
