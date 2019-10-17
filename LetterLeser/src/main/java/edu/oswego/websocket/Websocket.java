@@ -147,20 +147,6 @@ public class Websocket {
 		return new JsonParser().parse(message).getAsJsonObject();
 	}
 
-	// public class StorageObject {
-	// public Thread HanderThread;
-	// public Handler handler;
-	// public Thread validationThread;
-	// public ValidationRunnable validationRunnable;
-	//
-	// public StorageObject(Thread ht, Handler h, Thread vt, ValidationRunnable vr)
-	// {
-	// HanderThread = ht;
-	// handler = h;
-	// validationThread = vt;
-	// validationRunnable = vr;
-	// }
-	//
-	// }
+
 
 }

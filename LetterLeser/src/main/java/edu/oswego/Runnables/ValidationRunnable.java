@@ -10,7 +10,6 @@ import com.google.gson.JsonObject;
 
 import edu.oswego.database.Database;
 import edu.oswego.websocket.StorageObject;
-import edu.oswego.websocket.Websocket;
 
 public class ValidationRunnable implements Runnable {
 	private volatile AtomicReference<Session> session;
