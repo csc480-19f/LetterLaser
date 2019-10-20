@@ -36,7 +36,7 @@ public class MailTest {
 
          try {
         	 Store s = session.getStore("imap");
-        	 s.connect("imap.gmail.com", "csc344testacc@gmail.com", "ya29.ImGbB3ta1oTLhip9ML6ABlXuy5cD74nM9Gj1Ze9vMXIRdwYZKUrpw7e55fNqhVuohypgDu8EUGtB7V33S4eb3E3c7Tq58u0Dxt-yd2uKz_BGqVwdF3tztGSVClheeq94WUls");
+        	 s.connect("imap.gmail.com", "csc344testacc@gmail.com", "ya29.ImGbB2Q6F1cy_d8utBI-JhM-857WdwxlH6z5YFQ66sDcrvzOgLcVnEEwe7POOvumgYL4vIhaBA-pdgD6w3tk_6ytpHe1hUNDykiGj7L81CuJ0OspZ-rfvP2OJ2UGqRcaunPY");
 //        	 s.connect();
 			System.out.println("Done:: " + s.isConnected());
 		} catch (NoSuchProviderException e) {

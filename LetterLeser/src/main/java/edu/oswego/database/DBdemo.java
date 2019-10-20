@@ -1,6 +1,5 @@
 package edu.oswego.database;
 
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
@@ -23,7 +22,7 @@ public class DBdemo {
 		Mailer mailer = new Mailer("AUTH_KEY_INSERTED_HERE");
 		Database db = new Database("csc344testacc@gmail.com", mailer);
 		
-		db.truncateTables();
+//		db.truncateTables();
 		db.pull();
 
 		try {
