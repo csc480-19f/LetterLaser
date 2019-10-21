@@ -118,8 +118,7 @@ public class Websocket {
 		Handler handler = main.getHandler();
 		String email = handler.getEmail();
 		StorageObject validation = validationManager.get(email);
-		if (validation == null) {
-			// TODO Please update. Will always be null at this location.
+		if (validation == null) {//handles the situtation of a user quiting and connecting before validationThread is finished. This can and most likely will happen when dealing with more than 1k emails
 			ValidationRunnable vr = new ValidationRunnable(validation.getValidationRunnable());
 			Thread validationThread = new Thread(vr);
 			validationThread.start();

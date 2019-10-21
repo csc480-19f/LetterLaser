@@ -83,7 +83,6 @@ public class Handler implements Runnable {
 		List<UserFolder> folders = database.get().importFolders();
 		List<UserFavourites> favourites = database.get().getUserFavourites();
 		// TODO make the string into a json element
-
 		Gson g = new Gson();
 		String arrayOfFolders = g.toJson(folders);
 		String arrayOfFavs = g.toJson(favourites);
@@ -111,10 +110,13 @@ public class Handler implements Runnable {
 		} else if (messageType.equals("RemoveFavorite")) {
 			deleteFavorite(message);
 		} else if (messageType.equals("CallFavorite")) {
-			// TODO make a filter field that has the favorite info
-			handleGraphs(message.getAsJsonObject("Filter"));
+			UserFavourites filter = database.get().getUserFavourite(message.get("message").getAsString());
+			//TODO have UserFavourite get me an endDate var
+			List<Email> emails = database.get().getEmailByFilter(filter.getName(),filter.getStartDate().toString(),filter.getStartDate().toString(),filter.isSeen(),filter.getFolder().getFolder().getName());
+			List<UserFolder> folders = database.get().importFolders();
+			calculateAndSend(emails,folders);
 		} else {
-			handleGraphs(message.getAsJsonObject("Filter"));
+			parseJsonObject(message.getAsJsonObject("Filter"));
 		}
 
 	}
@@ -142,7 +144,7 @@ public class Handler implements Runnable {
 		database.get().removeUserFavourite(favName);
 	}
 
-	private void handleGraphs(JsonObject message) throws InterruptedException {
+	private void parseJsonObject(JsonObject message) throws InterruptedException {
 		String folderName = message.get("FolderName").getAsString();
 		String stringDate = message.get("Date").getAsString();
 		String interval = message.get("Interval").getAsString();
@@ -167,9 +169,14 @@ public class Handler implements Runnable {
 			return;
 		}
 
-		List<Email> emails = database.get().getEmailByFilter(attachment, Time.parseDateTime(date), Time.parseDateTime(date), seen, folderName);
+		List<Email> emails = database.get().getEmailByFilter(attachment, Time.parseDateTime(date), Time.parseDateTime(endDate), seen, folderName);
 		List<UserFolder> folders = database.get().importFolders();
-		// this will store the final data
+		calculateAndSend(emails,folders);
+
+
+	}
+
+	private void calculateAndSend(List<Email> emails, List<UserFolder> folders) throws InterruptedException {
 		if (Thread.interrupted()) {
 			throw new InterruptedException();
 		}
@@ -222,6 +229,7 @@ public class Handler implements Runnable {
 		JsonObject dataSet = new JsonObject();
 
 		// todo, combine all the data into final jsonobject and send it over to gui
+
 	}
 
 }

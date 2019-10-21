@@ -42,7 +42,9 @@ public class ValidationRunnable implements Runnable {
 		String email = googleAccessToken.get().getAsJsonObject("profileObj").get("email").getAsString();
 		Database db = atomicDatabase.get();
 		if (db.hasEmails(email)) {
+
 			emailStored.compareAndSet(false, true);
+
 			// TODO validate DB
 
 		} else {
