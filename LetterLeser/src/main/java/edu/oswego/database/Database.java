@@ -23,7 +23,6 @@ import edu.oswego.model.UserFavourites;
 import edu.oswego.model.UserFolder;
 import edu.oswego.props.Interval;
 import edu.oswego.props.Settings;
-import edu.oswego.sentiment.AnalyzeThis;
 import edu.oswego.sentiment.SentimentScore;
 
 /**
@@ -70,7 +69,6 @@ public class Database {
 	}
 
 	public Database(String emailAddress, Mailer mailer) {
-		System.out.println(emailAddress);
 		user = getUser(emailAddress);
 		this.mailer = mailer;
 	}
@@ -91,7 +89,8 @@ public class Database {
 	public void pull() {
 		List<UserFolder> folderList = importFolders();
 		try {
-			System.out.println(folderList.get(0).getFolder().getFullName() + "_" + folderList.get(0).getFolder().getMessageCount());
+			System.out.println(folderList.get(0).getFolder().getFullName() + "_"
+					+ folderList.get(0).getFolder().getMessageCount());
 		} catch (MessagingException e1) {
 			e1.printStackTrace();
 		}
@@ -113,11 +112,11 @@ public class Database {
 					}
 					insertUserEmail(user, emailId);
 					emailIdList.add(emailId);
-					
+
 					messageList.add(mailer.getTextFromMessage(m));
-//					System.out.println(m.getContent());
-//					messageList.add(m.getContent().toString());
-					
+					// System.out.println(m.getContent());
+					// messageList.add(m.getContent().toString());
+
 					s++;
 					if (s > stopper)
 						break;
@@ -132,22 +131,23 @@ public class Database {
 			// NULL POINTER EXCEPTION. FIX DIS yo.
 			// Mailer.markEmailsInFolder(f.getFolder().getFullName(), msgs);
 		}
-		
+
 		// TODO get working when phoenix fixes his ssa.
-//		String[] mArr = messageList.toArray(new String[messageList.size()]);
-//		SentimentScore[] ss = AnalyzeThis.singleScoreSentimize(mArr);
-//		for (int i = 0; i < emailIdList.size(); i++) {
-//			System.out.println("SS CALC");
-//			calculateSentimentScore(emailIdList.get(i), ss[i]);
-//		}
+		// String[] mArr = messageList.toArray(new String[messageList.size()]);
+		// SentimentScore[] ss = AnalyzeThis.singleScoreSentimize(mArr);
+		// for (int i = 0; i < emailIdList.size(); i++) {
+		// System.out.println("SS CALC");
+		// calculateSentimentScore(emailIdList.get(i), ss[i]);
+		// }
 	}
 
 	public List<Email> getEmailByFilter(String fileName, String startDate, String endDate, boolean seen,
 			String folderName) {
 		List<Email> emailList = new ArrayList<>();
 		List<String> filterStatements = new ArrayList<>();
-		
-		String selectionStatement = "SELECT * FROM email JOIN user_email on user_email.id = " + user.getId() + " WHERE ";
+
+		String selectionStatement = "SELECT * FROM email JOIN user_email on user_email.id = " + user.getId()
+				+ " WHERE ";
 
 		if (fileName != null) {
 			filterStatements.add("has_attachment = 1");
@@ -170,19 +170,19 @@ public class Database {
 		selectionStatement += ";";
 
 		try {
-			ResultSet rs = getConnection().prepareStatement(selectionStatement,Statement.RETURN_GENERATED_KEYS).executeQuery();
-			
+			ResultSet rs = getConnection().prepareStatement(selectionStatement, Statement.RETURN_GENERATED_KEYS)
+					.executeQuery();
+
 			while (rs.next()) {
+
 				// TODO getSentimentScoreById
 				Email e = new Email(rs.getInt(1), rs.getDate(2), rs.getString(3), rs.getDouble(4), rs.getBoolean(5),
-						rs.getString(6), rs.getBoolean(7), null, getFolderById(rs.getInt(9)));
+						rs.getString(6), rs.getBoolean(7), null, getFolderById(rs.getInt(9)), getReceivedEmail(rs.getInt(1)));
 				emailList.add(e);
 			}
 		} catch (SQLException e1) {
 			e1.printStackTrace();
 		}
-
-//		System.out.println(selectionStatement);
 
 		return emailList;
 	}
@@ -253,6 +253,33 @@ public class Database {
 
 		return null;
 	}
+	
+	public UserFavourites getUserFavourite(String favName) {
+		try {
+			ResultSet rs = getConnection()
+					.prepareStatement("SELECT * FROM user_favourites WHERE user_id = '" + user.getId() + "' AND fav_name = '" + favName + "';",
+							Statement.RETURN_GENERATED_KEYS)
+					.executeQuery();
+
+			while (rs.next()) {
+				ResultSet rs2 = getConnection()
+						.prepareStatement("SELECT * FROM filter_settings WHERE id = '" + rs.getInt(1) + "';",
+								Statement.RETURN_GENERATED_KEYS)
+						.executeQuery();
+				while (rs2.next())
+					return new UserFavourites(rs.getInt(1), rs.getString(2), rs2.getDate(2),
+							Interval.parse(rs2.getString(3)), rs2.getBoolean(4), rs2.getBoolean(5),
+							getFolderById(rs2.getInt(6)));
+
+				rs2.close();
+			}
+			rs.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+
+		return null;
+	}
 
 	public List<UserFavourites> getUserFavourites() {
 		List<UserFavourites> ufList = new ArrayList<>();
@@ -282,7 +309,8 @@ public class Database {
 		return ufList;
 	}
 
-	// TODO convert this to string with Time object available now. No need for ps. Just rs.
+	// TODO convert this to string with Time object available now. No need for ps.
+	// Just rs.
 	public boolean insertUserFavourites(String favName, java.util.Date utilDate, Interval intervalRange,
 			boolean hasAttachment, boolean isSeen, String folderName) {
 		int folderId = getFolderId(folderName);
@@ -559,6 +587,23 @@ public class Database {
 		}
 
 		return emailAddrList;
+	}
+
+	private List<EmailAddress> getReceivedEmail(int emailId) {
+		List<EmailAddress> addressIdList = new ArrayList<>();
+
+		try {
+			ResultSet rs = getConnection().prepareStatement(
+					"SELECT email_addr_id, email_address FROM received_email JOIN email_addr ON email_addr.id = received_email.email_addr_id"
+							+ " WHERE received_email.email_id = " + emailId + ";")
+					.executeQuery();
+			while (rs.next())
+				addressIdList.add(new EmailAddress(rs.getInt(1), rs.getString(2)));
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+
+		return addressIdList;
 	}
 
 	private boolean receivedEmailExists(int emailId, int emailAddrId) {

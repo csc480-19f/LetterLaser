@@ -1,13 +1,14 @@
 package edu.oswego.model;
 
 import java.sql.Date;
+import java.util.ArrayList;
+import java.util.List;
 
 import edu.oswego.sentiment.SentimentScore;
 
 public class Email {
 	
 	// SENT OR RECEIVED?
-	
 	private int id;
 	private Date dateReceived;
 	private String subject;
@@ -18,6 +19,7 @@ public class Email {
 	
 	private SentimentScore sentimentScore;
 	private UserFolder folder;
+	private List<EmailAddress> from;
 	
 	public Email(int id, Date dateReceived, String subject, double size, boolean isSeen, String fileName,
 			boolean hasAttachment, SentimentScore sentimentScore, UserFolder folder) {
@@ -30,6 +32,21 @@ public class Email {
 		this.hasAttachment = hasAttachment;
 		this.sentimentScore = sentimentScore;
 		this.folder = folder;
+		this.from = new ArrayList<>();
+	}
+
+	public Email(int id, Date dateReceived, String subject, double size, boolean isSeen, String fileName,
+			boolean hasAttachment, SentimentScore sentimentScore, UserFolder folder, List<EmailAddress> from) {
+		this.id = id;
+		this.dateReceived = dateReceived;
+		this.subject = subject;
+		this.size = size;
+		this.isSeen = isSeen;
+		this.fileName = fileName;
+		this.hasAttachment = hasAttachment;
+		this.sentimentScore = sentimentScore;
+		this.folder = folder;
+		this.from = from;
 	}
 
 	public int getId() {
@@ -68,11 +85,19 @@ public class Email {
 		return folder;
 	}
 
+	public List<EmailAddress> getFrom() {
+		return from;
+	}
+
+	public void setFrom(List<EmailAddress> from) {
+		this.from = from;
+	}
+
 	@Override
 	public String toString() {
 		return "Email [id=" + id + ", dateReceived=" + dateReceived + ", subject=" + subject + ", size=" + size
 				+ ", isSeen=" + isSeen + ", fileName=" + fileName + ", hasAttachment=" + hasAttachment
-				+ ", sentimentScore=" + sentimentScore + ", folder=" + folder + "]";
+				+ ", sentimentScore=" + sentimentScore + ", folder=" + folder + ", from=" + from + "]";
 	}
 
 }
