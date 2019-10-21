@@ -8,8 +8,8 @@ import java.util.concurrent.Callable;
 public class NumOfEmailsCallable implements Callable {
 	private static List<Email> emails;
 
-	private static final int oneDay = 86400000;
-	private static final int fourHours = 14400000;
+	private static final double oneDay = 86400000;
+	private static final double fourHours = 14400000;
 
 	/**
 	 * @author Phoenix Boisnier Things to keep in mind: Jan 1st, 1970 was a
@@ -22,12 +22,12 @@ public class NumOfEmailsCallable implements Callable {
 		this.emails = emails;
 	}
 
-	@Override
 	/**
 	 * This method calculates the heat map scores. It returns a 2-D Array of
 	 * Integers where the first index corresponds to the day of the week and the
 	 * second index corresponds to the hour interval the email belongs to.
 	 */
+	@Override
 	public Object call() throws Exception {
 		int[][] retVal = new int[7][6];
 
@@ -53,8 +53,8 @@ public class NumOfEmailsCallable implements Callable {
 	 * @return 0 for hours 0-3:59, 1 for hours 4-7:59, ... , 5 for hours 20-23:59
 	 */
 	private int findHour(Email e) {
-		long hoursLong = e.getDateReceived().getTime() % oneDay;
-		return ((int) hoursLong) / fourHours;
+		double hoursLong = e.getDateReceived().getTime() % oneDay;
+		return ((int) hoursLong) / (int)fourHours;
 	}
 
 	/**
@@ -67,7 +67,7 @@ public class NumOfEmailsCallable implements Callable {
 	 * @return 0 for Sun, 1 for Mon, 2 for Tue, ... , 6 for Sat.
 	 */
 	private int findDay(Email e) {
-		long dayLong = e.getDateReceived().getTime() / oneDay;
+		double dayLong = e.getDateReceived().getTime() / oneDay;
 		// -3 shifts Sunday (3 % 7) to be (0 % 7) since (0 % 7) = Thursday normally.
 		return (((int) dayLong) - 3) % 7;
 	}
