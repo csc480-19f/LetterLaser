@@ -70,6 +70,7 @@ public class Database {
 	}
 
 	public Database(String emailAddress, Mailer mailer) {
+		System.out.println(emailAddress);
 		user = getUser(emailAddress);
 		this.mailer = mailer;
 	}
@@ -89,6 +90,11 @@ public class Database {
 
 	public void pull() {
 		List<UserFolder> folderList = importFolders();
+		try {
+			System.out.println(folderList.get(0).getFolder().getFullName() + "_" + folderList.get(0).getFolder().getMessageCount());
+		} catch (MessagingException e1) {
+			e1.printStackTrace();
+		}
 		List<Integer> emailIdList = new ArrayList<>();
 		List<String> messageList = new ArrayList<>();
 
@@ -190,8 +196,10 @@ public class Database {
 
 			ResultSet generatedKeys = ps.getGeneratedKeys();
 
-			if (generatedKeys.next())
+			if (generatedKeys.next()) {
+				System.out.println(generatedKeys.getInt(1));
 				return generatedKeys.getInt(1);
+			}
 
 		} catch (SQLException e) {
 			e.printStackTrace();
