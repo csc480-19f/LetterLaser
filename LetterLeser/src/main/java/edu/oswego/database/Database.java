@@ -253,6 +253,33 @@ public class Database {
 
 		return null;
 	}
+	
+	public UserFavourites getUserFavourite(String favName) {
+		try {
+			ResultSet rs = getConnection()
+					.prepareStatement("SELECT * FROM user_favourites WHERE user_id = '" + user.getId() + "' AND fav_name = '" + favName + "';",
+							Statement.RETURN_GENERATED_KEYS)
+					.executeQuery();
+
+			while (rs.next()) {
+				ResultSet rs2 = getConnection()
+						.prepareStatement("SELECT * FROM filter_settings WHERE id = '" + rs.getInt(1) + "';",
+								Statement.RETURN_GENERATED_KEYS)
+						.executeQuery();
+				while (rs2.next())
+					return new UserFavourites(rs.getInt(1), rs.getString(2), rs2.getDate(2),
+							Interval.parse(rs2.getString(3)), rs2.getBoolean(4), rs2.getBoolean(5),
+							getFolderById(rs2.getInt(6)));
+
+				rs2.close();
+			}
+			rs.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+
+		return null;
+	}
 
 	public List<UserFavourites> getUserFavourites() {
 		List<UserFavourites> ufList = new ArrayList<>();
