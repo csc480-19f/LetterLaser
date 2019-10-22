@@ -3,6 +3,7 @@ package edu.oswego.Runnables;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import edu.oswego.database.Database;
+import edu.oswego.debug.DebugLogger;
 import edu.oswego.model.Email;
 import edu.oswego.model.UserFavourites;
 import edu.oswego.model.UserFolder;
@@ -22,6 +23,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.logging.Level;
 
 public class Handler implements Runnable {
 	private volatile AtomicReference<Session> session;
@@ -39,6 +41,7 @@ public class Handler implements Runnable {
 		this.googleAccessToken = googleAccessToken;
 		this.database = database;
 		this.hasEmails = hasEmails;
+		this.oldThread = null;
 	}
 
 	public Handler(Handler handler, JsonObject message, Thread oldThread) {
@@ -56,24 +59,43 @@ public class Handler implements Runnable {
 
 	@Override
 	public void run() {
-		while (oldThread.get().isAlive()) {
-			if (Thread.interrupted()) {
-				return;
-			}
-		} // freezes this thread till old thread is
-		if (googleAccessToken == null || Thread.interrupted()) {
+		{//debug stuff
+			DebugLogger.logEvent(Level.INFO, "session " + session.get().getId() + "handler has started");
+		}
+		if(oldThread==null) {
+			while (oldThread.get().isAlive()) {
+				if (Thread.interrupted()) {
+					{//debug stuff
+						DebugLogger.logEvent(Level.INFO, "session " + session.get().getId() + "Thread interupted when waiting for old thread to die");
+					}
+					return;
+				}
+			} // freezes this thread till old thread is
+		}
 
+		if (googleAccessToken == null || Thread.interrupted()) {
+			{//debug stuff
+				DebugLogger.logEvent(Level.INFO, "session " + session.get().getId() + "accessToken null or thread interuppeted: "+
+						"AccessToken: " + googleAccessToken.toString() +" Thread:"+Thread.interrupted());
+			}
+			return;
 		} else if (message.get().get("MessageType").getAsString().equals("StartUp")) {
+			{//debug stuff
+				DebugLogger.logEvent(Level.INFO, "session " + session.get().getId() + " begine sendingFolders");
+			}
 			try {
 				sendFolders();
 			} catch (IOException e) {
-				// cant really do anything
+				return;
 			}
 		} else {
 			try {
 				handleMessage(message.get());
 			} catch (InterruptedException e) {
-
+				{//debug stuff
+					DebugLogger.logEvent(Level.INFO, "session " + session.get().getId() + " Thread detected interrupt call thus terminated");
+				}
+				return;
 			}
 		}
 
@@ -82,6 +104,13 @@ public class Handler implements Runnable {
 	private void sendFolders() throws IOException {
 		List<UserFolder> folders = database.get().importFolders();
 		List<UserFavourites> favourites = database.get().getUserFavourites();
+
+		{//debug stuff
+			DebugLogger.logEvent(Level.INFO, "session " + session.get().getId() + "got folders and list of favourites: \n"+
+					"folders: "+folders.toString()+
+					"favourites: "+favourites.toString());
+		}
+
 		// TODO make the string into a json element
 		Gson g = new Gson();
 		String arrayOfFolders = g.toJson(folders);
@@ -91,25 +120,44 @@ public class Handler implements Runnable {
 		finalPackage.addProperty("FavoriteNames", arrayOfFavs);
 		finalPackage.addProperty("FolderNames", arrayOfFolders);
 
+		{//debug stuff
+			DebugLogger.logEvent(Level.INFO, "session " + session.get().getId() + "message compiled as:\n"+
+					finalPackage.getAsString());
+		}
+
 		session.get().getBasicRemote().sendText(finalPackage.getAsString());
 	}
 
 	private void handleMessage(JsonObject message) throws InterruptedException {
 		// waiting to know if db has data or not: look at ValidationRunnable
+		{//debug stuff
+			DebugLogger.logEvent(Level.INFO, "session " + session.get().getId() + "being handling message: \n"+message.toString());
+		}
+
 		while (!hasEmails.get()) {
 			try {
 				Thread.sleep(50);
 			} catch (InterruptedException e) {
+				{//debug stuff
+					DebugLogger.logEvent(Level.INFO, "session " + session.get().getId() + "interrupt called when validation is still preceding, current throwing interruptedException");
+				}
 				throw new InterruptedException();
 			}
 		}
 
 		String messageType = message.get("MessageType").getAsString();
+		{//debug stuff
+			DebugLogger.logEvent(Level.INFO, "session " + session.get().getId() + "messageType: "+messageType);
+		}
 		if (messageType.equals("AddFavorite")) {
 			addFavourite(message);
 		} else if (messageType.equals("RemoveFavorite")) {
 			deleteFavorite(message);
 		} else if (messageType.equals("CallFavorite")) {
+			{//debug stuff
+				DebugLogger.logEvent(Level.INFO, "session " + session.get().getId() + "calling Favorite");
+			}
+
 			UserFavourites filter = database.get().getUserFavourite(message.get("message").getAsString());
 			//TODO have UserFavourite get me an endDate var
 			List<Email> emails = database.get().getEmailByFilter(filter.getName(),filter.getStartDate().toString(),filter.getStartDate().toString(),filter.isSeen(),filter.getFolder().getFolder().getName());
@@ -130,11 +178,17 @@ public class Handler implements Runnable {
 		String interval = filter.get("Interval").getAsString();
 		boolean attachment = filter.get("Attachment").getAsBoolean();
 		boolean seen = filter.get("Seen").getAsBoolean();
-
+		{//debug stuff
+			DebugLogger.logEvent(Level.INFO, "session " + session.get().getId() + " message\n" + addFav.toString() + "\n" + filter.toString() + "\n"
+					+ favoriteName + "\n" + folderName + "\n" + stringDate + "\n" + interval + "\n" + attachment + "\n" + seen + "\n");
+		}
 		try {
 			Date date = new SimpleDateFormat("MM/dd/yyyy").parse(stringDate);
 			database.get().insertUserFavourites(favoriteName, date, Interval.MONTH, attachment, seen, folderName);
 		} catch (ParseException e) {
+			{//debug stuff
+				DebugLogger.logEvent(Level.SEVERE, "session " + session.get().getId() + " invalid date in addFavourite");
+			}
 			return;
 		}
 	}
@@ -142,6 +196,9 @@ public class Handler implements Runnable {
 	private void deleteFavorite(JsonObject message) {
 		String favName = message.get("FavoriteName").getAsString();
 		database.get().removeUserFavourite(favName);
+		{//debug stuff
+			DebugLogger.logEvent(Level.INFO, "session " + session.get().getId() + " favorite deleted");
+		}
 	}
 
 	private void parseJsonObject(JsonObject message) throws InterruptedException {
@@ -177,10 +234,12 @@ public class Handler implements Runnable {
 	}
 
 	private void calculateAndSend(List<Email> emails, List<UserFolder> folders) throws InterruptedException {
-		if (Thread.interrupted()) {
-			throw new InterruptedException();
-		}
 		// Making all the callables and futures and executing them in threads
+		{//debug stuff
+			DebugLogger.logEvent(Level.INFO, "session " + session.get().getId() + " running calcs on:\n"+
+					emails.toString()+"\n"+folders.toString());
+		}
+
 		DomainCallable dc = new DomainCallable(emails);
 		SentimentScoreCallable ssc = new SentimentScoreCallable(emails);
 		FolderCallable fc = new FolderCallable(folders);
@@ -196,6 +255,9 @@ public class Handler implements Runnable {
 		FutureTask tbrcTask = new FutureTask<>(tbrc);
 
 		if (Thread.interrupted()) {
+			{//debug stuff
+				DebugLogger.logEvent(Level.INFO, "session " + session.get().getId() + " thread interupted before calc started");
+			}
 			throw new InterruptedException();
 		}
 
@@ -227,6 +289,9 @@ public class Handler implements Runnable {
 		}
 
 		if (Thread.interrupted()) {
+			{//debug stuff
+				DebugLogger.logEvent(Level.INFO, "session " + session.get().getId() + " thread interrupted before compiling json");
+			}
 			throw new InterruptedException();
 		}
 

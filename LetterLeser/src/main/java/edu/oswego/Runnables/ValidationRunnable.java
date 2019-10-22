@@ -3,12 +3,14 @@ package edu.oswego.Runnables;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.logging.Level;
 
 import javax.websocket.Session;
 
 import com.google.gson.JsonObject;
 
 import edu.oswego.database.Database;
+import edu.oswego.debug.DebugLogger;
 import edu.oswego.websocket.StorageObject;
 
 public class ValidationRunnable implements Runnable {
@@ -42,12 +44,17 @@ public class ValidationRunnable implements Runnable {
 		String email = googleAccessToken.get().getAsJsonObject("profileObj").get("email").getAsString();
 		Database db = atomicDatabase.get();
 		if (db.hasEmails(email)) {
-
+			{//debug stuff
+				DebugLogger.logEvent(Level.INFO, "session " + session.get().getId() + " emails exist in db, setting emailsStored to true");
+			}
 			emailStored.compareAndSet(false, true);
 
 			// TODO validate DB
 
 		} else {
+			{//debug stuff
+				DebugLogger.logEvent(Level.INFO, "session " + session.get().getId() + " emails dont exist in db");
+			}
 			db.pull();
 			emailStored.compareAndSet(false, true);
 		}
