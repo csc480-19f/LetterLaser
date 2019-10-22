@@ -226,6 +226,10 @@ public class Handler implements Runnable {
 			e.printStackTrace();
 		}
 
+		if (Thread.interrupted()) {
+			throw new InterruptedException();
+		}
+
 		JsonObject dataSet = new JsonObject();
 
 		// todo, combine all the data into final jsonobject and send it over to gui
