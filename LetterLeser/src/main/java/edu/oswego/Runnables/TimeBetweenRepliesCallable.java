@@ -1,7 +1,6 @@
 package edu.oswego.Runnables;
 
 import edu.oswego.model.Email;
-import edu.oswego.model.EmailAddress;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -9,18 +8,18 @@ import java.util.List;
 import java.util.concurrent.Callable;
 
 public class TimeBetweenRepliesCallable implements Callable {
-	private static List<Email> emails;
+	private List<Email> emails;
+	private String user;
 
 	private static final double oneDay = 86400000;
 	private static final double oneHour = 3600000;
 
 	/**
 	 * @author Phoenix Boisnier
-	 * TODO This needs testing still.
-	 * @param emails
 	 */
-	public TimeBetweenRepliesCallable(List<Email> emails) {
+	public TimeBetweenRepliesCallable(List<Email> emails, String username) {
 		this.emails = emails;
+		this.user = username;
 	}
 
 	/**
@@ -41,7 +40,6 @@ public class TimeBetweenRepliesCallable implements Callable {
 		double[][] totals = new double[2][7];
 		//This bit will save us time later.
 		ArrayList<String> keys = new ArrayList<>();
-		String user = "";
 
 		/*
 		This section converts the emails array list into a hash map.
@@ -59,30 +57,6 @@ public class TimeBetweenRepliesCallable implements Callable {
 				subjects.put(e.getSubject(), new ArrayList<Email>());
 				subjects.get(e.getSubject()).add(e);
 				keys.add(e.getSubject());
-			}
-			//This bit will help us determine who the user is, since we do not have access to that information
-			//explicitly. Granted, this could be an issue if the user receives more emails from one particular address
-			//than they send out. If we want to avoid this, TODO we may need to add the user's address to Email.
-			List<EmailAddress> l = e.getFrom();
-			while(l.size() > 0){
-				if(addresses.containsKey(l.get(0).getEmailAddress())){
-					addresses.put(l.get(0).getEmailAddress(), addresses.get(l.get(0).getEmailAddress())+1);
-				}
-				else {
-					addresses.put(l.get(0).getEmailAddress(), 1);
-				}
-				if(addresses.containsKey(l.get(0).getEmailAddress()) && addresses.containsKey(user)){
-					if(addresses.get(user) < addresses.get(l.get(0).getEmailAddress())){
-						user = l.get(0).getEmailAddress();
-					}
-					//else user stays as current value.
-				}
-				//Since we know that l.get(0).getEmailAddress() exists in the hash map, that means that the user was not
-				//contained in the map, which means the user has no value and is assigned to the current email address.
-				else {
-					user = l.get(0).getEmailAddress();
-				}
-				l.remove(0);
 			}
 
 		}
