@@ -26,7 +26,6 @@ public class SentimentScoreCallable implements Callable {
                 positive += 1;
             }
         }
-		return positive / emails.size();
-	}
+	return (positive / emails.size())*100;
+    }
 }
-
