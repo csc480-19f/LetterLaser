@@ -240,7 +240,7 @@ public class Database {
 	}
 
 	/**
-	 * gets a user (email address object) based on a string email search.
+	 * fetches a user (email address object) based on a string email search.
 	 * 
 	 * @param emailAddress
 	 * @see EmailAddress
@@ -261,6 +261,15 @@ public class Database {
 		}
 
 		return new EmailAddress(insertUser(emailAddress), emailAddress);
+	}
+
+	/**
+	 * Gets a EmailAddress object of current db object user. Not the same as getUser(String emailAddress).
+	 * 
+	 * @return EmailAddress object
+	 */
+	public EmailAddress getUser() {
+		return user;
 	}
 
 	/**

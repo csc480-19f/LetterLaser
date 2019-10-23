@@ -3,6 +3,9 @@ package edu.oswego.database;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.Scanner;
+import java.util.logging.Level;
+
+import edu.oswego.debug.DebugLogger;
 
 /**
  * Simple static class to access credentials from other classes.
@@ -42,6 +45,7 @@ public class Settings {
 			edu.oswego.mail.Settings.EMAIL_PWD = scanner.nextLine();
 
 			scanner.close();
+			DebugLogger.logEvent(Level.INFO, "Credentials loaded from local file.");
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		}

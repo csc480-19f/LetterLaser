@@ -5,6 +5,7 @@ import com.google.gson.JsonObject;
 import edu.oswego.database.Database;
 import edu.oswego.debug.DebugLogger;
 import edu.oswego.model.Email;
+import edu.oswego.model.EmailAddress;
 import edu.oswego.model.UserFavourites;
 import edu.oswego.model.UserFolder;
 import edu.oswego.props.Interval;
@@ -161,7 +162,7 @@ public class Handler implements Runnable {
 			UserFavourites filter = database.get().getUserFavourite(message.get("message").getAsString());
 			//TODO have UserFavourite get me an endDate var
 			List<Email> emails = database.get().getEmailByFilter(filter.getName(),filter.getStartDate().toString(),filter.getStartDate().toString(),filter.isSeen(),filter.getFolder().getFolder().getName());
-			calculateAndSend(emails);
+			calculateAndSend(emails, database.get().getUser());
 		} else {
 			parseJsonObject(message.getAsJsonObject("Filter"));
 		}
@@ -226,12 +227,12 @@ public class Handler implements Runnable {
 		}
 
 		List<Email> emails = database.get().getEmailByFilter(attachment, Time.parseDateTime(date), Time.parseDateTime(endDate), seen, folderName);
-		calculateAndSend(emails);
+		calculateAndSend(emails, database.get().getUser());
 
 
 	}
 
-	private void calculateAndSend(List<Email> emails) throws InterruptedException {
+	private void calculateAndSend(List<Email> emails, EmailAddress user) throws InterruptedException {
 		// Making all the callables and futures and executing them in threads
 		{//debug stuff
 			DebugLogger.logEvent(Level.INFO, "session " + session.get().getId() + " running calcs on:\n"+
@@ -242,8 +243,8 @@ public class Handler implements Runnable {
 		SentimentScoreCallable ssc = new SentimentScoreCallable(emails);
 		FolderCallable fc = new FolderCallable(emails);
 		NumOfEmailsCallable noec = new NumOfEmailsCallable(emails);
-		SnRCallable src = new SnRCallable(emails);
-		TimeBetweenRepliesCallable tbrc = new TimeBetweenRepliesCallable(emails);
+		SnRCallable src = new SnRCallable(emails, user.getEmailAddress());
+		TimeBetweenRepliesCallable tbrc = new TimeBetweenRepliesCallable(emails, user.getEmailAddress());
 
 		FutureTask sscTask = new FutureTask<>(ssc);
 		FutureTask dcTask = new FutureTask<>(dc);
