@@ -67,7 +67,7 @@ public class Database {
 				queryAttr.close();
 			}
 		} catch (SQLException e) {
-			e.printStackTrace();
+			DebugLogger.logEvent(Level.WARNING, e.getMessage());
 		}
 	}
 
@@ -369,14 +369,16 @@ public class Database {
 			DebugLogger.logEvent(Level.WARNING, e.getMessage());
 		}
 
-		DebugLogger.logEvent(Level.INFO, "Favourites fetched for " + user.getId() + " <" + user.getEmailAddress() + ">");
-		
+		DebugLogger.logEvent(Level.INFO,
+				"Favourites fetched for " + user.getId() + " <" + user.getEmailAddress() + ">");
+
 		return ufList;
 	}
 
 	// TODO convert this to string with Time object available now. No need for ps.
 	/**
 	 * Inserts a user favourite based on several parameters belong
+	 * 
 	 * @param favName
 	 * @param utilDate
 	 * @param intervalRange
@@ -396,14 +398,16 @@ public class Database {
 
 		query("INSERT INTO user_favourites (filter_settings_id, user_id, fav_name) VALUE (" + filterId + ", "
 				+ user.getId() + ", '" + favName + "');");
-		
-		DebugLogger.logEvent(Level.INFO, "User Favourite added for " + user.getId() + " <" + user.getEmailAddress() + ">");
+
+		DebugLogger.logEvent(Level.INFO,
+				"User Favourite added for " + user.getId() + " <" + user.getEmailAddress() + ">");
 
 		return true;
 	}
 
 	/**
 	 * Inserts a filter_settings record in the database
+	 * 
 	 * @param utilDate
 	 * @param intervalRange
 	 * @param hasAttachment
@@ -441,16 +445,19 @@ public class Database {
 
 	/**
 	 * Removes a user_favourites record by favourite name
+	 * 
 	 * @param favName
 	 * @see #insertUserFavourites
 	 */
 	public void removeUserFavourite(String favName) {
 		query("DELETE FROM user_favourites WHERE fav_name = '" + favName + "' AND user_id = " + user.getId() + ";");
-		DebugLogger.logEvent(Level.INFO, "User favourite removal submitted for " + user.getId() + " <" + user.getEmailAddress() + ">");
+		DebugLogger.logEvent(Level.INFO,
+				"User favourite removal submitted for " + user.getId() + " <" + user.getEmailAddress() + ">");
 	}
 
 	/**
 	 * Checks if a folder exists in the database
+	 * 
 	 * @param folderName
 	 * @param folderList
 	 * @return boolean value whether the folder exists or not
@@ -471,6 +478,7 @@ public class Database {
 
 	/**
 	 * Imports all folders from a user's mail folder
+	 * 
 	 * @return List of UserFolder
 	 * @see UserFolder
 	 */
@@ -505,6 +513,7 @@ public class Database {
 
 	/**
 	 * Get an email based on its message
+	 * 
 	 * @param m
 	 * @return database id of the email record
 	 */
@@ -530,6 +539,7 @@ public class Database {
 
 	/**
 	 * Inserts an email record into the database
+	 * 
 	 * @param m
 	 * @param folderList
 	 * @param emailIdList
@@ -591,6 +601,7 @@ public class Database {
 
 	/**
 	 * Checks if an email address exists
+	 * 
 	 * @param emailAddress
 	 * @return boolean whether email address exists or not
 	 */
@@ -611,6 +622,7 @@ public class Database {
 
 	/**
 	 * Parses an email with invalid characters (such as apostrophe's)
+	 * 
 	 * @param address
 	 * @return legal string value of email address
 	 */
@@ -627,6 +639,7 @@ public class Database {
 
 	/**
 	 * Inserts an email address record into database
+	 * 
 	 * @param addresses
 	 * @return list of EmailAddress
 	 * @see EmailAddress
@@ -668,6 +681,7 @@ public class Database {
 
 	/**
 	 * Gets all emails received based on emailId
+	 * 
 	 * @param emailId
 	 * @return list of EmailAddress
 	 */
@@ -690,6 +704,7 @@ public class Database {
 
 	/**
 	 * Checks if received email record exists
+	 * 
 	 * @param emailId
 	 * @param emailAddrId
 	 * @return boolean if receieved email exists
@@ -709,6 +724,7 @@ public class Database {
 
 	/**
 	 * Inserts a received email record into database
+	 * 
 	 * @param emailId
 	 * @param emailAddrId
 	 */
@@ -720,6 +736,7 @@ public class Database {
 
 	/**
 	 * Checks if an email exists for a user exists
+	 * 
 	 * @param addr
 	 * @param emailId
 	 * @return if email exists for user
@@ -740,6 +757,7 @@ public class Database {
 
 	/**
 	 * Inserts a user email record
+	 * 
 	 * @param addr
 	 * @param emailId
 	 */
@@ -750,6 +768,7 @@ public class Database {
 
 	/**
 	 * Gets count of all emails by folder name
+	 * 
 	 * @param folderName
 	 * @return number of emails
 	 */
@@ -771,19 +790,22 @@ public class Database {
 
 		return size;
 	}
-	
+
 	/**
 	 * Sets validated amount of emails (in CSC480_19f folder) for user after a pull
+	 * 
 	 * @param emailAddress
 	 * @param count
 	 */
 	public void setValidatedEmailCount(String emailAddress, int count) {
 		query("UPDATE user SET validated_emails = " + count + " WHERE email_address = '" + emailAddress + "';");
-		DebugLogger.logEvent(Level.INFO, "Validation count submitted for " + user.getId() + " <" + user.getEmailAddress() + ">");
+		DebugLogger.logEvent(Level.INFO,
+				"Validation count submitted for " + user.getId() + " <" + user.getEmailAddress() + ">");
 	}
-	
+
 	/**
-	 * Gets number of validated emails 
+	 * Gets number of validated emails
+	 * 
 	 * @return number of validated emails
 	 * @see #setValidatedEmailCount
 	 */
@@ -804,6 +826,7 @@ public class Database {
 
 	/**
 	 * Creates a database query. This is a dangerous operation if unchecked.
+	 * 
 	 * @param statement
 	 * @deprecated
 	 */
@@ -819,6 +842,7 @@ public class Database {
 
 	/**
 	 * Creates a database query with a bunch of statements.
+	 * 
 	 * @param statements
 	 * @deprecated
 	 * @see #query
@@ -828,9 +852,10 @@ public class Database {
 			query(statement);
 	}
 
-	//TODO change this so it's only for a user
+	// TODO change this so it's only for a user
 	/**
 	 * Truncates all tables. Dangerous as it removes all data for all users.
+	 * 
 	 * @see #truncateTable
 	 */
 	public void truncateTables() {
@@ -841,6 +866,7 @@ public class Database {
 
 	/**
 	 * Truncates a single table
+	 * 
 	 * @param table
 	 */
 	public void truncateTable(String table) {
@@ -850,14 +876,15 @@ public class Database {
 
 	/**
 	 * Checks if a user has emails.
+	 * 
 	 * @param emailAddress
 	 * @return if user has emails
 	 */
 	public boolean hasEmails() {
 		try {
-			ResultSet queryTbl = getConnection()
-					.prepareStatement("SELECT * from user " + "JOIN user_email ON user.id = user_email.id "
-							+ "JOIN email ON email.id = user_email.email_id WHERE email = " + user.getEmailAddress() + ";")
+			ResultSet queryTbl = getConnection().prepareStatement("SELECT * from user "
+					+ "JOIN user_email ON user.id = user_email.id "
+					+ "JOIN email ON email.id = user_email.email_id WHERE email = " + user.getEmailAddress() + ";")
 					.executeQuery();
 			int size = 0;
 
@@ -878,6 +905,7 @@ public class Database {
 	// TODO NEEDS THIS IMPLEMENTATION OF SENTIMENT ANALYZER TO SCORE
 	/**
 	 * Uses sentiment score analyzer to calculate and insert the value
+	 * 
 	 * @param emailId
 	 * @param score
 	 * @see #insertSentimentScore
@@ -896,6 +924,7 @@ public class Database {
 
 	/**
 	 * Inserts a sentiment score record into the database
+	 * 
 	 * @param score
 	 * @return database id of sentiment score record
 	 */
@@ -919,6 +948,7 @@ public class Database {
 
 	/**
 	 * Inserts sentiment score reference into an email record
+	 * 
 	 * @param emailId
 	 * @param sentimentScoreId
 	 */

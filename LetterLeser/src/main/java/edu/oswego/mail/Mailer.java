@@ -2,6 +2,7 @@ package edu.oswego.mail;
 
 import java.io.IOException;
 import java.util.Properties;
+import java.util.logging.Level;
 
 import javax.mail.BodyPart;
 import javax.mail.Folder;
@@ -15,29 +16,41 @@ import javax.mail.Store;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMultipart;
 
+import edu.oswego.debug.DebugLogger;
+
 /**
  * Mailer class that has the Session/Store objects as well as host/port/tls
  * settings.
  * 
  * @author Jimmy Nguyen
- * @since 10/08/2019
+ * @since 10/23/2019
  */
 
 public class Mailer {
 
 	private Session session;
 	private Store storage;
-	private String accessKey;
+	private String emailAddress, password;
 
-	public Mailer(String accessKey) {
-		this.accessKey = accessKey; // TODO Gotta do getStorage() adjustment when auth key comes in
+	/**
+	 * Creates a mailer object.
+	 * 
+	 * @param emailAddress
+	 * @param password
+	 * @see .Database
+	 */
+	public Mailer(String emailAddress, String password) {
+		this.emailAddress = emailAddress;
+		this.password = password; // UNSAFE. Lets encrypt.
+		DebugLogger.logEvent(Level.WARNING,
+				"Mailer object created. Information is in local storage stored unencrypted.");
 	}
 
-	/*
+	/**
 	 * Establish a connection using imap
 	 * 
 	 * @return a javaxmail Session object. Needed for getting a javaxmail Storage
-	 * object.
+	 *         object.
 	 */
 	public Session getConnection() {
 		if (session == null) {
@@ -50,8 +63,8 @@ public class Mailer {
 		return session;
 	}
 
-	/*
-	 * Logins with a user and password
+	/**
+	 * Logins with a user and password information
 	 * 
 	 * @return javaxmail Store object. Needed to pull by special means.
 	 */
@@ -60,7 +73,7 @@ public class Mailer {
 			try {
 				storage = getConnection().getStore("imaps");
 			} catch (NoSuchProviderException e) {
-				e.printStackTrace();
+				DebugLogger.logEvent(Level.WARNING, e.getMessage());
 			}
 		}
 
@@ -68,19 +81,18 @@ public class Mailer {
 			try {
 				storage.connect(Settings.HOST, Settings.EMAIL_ADDRESS, Settings.EMAIL_PWD);
 			} catch (MessagingException e) {
-				e.printStackTrace();
+				DebugLogger.logEvent(Level.WARNING, e.getMessage());
 			}
 		}
 
 		return storage;
 	}
 
-	/*
-	 * Fetches a gmail folder
+	/**
+	 * Fetches a folder by name
 	 * 
-	 * @param folderName - name of folder
-	 * 
-	 * @return javaxmail Folder object
+	 * @param folderName
+	 * @return JavaxMail folder object
 	 */
 	public Folder getFolder(String folderName) {
 		Store store = getStorage();
@@ -88,19 +100,17 @@ public class Mailer {
 		try {
 			folder = store.getFolder(folderName);
 		} catch (MessagingException e) {
-			e.printStackTrace();
+			DebugLogger.logEvent(Level.WARNING, e.getMessage());
 		}
 		return folder;
 	}
 
-	/*
-	 * Moves emails that were processed in the database to a new folder called
-	 * CSC480_19F (creates it if not exists). Used for validation.
+	/**
+	 * Moves emails that were processed/pulled in database to a new invisible folder
+	 * called CSC480_19F (creates if not exists). Used for validation/checking.
 	 * 
-	 * @param originFolderName - name of the folder that you want to copy messages
-	 * from
-	 * 
-	 * @param msgs - messages from the origin folder.
+	 * @param originFolderName
+	 * @param msgs
 	 */
 	public void markEmailsInFolder(String originFolderName, Message[] msgs) { // TODO change this to javaxmail folder
 		// MAKE HIDDEN FOLDER... maybe subscribed?
@@ -124,16 +134,15 @@ public class Mailer {
 			originFolder.copyMessages(msgs, folder);
 			originFolder.close();
 		} catch (MessagingException e) {
-			e.printStackTrace();
+			DebugLogger.logEvent(Level.WARNING, e.getMessage());
 		}
 	}
 
-	/*
-	 * Uses DB connection and PreparedStatement to execute a query.
+	/**
+	 * Gets all the emails from a folder
 	 * 
-	 * @param folderName - name of folder
-	 * 
-	 * @return array of javaxmail Message object.
+	 * @param folderName
+	 * @return Message array object
 	 */
 	public Message[] pullEmails(String folderName) {
 		Store store = getStorage();
@@ -143,18 +152,17 @@ public class Mailer {
 			Message[] msgs = folder.getMessages();
 			return msgs;
 		} catch (MessagingException e) {
-			e.printStackTrace();
+			DebugLogger.logEvent(Level.WARNING, e.getMessage());
 		}
 
 		return null;
 	}
 
-	/*
-	 * Checks if a message has an attachment
+	/**
+	 * Checks if a message has an attachment via multipart and mimebodypart
 	 * 
-	 * @param m - javaxmail message object
-	 * 
-	 * @return boolean if message is multipart
+	 * @param m
+	 * @return if message has attachment
 	 */
 	public boolean hasAttachment(Message m) {
 		try {
@@ -175,11 +183,10 @@ public class Mailer {
 		return false;
 	}
 
-	/*
-	 * Fetches attachment name based on message
+	/**
+	 * Fetches the name of an attachment
 	 * 
-	 * @param m - javaxmail message object
-	 * 
+	 * @param m
 	 * @return name of attachment
 	 */
 	public String getAttachmentName(Message m) {
@@ -191,15 +198,20 @@ public class Mailer {
 					return part.getFileName().toString();
 			}
 		} catch (MessagingException e) {
-			e.printStackTrace();
+			DebugLogger.logEvent(Level.WARNING, e.getMessage());
 		} catch (IOException e) {
-			e.printStackTrace();
+			DebugLogger.logEvent(Level.WARNING, e.getMessage());
 		}
 
 		return "";
 	}
-	
 
+	/**
+	 * Gets content of email for sentiment analysis
+	 * 
+	 * @param message
+	 * @return content of email
+	 */
 	public String getTextFromMessage(Message message) {
 		String text = "";
 		try {
@@ -208,13 +220,20 @@ public class Mailer {
 			else if (message.isMimeType("multipart/*"))
 				text = getTextFromMimeMultipart((MimeMultipart) message.getContent());
 		} catch (MessagingException e) {
-			e.printStackTrace();
+			DebugLogger.logEvent(Level.WARNING, e.getMessage());
 		} catch (IOException e) {
-			e.printStackTrace();
+			DebugLogger.logEvent(Level.WARNING, e.getMessage());
 		}
 		return text;
 	}
-	
+
+	/**
+	 * Gets the content of email for sentiment analysis if MMP object
+	 * 
+	 * @param mmp
+	 * @return email content from MimeMultipart object
+	 * @see #getTextFromMessage
+	 */
 	private String getTextFromMimeMultipart(MimeMultipart mmp) {
 		String text = "";
 		try {
@@ -223,18 +242,17 @@ public class Mailer {
 				if (bodyPart.isMimeType("text/plain")) {
 					text += "\n" + bodyPart.getContent();
 					break;
-				} else if (bodyPart.isMimeType("text/html")) {
+				} else if (bodyPart.isMimeType("text/html"))
 					text += "\n" + org.jsoup.Jsoup.parse((String) bodyPart.getContent()).text();
-				} else if (bodyPart.getContent() instanceof MimeMultipart) {
-					text += getTextFromMimeMultipart((MimeMultipart)bodyPart.getContent());
-				}
+				else if (bodyPart.getContent() instanceof MimeMultipart)
+					text += getTextFromMimeMultipart((MimeMultipart) bodyPart.getContent());
 			}
 		} catch (MessagingException e) {
-			e.printStackTrace();
+			DebugLogger.logEvent(Level.WARNING, e.getMessage());
 		} catch (IOException e) {
-			e.printStackTrace();
+			DebugLogger.logEvent(Level.WARNING, e.getMessage());
 		}
-		
+
 		return text;
 	}
 

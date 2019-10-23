@@ -19,7 +19,7 @@ public class DBdemo {
 		long ct = System.currentTimeMillis();
 		Settings.loadCredentials();
 		
-		Mailer mailer = new Mailer("AUTH_KEY_INSERTED_HERE");
+		Mailer mailer = new Mailer("csc344testacc@gmail.com", "PASS");
 		Database db = new Database("csc344testacc@gmail.com", mailer);
 		
 //		db.truncateTables();
