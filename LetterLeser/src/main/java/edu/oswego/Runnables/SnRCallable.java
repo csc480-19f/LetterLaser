@@ -8,7 +8,7 @@ public class SnRCallable implements Callable {
 	private List<Email> emails;
 	private String user;
 
-	private final double oneDay = 86400000;
+	private static final double oneDay = 86400000;
 
 	/**
 	 * @author Phoenix Boisnier
