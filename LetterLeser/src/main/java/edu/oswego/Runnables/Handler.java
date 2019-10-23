@@ -161,8 +161,7 @@ public class Handler implements Runnable {
 			UserFavourites filter = database.get().getUserFavourite(message.get("message").getAsString());
 			//TODO have UserFavourite get me an endDate var
 			List<Email> emails = database.get().getEmailByFilter(filter.getName(),filter.getStartDate().toString(),filter.getStartDate().toString(),filter.isSeen(),filter.getFolder().getFolder().getName());
-			List<UserFolder> folders = database.get().importFolders();
-			calculateAndSend(emails,folders);
+			calculateAndSend(emails);
 		} else {
 			parseJsonObject(message.getAsJsonObject("Filter"));
 		}
@@ -227,22 +226,21 @@ public class Handler implements Runnable {
 		}
 
 		List<Email> emails = database.get().getEmailByFilter(attachment, Time.parseDateTime(date), Time.parseDateTime(endDate), seen, folderName);
-		List<UserFolder> folders = database.get().importFolders();
-		calculateAndSend(emails,folders);
+		calculateAndSend(emails);
 
 
 	}
 
-	private void calculateAndSend(List<Email> emails, List<UserFolder> folders) throws InterruptedException {
+	private void calculateAndSend(List<Email> emails) throws InterruptedException {
 		// Making all the callables and futures and executing them in threads
 		{//debug stuff
 			DebugLogger.logEvent(Level.INFO, "session " + session.get().getId() + " running calcs on:\n"+
-					emails.toString()+"\n"+folders.toString());
+					emails.toString());
 		}
 
 		DomainCallable dc = new DomainCallable(emails);
 		SentimentScoreCallable ssc = new SentimentScoreCallable(emails);
-		FolderCallable fc = new FolderCallable(folders);
+		FolderCallable fc = new FolderCallable(emails);
 		NumOfEmailsCallable noec = new NumOfEmailsCallable(emails);
 		SnRCallable src = new SnRCallable(emails);
 		TimeBetweenRepliesCallable tbrc = new TimeBetweenRepliesCallable(emails);
