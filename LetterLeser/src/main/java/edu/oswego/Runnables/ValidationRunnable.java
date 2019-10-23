@@ -43,7 +43,7 @@ public class ValidationRunnable implements Runnable {
 		// TODO check if that is how you get email from google json object
 		String email = googleAccessToken.get().getAsJsonObject("profileObj").get("email").getAsString();
 		Database db = atomicDatabase.get();
-		if (db.hasEmails(email)) {
+		if (db.hasEmails()) {
 			{//debug stuff
 				DebugLogger.logEvent(Level.INFO, "session " + session.get().getId() + " emails exist in db, setting emailsStored to true");
 			}

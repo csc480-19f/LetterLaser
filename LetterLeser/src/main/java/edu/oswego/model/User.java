@@ -2,13 +2,20 @@ package edu.oswego.model;
 
 import java.util.List;
 
+/**
+ * User object based on SQL table model: user
+ * 
+ * @author Jimmy Nguyen
+ * @since 10/23/2019
+ *
+ */
+
 public class User {
 	
 	private EmailAddress emailAddress;
 	private List<UserFavourites> userFavourites;
 	
 	public User(EmailAddress emailAddress, List<UserFavourites> userFavourites) {
-		super();
 		this.emailAddress = emailAddress;
 		this.userFavourites = userFavourites;
 	}

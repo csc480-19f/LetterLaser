@@ -10,19 +10,25 @@ import javax.mail.MessagingException;
 import edu.oswego.mail.Mailer;
 import edu.oswego.model.Email;
 import edu.oswego.props.Interval;
-import edu.oswego.props.Settings;
 import edu.oswego.props.Time;
 
+/**
+ * Test class demonstrating some database functionality.
+ * 
+ * @author nguyen
+ * @since 10/23/2019
+ * @deprecated
+ */
 public class DBdemo {
 
 	public static void main(String[] args) {
 		long ct = System.currentTimeMillis();
 		Settings.loadCredentials();
-		
-		Mailer mailer = new Mailer("AUTH_KEY_INSERTED_HERE");
+
+		Mailer mailer = new Mailer("csc344testacc@gmail.com", "PASS");
 		Database db = new Database("csc344testacc@gmail.com", mailer);
-		
-//		db.truncateTables();
+
+		// db.truncateTables();
 		db.pull();
 
 		try {
@@ -31,24 +37,24 @@ public class DBdemo {
 			db.insertUserFavourites("Crappy favs", utilDate, Interval.YEAR, true, true, "INBOX");
 			db.insertUserFavourites("Mediocre favs", utilDate, Interval.MONTH, false, true, "Misc/UUP/CELT");
 			db.insertUserFavourites("Jimmys favs", utilDate, Interval.WEEK, true, false, "[Gmail]/Sent Mail");
-//			db.removeUserFavourite("Awesome favs");
+			// db.removeUserFavourite("Awesome favs");
 		} catch (java.text.ParseException e) {
 			e.printStackTrace();
 		}
 
 		db.showTables();
 		// db.truncateTables();
-		
+
 		String startDate = Time.parseDateTime(Time.getDate("2010-03-12"));
 		String endDate = Time.parseDateTime(Time.getDate("2014-03-12"));
 		List<Email> emailList = db.getEmailByFilter(null, startDate, endDate, false, "Apple Developer");
-		
+
 		System.out.println(emailList);
-		
+
 		double time = (double) ((System.currentTimeMillis() - ct) * .001);
 		System.out.println("Total runtime: " + time + " seconds\n");
 	}
-	
+
 	public static boolean needsUpdate(Database db, Mailer mailer) {
 		int validatedEmails = db.getValidatedEmails();
 		Folder validationFolder = mailer.getFolder("CSC480_19f");
@@ -65,5 +71,5 @@ public class DBdemo {
 
 		return false;
 	}
-	
+
 }

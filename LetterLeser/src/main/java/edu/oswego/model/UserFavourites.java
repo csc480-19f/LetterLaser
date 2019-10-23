@@ -4,6 +4,14 @@ import java.sql.Date;
 
 import edu.oswego.props.Interval;
 
+/**
+ * User Favourites object based on SQL table model: user_favourites
+ * 
+ * @author Jimmy Nguyen
+ * @since 10/23/2019
+ *
+ */
+
 public class UserFavourites {
 	
 	private int id;
@@ -16,7 +24,6 @@ public class UserFavourites {
 	
 	public UserFavourites(int id, String name, Date startDate, Interval intervalRange, boolean hasAttachment,
 			boolean isSeen, UserFolder folder) {
-		super();
 		this.id = id;
 		this.name = name;
 		this.startDate = startDate;

@@ -14,10 +14,10 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import edu.oswego.database.Database;
+import edu.oswego.database.Settings;
 import edu.oswego.mail.Mailer;
 import edu.oswego.model.UserFavourites;
 import edu.oswego.props.Interval;
-import edu.oswego.props.Settings;
 
 class DatabaseUserTest {
 
@@ -27,7 +27,7 @@ class DatabaseUserTest {
 	@BeforeEach
 	void setUp() throws Exception {
 		Settings.loadCredentials();
-		mailer = new Mailer("AUTH_KEY_INSERTED_HERE");
+		mailer = new Mailer("email here", "passwordh ere");
 		db = new Database("csc344testacc@gmail.com", mailer);
 		db.truncateTables();
 	}

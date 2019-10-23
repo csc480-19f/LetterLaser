@@ -75,7 +75,7 @@ public class Websocket {
 			{//debug stuff
 				DebugLogger.logEvent(Level.INFO, "session " + session.getId() + "email parsed = "+email);
 			}
-			Mailer mailer = new Mailer(jsonMessage.get("accessToken").getAsString());
+			Mailer mailer = new Mailer(email, jsonMessage.get("password").getAsString()); // I changed this cause we need a pass now. - Jim
 			Database db = new Database(email, mailer);
 
 			AtomicBoolean emailsExist = new AtomicBoolean(false);

@@ -9,6 +9,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
 
 import javax.mail.Address;
 import javax.mail.Flags;
@@ -16,32 +17,33 @@ import javax.mail.Folder;
 import javax.mail.Message;
 import javax.mail.MessagingException;
 
+import edu.oswego.debug.DebugLogger;
 import edu.oswego.mail.Mailer;
 import edu.oswego.model.Email;
 import edu.oswego.model.EmailAddress;
 import edu.oswego.model.UserFavourites;
 import edu.oswego.model.UserFolder;
 import edu.oswego.props.Interval;
-import edu.oswego.props.Settings;
 import edu.oswego.sentiment.SentimentScore;
 
 /**
  * Database class to get connection, push/pull data, and submit queries.
  * 
  * @author Jimmy
- * @since 10/08/2019
+ * @since 10/23/2019
  */
-
-// TODO NO APOSTROPHE IN ANY INSERTIONS. MUST STRIP/PARSE
 
 public class Database {
 
 	private Connection connection;
 	private EmailAddress user;
-
 	private Mailer mailer;
 
-	// Experimental only.
+	/**
+	 * Experimental purposes only.
+	 * 
+	 * @deprecated
+	 */
 	public void showTables() {
 		try {
 			// show all tables
@@ -49,7 +51,7 @@ public class Database {
 
 			while (queryTbl.next()) {
 				String tbl = queryTbl.getString(1);
-				System.out.println("[INBOX] Table: " + tbl + "\n-------------------");
+				System.out.println("[FOLDER] Table: " + tbl + "\n-------------------");
 
 				// show all attributes from the tables
 				ResultSet queryAttr = getConnection().prepareStatement("select * from " + tbl).executeQuery();
@@ -64,36 +66,47 @@ public class Database {
 				queryAttr.close();
 			}
 		} catch (SQLException e) {
-			e.printStackTrace();
+			DebugLogger.logEvent(Level.WARNING, e.getMessage());
 		}
 	}
 
+	/**
+	 * @param emailAddress
+	 * 
+	 * @param mailer
+	 */
 	public Database(String emailAddress, Mailer mailer) {
 		user = getUser(emailAddress);
 		this.mailer = mailer;
+		DebugLogger.logEvent(Level.INFO,
+				"Database obj created for: " + user.getId() + " <" + user.getEmailAddress() + ">");
 	}
 
+	/**
+	 * Create and establish a database connection
+	 * 
+	 * @return JavaMail Connection object
+	 */
 	public Connection getConnection() {
 		try {
-			if (connection == null || connection.isClosed())
+			if (connection == null || connection.isClosed()) {
 				connection = DriverManager.getConnection("jdbc:mysql://" + Settings.DATABASE_HOST + ":"
 						+ Settings.DATABASE_PORT + "/" + Settings.DATABASE_SCHEMA
 						+ "?useUnicode=true&characterEncoding=UTF-8&serverTimezone=UTC&user="
 						+ Settings.DATABASE_USERNAME + "&password=" + Settings.DATABASE_PASSWORD);
+				DebugLogger.logEvent(Level.INFO, "Connection has been established with database.");
+			}
 		} catch (SQLException e) {
-			e.printStackTrace();
+			DebugLogger.logEvent(Level.WARNING, e.getMessage());
 		}
 		return connection;
 	}
 
+	/**
+	 * Pulls mailer emails into database
+	 */
 	public void pull() {
 		List<UserFolder> folderList = importFolders();
-		try {
-			System.out.println(folderList.get(0).getFolder().getFullName() + "_"
-					+ folderList.get(0).getFolder().getMessageCount());
-		} catch (MessagingException e1) {
-			e1.printStackTrace();
-		}
 		List<Integer> emailIdList = new ArrayList<>();
 		List<String> messageList = new ArrayList<>();
 
@@ -114,15 +127,13 @@ public class Database {
 					emailIdList.add(emailId);
 
 					messageList.add(mailer.getTextFromMessage(m));
-					// System.out.println(m.getContent());
-					// messageList.add(m.getContent().toString());
 
 					s++;
 					if (s > stopper)
 						break;
 
 				} catch (MessagingException e) {
-					e.printStackTrace();
+					DebugLogger.logEvent(Level.WARNING, e.getMessage());
 				}
 			}
 			break;
@@ -139,8 +150,21 @@ public class Database {
 		// System.out.println("SS CALC");
 		// calculateSentimentScore(emailIdList.get(i), ss[i]);
 		// }
+
+		DebugLogger.logEvent(Level.INFO,
+				"Emails have been pulled for " + user.getId() + " <" + user.getEmailAddress() + ">");
 	}
 
+	/**
+	 * Aggregates all emails under the param conditions
+	 * 
+	 * @param fileName
+	 * @param startDate
+	 * @param endDate
+	 * @param seen
+	 * @param folderName
+	 * @return List of Email objects
+	 */
 	public List<Email> getEmailByFilter(String fileName, String startDate, String endDate, boolean seen,
 			String folderName) {
 		List<Email> emailList = new ArrayList<>();
@@ -174,39 +198,54 @@ public class Database {
 					.executeQuery();
 
 			while (rs.next()) {
-
 				// TODO getSentimentScoreById
 				Email e = new Email(rs.getInt(1), rs.getDate(2), rs.getString(3), rs.getDouble(4), rs.getBoolean(5),
-						rs.getString(6), rs.getBoolean(7), null, getFolderById(rs.getInt(9)), getReceivedEmail(rs.getInt(1)));
+						rs.getString(6), rs.getBoolean(7), null, getFolderById(rs.getInt(9)),
+						getReceivedEmail(rs.getInt(1)));
 				emailList.add(e);
 			}
-		} catch (SQLException e1) {
-			e1.printStackTrace();
+		} catch (SQLException e) {
+			DebugLogger.logEvent(Level.WARNING, e.getMessage());
 		}
 
+		DebugLogger.logEvent(Level.INFO, "Query submitted for " + user.getId() + " <" + user.getEmailAddress() + ">");
 		return emailList;
 	}
 
+	/**
+	 * Inserts a user object and gives back the id value
+	 * 
+	 * @param emailAddress
+	 * @return database id of user. -1 if id there is no insertion.
+	 */
 	private int insertUser(String emailAddress) {
 		try {
 			PreparedStatement ps = getConnection().prepareStatement(
 					"INSERT INTO user (email_address) VALUE ('" + emailAddress + "')", Statement.RETURN_GENERATED_KEYS);
 			if (ps.executeUpdate() == 0)
-				throw new SQLException("Could not insert into folder, no rows affected");
+				DebugLogger.logEvent(Level.INFO, "Could not insert a user, no rows affected");
 
 			ResultSet generatedKeys = ps.getGeneratedKeys();
 
 			if (generatedKeys.next()) {
-				System.out.println(generatedKeys.getInt(1));
+				DebugLogger.logEvent(Level.INFO,
+						"New user created " + generatedKeys.getInt(1) + " <" + emailAddress + ">");
 				return generatedKeys.getInt(1);
 			}
 
 		} catch (SQLException e) {
-			e.printStackTrace();
+			DebugLogger.logEvent(Level.WARNING, e.getMessage());
 		}
 		return -1;
 	}
 
+	/**
+	 * fetches a user (email address object) based on a string email search.
+	 * 
+	 * @param emailAddress
+	 * @see EmailAddress
+	 * @return EmailAddress object
+	 */
 	private EmailAddress getUser(String emailAddress) {
 		try {
 			ResultSet rs = getConnection()
@@ -218,12 +257,27 @@ public class Database {
 
 			rs.close();
 		} catch (SQLException e) {
-			e.printStackTrace();
+			DebugLogger.logEvent(Level.WARNING, e.getMessage());
 		}
 
 		return new EmailAddress(insertUser(emailAddress), emailAddress);
 	}
 
+	/**
+	 * Gets a EmailAddress object of current db object user. Not the same as getUser(String emailAddress).
+	 * 
+	 * @return EmailAddress object
+	 */
+	public EmailAddress getUser() {
+		return user;
+	}
+
+	/**
+	 * Gets a folder id based on its name
+	 * 
+	 * @param folderName
+	 * @return database id number of the folder
+	 */
 	private int getFolderId(String folderName) {
 		try {
 			ResultSet generatedKeys = getConnection()
@@ -231,15 +285,18 @@ public class Database {
 			if (generatedKeys.next())
 				return generatedKeys.getInt(1);
 		} catch (SQLException e) {
-			e.printStackTrace();
+			DebugLogger.logEvent(Level.WARNING, e.getMessage());
 		}
 
-		// for (UserFolder f : folderList)
-		// if (f.getFolder().getFullName().equals(folderName))
-		// return f.getId();
 		return -1;
 	}
 
+	/**
+	 * Gets a folder based on its id number
+	 * 
+	 * @param id
+	 * @return UserFolder object
+	 */
 	private UserFolder getFolderById(int id) {
 		try {
 			ResultSet generatedKeys = getConnection().prepareStatement("SELECT * FROM folder WHERE id = " + id + ";")
@@ -248,17 +305,22 @@ public class Database {
 				return new UserFolder(generatedKeys.getInt(1), mailer.getFolder(generatedKeys.getString(2)));
 
 		} catch (SQLException e) {
-			e.printStackTrace();
+			DebugLogger.logEvent(Level.WARNING, e.getMessage());
 		}
 
 		return null;
 	}
-	
+
+	/**
+	 * Fetches UserFavourites from database by the favourite name
+	 * 
+	 * @param favName
+	 * @return UserFavourites object
+	 */
 	public UserFavourites getUserFavourite(String favName) {
 		try {
-			ResultSet rs = getConnection()
-					.prepareStatement("SELECT * FROM user_favourites WHERE user_id = '" + user.getId() + "' AND fav_name = '" + favName + "';",
-							Statement.RETURN_GENERATED_KEYS)
+			ResultSet rs = getConnection().prepareStatement("SELECT * FROM user_favourites WHERE user_id = '"
+					+ user.getId() + "' AND fav_name = '" + favName + "';", Statement.RETURN_GENERATED_KEYS)
 					.executeQuery();
 
 			while (rs.next()) {
@@ -266,21 +328,30 @@ public class Database {
 						.prepareStatement("SELECT * FROM filter_settings WHERE id = '" + rs.getInt(1) + "';",
 								Statement.RETURN_GENERATED_KEYS)
 						.executeQuery();
-				while (rs2.next())
+				while (rs2.next()) {
+					DebugLogger.logEvent(Level.INFO,
+							"Favourites fetched for " + user.getId() + " <" + user.getEmailAddress() + ">");
 					return new UserFavourites(rs.getInt(1), rs.getString(2), rs2.getDate(2),
 							Interval.parse(rs2.getString(3)), rs2.getBoolean(4), rs2.getBoolean(5),
 							getFolderById(rs2.getInt(6)));
+				}
 
 				rs2.close();
 			}
 			rs.close();
 		} catch (SQLException e) {
-			e.printStackTrace();
+			DebugLogger.logEvent(Level.WARNING, e.getMessage());
 		}
 
 		return null;
 	}
 
+	/**
+	 * Fetches a list of UserFavourites belonging to session user
+	 * 
+	 * @see #getUserFavourite
+	 * @return List of UserFavourites
+	 */
 	public List<UserFavourites> getUserFavourites() {
 		List<UserFavourites> ufList = new ArrayList<>();
 		try {
@@ -303,14 +374,28 @@ public class Database {
 			}
 			rs.close();
 		} catch (SQLException e) {
-			e.printStackTrace();
+			DebugLogger.logEvent(Level.WARNING, e.getMessage());
 		}
+
+		DebugLogger.logEvent(Level.INFO,
+				"Favourites fetched for " + user.getId() + " <" + user.getEmailAddress() + ">");
 
 		return ufList;
 	}
 
 	// TODO convert this to string with Time object available now. No need for ps.
-	// Just rs.
+	/**
+	 * Inserts a user favourite based on several parameters belong
+	 * 
+	 * @param favName
+	 * @param utilDate
+	 * @param intervalRange
+	 * @param hasAttachment
+	 * @param isSeen
+	 * @param folderName
+	 * @return boolean if operation was completed successfully
+	 * @see #insertFilter
+	 */
 	public boolean insertUserFavourites(String favName, java.util.Date utilDate, Interval intervalRange,
 			boolean hasAttachment, boolean isSeen, String folderName) {
 		int folderId = getFolderId(folderName);
@@ -322,9 +407,23 @@ public class Database {
 		query("INSERT INTO user_favourites (filter_settings_id, user_id, fav_name) VALUE (" + filterId + ", "
 				+ user.getId() + ", '" + favName + "');");
 
+		DebugLogger.logEvent(Level.INFO,
+				"User Favourite added for " + user.getId() + " <" + user.getEmailAddress() + ">");
+
 		return true;
 	}
 
+	/**
+	 * Inserts a filter_settings record in the database
+	 * 
+	 * @param utilDate
+	 * @param intervalRange
+	 * @param hasAttachment
+	 * @param isSeen
+	 * @param folderId
+	 * @return database id of filter_settings record
+	 * @see #insertUserFavourites
+	 */
 	private int insertFilter(java.util.Date utilDate, String intervalRange, boolean hasAttachment, boolean isSeen,
 			int folderId) {
 		try {
@@ -338,10 +437,8 @@ public class Database {
 			ps.setBoolean(4, isSeen);
 			ps.setInt(5, folderId);
 
-			if (ps.executeUpdate() == 0) {
-				System.out.println("NOPE");
-				throw new SQLException("Could not insert into folder, no rows affected");
-			}
+			if (ps.executeUpdate() == 0)
+				DebugLogger.logEvent(Level.WARNING, "Could not insert filter. No rows affected");
 
 			ResultSet generatedKeys = ps.getGeneratedKeys();
 
@@ -349,67 +446,30 @@ public class Database {
 				return generatedKeys.getInt(1);
 
 		} catch (SQLException e) {
-			e.printStackTrace();
+			DebugLogger.logEvent(Level.WARNING, e.getMessage());
 		}
 		return -1;
 	}
 
-	// TODO public void updateUserFavourites() {}
-	// public boolean updateUserFavourites(String favName, java.util.Date utilDate,
-	// Interval intervalRange, boolean hasAttachment, boolean isSeen, String
-	// folderName) {
-	// int folderId = getFolderId(folderName);
-	// if (folderId == -1)
-	// return false;
-	//
-	// int filterId = insertFilter(utilDate, intervalRange.toString(),
-	// hasAttachment, isSeen, folderId);
-	//
-	// query("INSERT INTO user_favourites (filter_settings_id, user_id, fav_name)
-	// VALUE (" + filterId + ", "
-	// + user.getId() + ", '" + favName + "');");
-	//
-	// return true;
-	// }
-	//
-	// private int updateFilter(java.util.Date utilDate, String intervalRange,
-	// boolean hasAttachment, boolean isSeen, int folderId) {
-	// try {
-	// PreparedStatement ps = getConnection().prepareStatement(
-	// "INSERT INTO filter_settings (start_date, interval_range, has_attachment,
-	// is_seen, folder_id) VALUE (?, ?, ?, ?, ?);",
-	// Statement.RETURN_GENERATED_KEYS);
-	//
-	// ps.setObject(1, utilDate);
-	// ps.setString(2, intervalRange);
-	// ps.setBoolean(3, hasAttachment);
-	// ps.setBoolean(4, isSeen);
-	// ps.setInt(5, folderId);
-	//
-	// if (ps.executeUpdate() == 0) {
-	// System.out.println("NOPE");
-	// throw new SQLException("Could not insert into folder, no rows affected");
-	// }
-	//
-	// ResultSet generatedKeys = ps.getGeneratedKeys();
-	//
-	// if (generatedKeys.next())
-	// return generatedKeys.getInt(1);
-	//
-	// } catch (SQLException e) {
-	// e.printStackTrace();
-	// }
-	// return -1;
-	// }
-
+	/**
+	 * Removes a user_favourites record by favourite name
+	 * 
+	 * @param favName
+	 * @see #insertUserFavourites
+	 */
 	public void removeUserFavourite(String favName) {
 		query("DELETE FROM user_favourites WHERE fav_name = '" + favName + "' AND user_id = " + user.getId() + ";");
+		DebugLogger.logEvent(Level.INFO,
+				"User favourite removal submitted for " + user.getId() + " <" + user.getEmailAddress() + ">");
 	}
 
-	public void setValidatedEmailCount(String emailAddress, int count) {
-		query("UPDATE user SET validated_emails = " + count + " WHERE email_address = '" + emailAddress + "';");
-	}
-
+	/**
+	 * Checks if a folder exists in the database
+	 * 
+	 * @param folderName
+	 * @param folderList
+	 * @return boolean value whether the folder exists or not
+	 */
 	private boolean folderExists(String folderName, List<UserFolder> folderList) {
 		try {
 			ResultSet rs = getConnection()
@@ -418,18 +478,23 @@ public class Database {
 				folderList.add(new UserFolder(rs.getInt(1), mailer.getFolder(rs.getString(2))));
 				return true;
 			}
-		} catch (SQLException e1) {
-			e1.printStackTrace();
+		} catch (SQLException e) {
+			DebugLogger.logEvent(Level.WARNING, e.getMessage());
 		}
 		return false;
 	}
 
+	/**
+	 * Imports all folders from a user's mail folder
+	 * 
+	 * @return List of UserFolder
+	 * @see UserFolder
+	 */
 	public List<UserFolder> importFolders() {
 		List<UserFolder> folderList = new ArrayList<>();
 		try {
 			Folder[] folders = mailer.getStorage().getDefaultFolder().list("*");
 
-			// TODO exclude these folders by a Settings global var or something?
 			for (Folder f : folders) {
 				if (!folderExists(f.getFullName(), folderList) && !f.getFullName().equals("[Gmail]")
 						&& !f.getFullName().equals("CSC480_19F") && !f.getFullName().equals("[Gmail]/All Mail")) {
@@ -438,7 +503,7 @@ public class Database {
 							"INSERT INTO folder (fold_name) VALUE ('" + f.getFullName() + "')",
 							Statement.RETURN_GENERATED_KEYS);
 					if (ps.executeUpdate() == 0)
-						throw new SQLException("Could not insert into folder, no rows affected");
+						DebugLogger.logEvent(Level.WARNING, "Could not insert into folder, no rows affected");
 
 					ResultSet generatedKeys = ps.getGeneratedKeys();
 					if (generatedKeys.next()) {
@@ -454,6 +519,12 @@ public class Database {
 		return folderList;
 	}
 
+	/**
+	 * Get an email based on its message
+	 * 
+	 * @param m
+	 * @return database id of the email record
+	 */
 	private int getEmailId(Message m) {
 		try {
 			PreparedStatement ps = getConnection()
@@ -466,14 +537,22 @@ public class Database {
 			while (rs.next())
 				return rs.getInt(1);
 
-		} catch (SQLException e1) {
-			e1.printStackTrace();
+		} catch (SQLException e) {
+			e.printStackTrace();
 		} catch (MessagingException e) {
 			e.printStackTrace();
 		}
 		return -1;
 	}
 
+	/**
+	 * Inserts an email record into the database
+	 * 
+	 * @param m
+	 * @param folderList
+	 * @param emailIdList
+	 * @return database id of email record
+	 */
 	private int insertEmail(Message m, List<UserFolder> folderList, List<Integer> emailIdList) {
 		int emailId = -1;
 
@@ -511,7 +590,7 @@ public class Database {
 			ps.setInt(7, folderId);
 
 			if (ps.executeUpdate() == 0)
-				throw new SQLException("Could not insert into folder, no rows affected");
+				DebugLogger.logEvent(Level.WARNING, "Could not insert into email, no rows affected");
 
 			ResultSet generatedKeys = ps.getGeneratedKeys();
 			if (generatedKeys.next()) {
@@ -520,14 +599,20 @@ public class Database {
 			}
 
 		} catch (SQLException e) {
-			e.printStackTrace();
+			DebugLogger.logEvent(Level.WARNING, e.getMessage());
 		} catch (MessagingException e) {
-			e.printStackTrace();
+			DebugLogger.logEvent(Level.WARNING, e.getMessage());
 		}
 
 		return emailId;
 	}
 
+	/**
+	 * Checks if an email address exists
+	 * 
+	 * @param emailAddress
+	 * @return boolean whether email address exists or not
+	 */
 	private boolean emailAddressExists(String emailAddress) {
 		int size = -1;
 		try {
@@ -537,12 +622,18 @@ public class Database {
 			while (rs.next()) {
 				size = rs.getInt(1);
 			}
-		} catch (SQLException e1) {
-			e1.printStackTrace();
+		} catch (SQLException e) {
+			DebugLogger.logEvent(Level.WARNING, e.getMessage());
 		}
 		return size >= 1;
 	}
 
+	/**
+	 * Parses an email with invalid characters (such as apostrophe's)
+	 * 
+	 * @param address
+	 * @return legal string value of email address
+	 */
 	private String parseAddress(Address address) {
 		String addressParsed = "";
 		if (address.toString().contains("<")) {
@@ -554,6 +645,13 @@ public class Database {
 		return addressParsed;
 	}
 
+	/**
+	 * Inserts an email address record into database
+	 * 
+	 * @param addresses
+	 * @return list of EmailAddress
+	 * @see EmailAddress
+	 */
 	private List<EmailAddress> insertEmailAddress(Address[] addresses) {
 		List<EmailAddress> emailAddrList = new ArrayList<>();
 
@@ -566,7 +664,7 @@ public class Database {
 							Statement.RETURN_GENERATED_KEYS);
 
 					if (ps.executeUpdate() == 0)
-						throw new SQLException("Could not insert into folder, no rows affected");
+						DebugLogger.logEvent(Level.WARNING, "Could not insert an email address");
 
 					ResultSet generatedKeys = ps.getGeneratedKeys();
 					if (generatedKeys.next())
@@ -582,13 +680,19 @@ public class Database {
 					rs.close();
 				}
 			} catch (SQLException e) {
-				e.printStackTrace();
+				DebugLogger.logEvent(Level.WARNING, e.getMessage());
 			}
 		}
 
 		return emailAddrList;
 	}
 
+	/**
+	 * Gets all emails received based on emailId
+	 * 
+	 * @param emailId
+	 * @return list of EmailAddress
+	 */
 	private List<EmailAddress> getReceivedEmail(int emailId) {
 		List<EmailAddress> addressIdList = new ArrayList<>();
 
@@ -600,12 +704,19 @@ public class Database {
 			while (rs.next())
 				addressIdList.add(new EmailAddress(rs.getInt(1), rs.getString(2)));
 		} catch (SQLException e) {
-			e.printStackTrace();
+			DebugLogger.logEvent(Level.WARNING, e.getMessage());
 		}
 
 		return addressIdList;
 	}
 
+	/**
+	 * Checks if received email record exists
+	 * 
+	 * @param emailId
+	 * @param emailAddrId
+	 * @return boolean if receieved email exists
+	 */
 	private boolean receivedEmailExists(int emailId, int emailAddrId) {
 		try {
 			ResultSet rs = getConnection().prepareStatement("SELECT * FROM received_email WHERE email_id = " + emailId
@@ -613,18 +724,32 @@ public class Database {
 			while (rs.next())
 				return true;
 		} catch (SQLException e) {
-			e.printStackTrace();
+			DebugLogger.logEvent(Level.WARNING, e.getMessage());
 		}
 
 		return false;
 	}
 
+	/**
+	 * Inserts a received email record into database
+	 * 
+	 * @param emailId
+	 * @param emailAddrId
+	 */
 	private void insertReceivedEmails(int emailId, int emailAddrId) {
 		if (!receivedEmailExists(emailId, emailAddrId))
 			query("INSERT INTO received_email (email_id, email_addr_id) VALUE ('" + emailId + "', " + emailAddrId
 					+ ");");
 	}
 
+	/**
+	 * Checks if an email exists for a user exists
+	 * 
+	 * @param addr
+	 * @param emailId
+	 * @return if email exists for user
+	 * @see #insertUserEmail
+	 */
 	private boolean userEmailExists(EmailAddress addr, int emailId) {
 		try {
 			ResultSet rs = getConnection().prepareStatement(
@@ -632,17 +757,29 @@ public class Database {
 					.executeQuery();
 			while (rs.next())
 				return true;
-		} catch (SQLException e1) {
-			e1.printStackTrace();
+		} catch (SQLException e) {
+			DebugLogger.logEvent(Level.WARNING, e.getMessage());
 		}
 		return false;
 	}
 
+	/**
+	 * Inserts a user email record
+	 * 
+	 * @param addr
+	 * @param emailId
+	 */
 	private void insertUserEmail(EmailAddress addr, int emailId) {
 		if (!userEmailExists(addr, emailId))
 			query("INSERT INTO user_email (user_id, email_id) VALUE (" + addr.getId() + ", " + emailId + ");");
 	}
 
+	/**
+	 * Gets count of all emails by folder name
+	 * 
+	 * @param folderName
+	 * @return number of emails
+	 */
 	public int getEmailCountByFolder(String folderName) {
 		int size = 0;
 		try {
@@ -656,12 +793,30 @@ public class Database {
 
 			queryTbl.close();
 		} catch (SQLException e) {
-			e.printStackTrace();
+			DebugLogger.logEvent(Level.WARNING, e.getMessage());
 		}
 
 		return size;
 	}
 
+	/**
+	 * Sets validated amount of emails (in CSC480_19f folder) for user after a pull
+	 * 
+	 * @param emailAddress
+	 * @param count
+	 */
+	public void setValidatedEmailCount(String emailAddress, int count) {
+		query("UPDATE user SET validated_emails = " + count + " WHERE email_address = '" + emailAddress + "';");
+		DebugLogger.logEvent(Level.INFO,
+				"Validation count submitted for " + user.getId() + " <" + user.getEmailAddress() + ">");
+	}
+
+	/**
+	 * Gets number of validated emails
+	 * 
+	 * @return number of validated emails
+	 * @see #setValidatedEmailCount
+	 */
 	public int getValidatedEmails() {
 		int validatedEmails = 0;
 		try {
@@ -672,39 +827,72 @@ public class Database {
 				validatedEmails = queryTbl.getInt(3);
 
 		} catch (SQLException e) {
-			e.printStackTrace();
+			DebugLogger.logEvent(Level.WARNING, e.getMessage());
 		}
 		return validatedEmails;
 	}
 
+	/**
+	 * Creates a database query. This is a dangerous operation if unchecked.
+	 * 
+	 * @param statement
+	 * @deprecated
+	 */
 	public void query(String statement) {
 		try {
 			PreparedStatement ps = getConnection().prepareStatement(statement);
 			ps.execute();
+			DebugLogger.logEvent(Level.INFO, "Query made for statement: " + statement);
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
 	}
 
+	/**
+	 * Creates a database query with a bunch of statements.
+	 * 
+	 * @param statements
+	 * @deprecated
+	 * @see #query
+	 */
 	public void query(String[] statements) {
 		for (String statement : statements)
 			query(statement);
 	}
 
+	// TODO change this so it's only for a user
+	/**
+	 * Truncates all tables. Dangerous as it removes all data for all users.
+	 * 
+	 * @see #truncateTable
+	 */
 	public void truncateTables() {
 		for (String tbl : Settings.DATABASE_TABLES)
 			truncateTable(tbl);
+		DebugLogger.logEvent(Level.SEVERE, "Database tables have been truncated completely.");
 	}
 
+	/**
+	 * Truncates a single table
+	 * 
+	 * @param table
+	 */
 	public void truncateTable(String table) {
 		query("TRUNCATE TABLE " + table + ";");
+		DebugLogger.logEvent(Level.SEVERE, table + " has been truncated completely");
 	}
 
-	public boolean hasEmails(String emailAddress) {
+	/**
+	 * Checks if a user has emails.
+	 * 
+	 * @param emailAddress
+	 * @return if user has emails
+	 */
+	public boolean hasEmails() {
 		try {
-			ResultSet queryTbl = getConnection()
-					.prepareStatement("SELECT * from user " + "JOIN user_email ON user.id = user_email.id "
-							+ "JOIN email ON email.id = user_email.email_id WHERE email = " + emailAddress + ";")
+			ResultSet queryTbl = getConnection().prepareStatement("SELECT * from user "
+					+ "JOIN user_email ON user.id = user_email.id "
+					+ "JOIN email ON email.id = user_email.email_id WHERE email = " + user.getEmailAddress() + ";")
 					.executeQuery();
 			int size = 0;
 
@@ -717,12 +905,20 @@ public class Database {
 			queryTbl.close();
 
 		} catch (SQLException e) {
-			e.printStackTrace();
+			DebugLogger.logEvent(Level.WARNING, e.getMessage());
 		}
 		return false;
 	}
 
 	// TODO NEEDS THIS IMPLEMENTATION OF SENTIMENT ANALYZER TO SCORE
+	/**
+	 * Uses sentiment score analyzer to calculate and insert the value
+	 * 
+	 * @param emailId
+	 * @param score
+	 * @see #insertSentimentScore
+	 * @see #insertSentimentScoreIntoEmail
+	 */
 	public void calculateSentimentScore(int emailId, SentimentScore score) {
 		int sentimentId = insertSentimentScore(score);
 
@@ -734,6 +930,12 @@ public class Database {
 		insertSentimentScoreIntoEmail(emailId, sentimentId);
 	}
 
+	/**
+	 * Inserts a sentiment score record into the database
+	 * 
+	 * @param score
+	 * @return database id of sentiment score record
+	 */
 	private int insertSentimentScore(SentimentScore score) {
 		try {
 			PreparedStatement ps = getConnection()
@@ -747,21 +949,25 @@ public class Database {
 			}
 			ps.close();
 		} catch (SQLException e) {
-			e.printStackTrace();
+			DebugLogger.logEvent(Level.WARNING, e.getMessage());
 		}
 		return -1;
 	}
 
+	/**
+	 * Inserts sentiment score reference into an email record
+	 * 
+	 * @param emailId
+	 * @param sentimentScoreId
+	 */
 	private void insertSentimentScoreIntoEmail(int emailId, int sentimentScoreId) {
 		try {
-			PreparedStatement pstmt = getConnection().prepareStatement(
+			PreparedStatement ps = getConnection().prepareStatement(
 					"UPDATE email SET sentiment_score_id = " + sentimentScoreId + " WHERE id = " + emailId + ";");
-			pstmt.execute();
-			System.out.println(sentimentScoreId);
-
-			pstmt.close();
+			ps.execute();
+			ps.close();
 		} catch (SQLException e) {
-			e.printStackTrace();
+			DebugLogger.logEvent(Level.WARNING, e.getMessage());
 		}
 	}
 

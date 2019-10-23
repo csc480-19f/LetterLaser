@@ -2,6 +2,14 @@ package edu.oswego.model;
 
 import javax.mail.Folder;
 
+/**
+ * User Folder object based on SQL table model: user_folder
+ * 
+ * @author Jimmy Nguyen
+ * @since 10/23/2019
+ *
+ */
+
 public class UserFolder {
 
 	private int id;

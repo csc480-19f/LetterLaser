@@ -1,8 +1,11 @@
-package edu.oswego.props;
+package edu.oswego.database;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.Scanner;
+import java.util.logging.Level;
+
+import edu.oswego.debug.DebugLogger;
 
 /**
  * Simple static class to access credentials from other classes.
@@ -20,18 +23,14 @@ public class Settings {
 	public static String DATABASE_HOST = "";
 	public static String DATABASE_PORT = "";
 
-//	public static String EMAIL_ADDRESS = "";
-//	public static String EMAIL_PWD = "";
-
 	public static final String[] DATABASE_TABLES = new String[] { "email", "email_addr", "filter_settings", "folder",
 			"received_email", "user", "user_email", "user_favourites", "sentiment_score" };
 	
-	private Settings() {
-		// Cannot instantiate an object of settings.
-	}
+	private Settings() {} // Cannot instantiate an object
 
-	/*
-	 * We don't need this. Only for testing since it's a public repo.
+	/**
+	 * Only for testing purposes
+	 * @deprecated
 	 */
 	public static void loadCredentials() {
 		try {
@@ -46,6 +45,7 @@ public class Settings {
 			edu.oswego.mail.Settings.EMAIL_PWD = scanner.nextLine();
 
 			scanner.close();
+			DebugLogger.logEvent(Level.INFO, "Credentials loaded from local file.");
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		}

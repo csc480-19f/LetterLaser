@@ -6,9 +6,16 @@ import java.util.List;
 
 import edu.oswego.sentiment.SentimentScore;
 
+/**
+ * Email object based on SQL table model: email
+ * 
+ * @author Jimmy Nguyen
+ * @since 10/23/2019
+ *
+ */
+
 public class Email {
-	
-	// SENT OR RECEIVED?
+
 	private int id;
 	private Date dateReceived;
 	private String subject;
@@ -16,11 +23,11 @@ public class Email {
 	private boolean isSeen;
 	private String fileName;
 	private boolean hasAttachment;
-	
+
 	private SentimentScore sentimentScore;
 	private UserFolder folder;
 	private List<EmailAddress> from;
-	
+
 	public Email(int id, Date dateReceived, String subject, double size, boolean isSeen, String fileName,
 			boolean hasAttachment, SentimentScore sentimentScore, UserFolder folder) {
 		this.id = id;
