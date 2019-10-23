@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.concurrent.Callable;
 
 public class SentimentScoreCallable implements Callable {
-    private static List<Email> emails;
+    private List<Email> emails;
 
     public SentimentScoreCallable(List<Email> emails){
         this.emails = emails;

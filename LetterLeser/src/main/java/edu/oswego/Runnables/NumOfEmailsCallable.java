@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.concurrent.Callable;
 
 public class NumOfEmailsCallable implements Callable {
-	private static List<Email> emails;
+	private List<Email> emails;
 
 	private static final double oneDay = 86400000;
 	private static final double fourHours = 14400000;

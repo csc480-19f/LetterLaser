@@ -6,10 +6,10 @@ import java.util.List;
 import java.util.concurrent.Callable;
 
 public class DomainCallable implements Callable {
-	private static List<Email> emails;
+	private List<Email> emails;
 
 	public DomainCallable(List<Email> emails) {
-		DomainCallable.emails = emails;
+		this.emails = emails;
 	}
 
 	@Override
