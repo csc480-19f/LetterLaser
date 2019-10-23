@@ -24,7 +24,6 @@ import edu.oswego.model.EmailAddress;
 import edu.oswego.model.UserFavourites;
 import edu.oswego.model.UserFolder;
 import edu.oswego.props.Interval;
-import edu.oswego.props.Settings;
 import edu.oswego.sentiment.SentimentScore;
 
 /**

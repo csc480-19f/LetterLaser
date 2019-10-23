@@ -71,7 +71,7 @@ public class Mailer {
 	public Store getStorage() {
 		if (storage == null) {
 			try {
-				storage = getConnection().getStore("imaps");
+				storage = getConnection().getStore(Settings.STORE_TYPE);
 			} catch (NoSuchProviderException e) {
 				DebugLogger.logEvent(Level.WARNING, e.getMessage());
 			}
@@ -80,6 +80,7 @@ public class Mailer {
 		if (!storage.isConnected()) {
 			try {
 				storage.connect(Settings.HOST, Settings.EMAIL_ADDRESS, Settings.EMAIL_PWD);
+				//storage.connect(Settings.HOST, emailAddress, password);
 			} catch (MessagingException e) {
 				DebugLogger.logEvent(Level.WARNING, e.getMessage());
 			}
