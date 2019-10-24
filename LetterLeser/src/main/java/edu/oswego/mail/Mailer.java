@@ -47,7 +47,7 @@ public class Mailer {
 	}
 	
 	public boolean isConnected() {
-		return storage.isConnected();
+		return getStorage().isConnected();
 	}
 
 	/**
