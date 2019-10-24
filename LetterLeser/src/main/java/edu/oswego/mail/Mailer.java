@@ -45,6 +45,10 @@ public class Mailer {
 		DebugLogger.logEvent(Mailer.class.getName(),Level.WARNING,
 				"Mailer object created. Information is in local storage stored unencrypted.");
 	}
+	
+	public boolean isConnected() {
+		return storage.isConnected();
+	}
 
 	/**
 	 * Establish a connection using imap
