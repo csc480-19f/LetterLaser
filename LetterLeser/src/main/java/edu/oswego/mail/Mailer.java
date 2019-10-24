@@ -49,29 +49,24 @@ public class Mailer {
 	}
 	
 	public boolean isConnected() {
-		try {
-		    Properties props = new Properties();
-		    // required for gmail 
-		    props.put("mail.smtp.starttls.enable","true");
-		    props.put("mail.smtp.auth", "true");
-		    // or use getDefaultInstance instance if desired...
-		    Session session = Session.getInstance(props, null);
-		    Transport transport = session.getTransport("smtp");
-		    transport.connect(Settings.HOST, Settings.PORT, emailAddress, password);
-		    transport.close();
-		    return true;
-		 } 
-		 catch(AuthenticationFailedException e) {
-		       System.out.println("AuthenticationFailedException - for authentication failures");
-		       e.printStackTrace();
-		       return false;
-		 }
-		 catch(MessagingException e) {
-		       System.out.println("for other failures");
-		       e.printStackTrace();
-		       return false;
-		 }
-		
+		    try {
+		        Properties props = new Properties();
+		        props.put("mail.smtp.starttls.enable","true");
+		        props.put("mail.smtp.auth", "true");
+		        Session session = Session.getInstance(props, null);
+		        Transport transport = session.getTransport("smtp");
+		        transport.connect("smtp.gmail.com", 587, emailAddress, password);
+		        transport.close();
+		        return true;
+		     } 
+		     catch(AuthenticationFailedException e) {
+		           e.printStackTrace();
+		     }
+		     catch(MessagingException e) {
+		           e.printStackTrace();
+		     }
+		    
+		    return false;
 	}
 
 	/**
