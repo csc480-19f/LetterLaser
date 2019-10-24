@@ -45,7 +45,7 @@ public class Settings {
 			edu.oswego.mail.Settings.EMAIL_PWD = scanner.nextLine();
 
 			scanner.close();
-			DebugLogger.logEvent(Level.INFO, "Credentials loaded from local file.");
+			DebugLogger.logEvent(Settings.class.getName(),Level.INFO, "Credentials loaded from local file.");
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		}

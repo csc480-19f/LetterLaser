@@ -45,7 +45,7 @@ public class ValidationRunnable implements Runnable {
 		Database db = atomicDatabase.get();
 		if (db.hasEmails()) {
 			{//debug stuff
-				DebugLogger.logEvent(Level.INFO, "session " + session.get().getId() + " emails exist in db, setting emailsStored to true");
+				DebugLogger.logEvent(ValidationRunnable.class.getName(),Level.INFO, "session " + session.get().getId() + " emails exist in db, setting emailsStored to true");
 			}
 			emailStored.compareAndSet(false, true);
 
@@ -53,7 +53,7 @@ public class ValidationRunnable implements Runnable {
 
 		} else {
 			{//debug stuff
-				DebugLogger.logEvent(Level.INFO, "session " + session.get().getId() + " emails dont exist in db");
+				DebugLogger.logEvent(ValidationRunnable.class.getName(),Level.INFO, "session " + session.get().getId() + " emails dont exist in db");
 			}
 			db.pull();
 			emailStored.compareAndSet(false, true);

@@ -31,7 +31,7 @@ public class Websocket {
 
 	@OnOpen
 	public void onOpen(Session session) {
-		DebugLogger.logEvent(Level.INFO,"session "+session.getId()+" opened Connection");
+		DebugLogger.logEvent(Websocket.class.getName(),Level.INFO,"session "+session.getId()+" opened Connection");
 		//System.out.println("Session " + session.getId() + " been established");
 	}
 
@@ -47,7 +47,7 @@ public class Websocket {
 
 		if (jsonMessage == null) {
 			{//debug stuff
-				DebugLogger.logEvent(Level.SEVERE, "session " + session.getId() + "jsonMessage was null\n" +
+				DebugLogger.logEvent(Websocket.class.getName(),Level.SEVERE, "session " + session.getId() + "jsonMessage was null\n" +
 								"message was :\n" + message
 								);
 			}
@@ -63,17 +63,17 @@ public class Websocket {
 		// The first message that must be sent to the websocket is a valid
 		// googlejsonobject which will construct everything
 		{//debug stuff
-			DebugLogger.logEvent(Level.INFO, "session " + session.getId() + " storageObject state: "+storageObject.toString());
+			DebugLogger.logEvent(Websocket.class.getName(),Level.INFO, "session " + session.getId() + " storageObject state: "+storageObject.toString());
 		}
 		if (storageObject == null) {
 
 			{//debug stuff
-				DebugLogger.logEvent(Level.INFO, "session " + session.getId() + " generating first storageObejct");
+				DebugLogger.logEvent(Websocket.class.getName(),Level.INFO, "session " + session.getId() + " generating first storageObejct");
 			}
 
 			String email = jsonMessage.getAsJsonObject("profileObj").get("email").getAsString();
 			{//debug stuff
-				DebugLogger.logEvent(Level.INFO, "session " + session.getId() + "email parsed = "+email);
+				DebugLogger.logEvent(Websocket.class.getName(),Level.INFO, "session " + session.getId() + "email parsed = "+email);
 			}
 			Mailer mailer = new Mailer(email, jsonMessage.get("password").getAsString()); // I changed this cause we need a pass now. - Jim
 			Database db = new Database(email, mailer);
@@ -89,7 +89,7 @@ public class Websocket {
 			ValidationRunnable validationRunnable = null;
 
 			{//debug stuff
-				DebugLogger.logEvent(Level.INFO, "session " + session.getId() + " validationstorageObject: "+validationStorageObject.toString());
+				DebugLogger.logEvent(Websocket.class.getName(),Level.INFO, "session " + session.getId() + " validationstorageObject: "+validationStorageObject.toString());
 			}
 
 			if (validationStorageObject == null) {
@@ -106,14 +106,14 @@ public class Websocket {
 			}
 
 			{//debug stuff
-				DebugLogger.logEvent(Level.INFO, "session " + session.getId() + " new validation object has been made \nvalidationstorageObject: "+validationStorageObject.toString());
+				DebugLogger.logEvent(Websocket.class.getName(),Level.INFO, "session " + session.getId() + " new validation object has been made \nvalidationstorageObject: "+validationStorageObject.toString());
 			}
 
 			Handler handler = new Handler(atomicSession, atomicMessage, googleOauth2, database, emailsExist);
 			Thread handlerThread = new Thread(handler);
 
 			{//debug stuff
-				DebugLogger.logEvent(Level.INFO, "session " + session.getId() + "starting threads");
+				DebugLogger.logEvent(Websocket.class.getName(),Level.INFO, "session " + session.getId() + "starting threads");
 			}
 
 			validationThread.start();
@@ -123,17 +123,17 @@ public class Websocket {
 			sessionThreadMapper.put(session.getId(), storageObject);
 
 			{//debug stuff
-				DebugLogger.logEvent(Level.INFO, "session " + session.getId() + "message has been consumed");
+				DebugLogger.logEvent(Websocket.class.getName(),Level.INFO, "session " + session.getId() + "message has been consumed");
 			}
 
 		} else if (MessageType.checkType(MessageType.REFRESH, jsonMessage.get("MessageType"))) {
 			{//debug stuff
-				DebugLogger.logEvent(Level.INFO, "session " + session.getId() + " refreshing data");
+				DebugLogger.logEvent(Websocket.class.getName(),Level.INFO, "session " + session.getId() + " refreshing data");
 			}
 			databaseValidation(session);
 		} else {
 			{//debug stuff
-				DebugLogger.logEvent(Level.INFO, "session " + session.getId() + " handling a different request");
+				DebugLogger.logEvent(Websocket.class.getName(),Level.INFO, "session " + session.getId() + " handling a different request");
 			}
 			newRequest(session, jsonMessage, storageObject);
 		}
@@ -146,13 +146,13 @@ public class Websocket {
 		System.out.println("onClose");
 		sessionThreadMapper.get(session.getId()).getHanderThread().interrupt();
 		sessionThreadMapper.remove(session.getId());
-		DebugLogger.logEvent(Level.INFO,"session "+session.getId()+" closed Connection");
+		DebugLogger.logEvent(Websocket.class.getName(),Level.INFO,"session "+session.getId()+" closed Connection");
 	}
 
 	@OnError
 	public void onError(Throwable t, Session session) {
 		//System.out.println("onError::");
-		DebugLogger.logEvent(Level.WARNING,"session "+session.getId()+" threw error: "+t.getMessage());
+		DebugLogger.logEvent(Websocket.class.getName(),Level.WARNING,"session "+session.getId()+" threw error: "+t.getMessage());
 	}
 
 	/*
@@ -166,7 +166,7 @@ public class Websocket {
 		StorageObject validation = validationManager.get(email);
 
 		{//debug stuff
-			DebugLogger.logEvent(Level.INFO, "session " + session.getId() + " validationStoragobject: "+validation.toString());
+			DebugLogger.logEvent(Websocket.class.getName(),Level.INFO, "session " + session.getId() + " validationStoragobject: "+validation.toString());
 		}
 
 		if (validation == null) {//handles the situtation of a user quiting and connecting before validationThread is finished. This can and most likely will happen when dealing with more than 1k emails
@@ -177,7 +177,7 @@ public class Websocket {
 		}
 
 		{//debug stuff
-			DebugLogger.logEvent(Level.INFO, "session " + session.getId() + "new validationStoragobject: "+validation.toString());
+			DebugLogger.logEvent(Websocket.class.getName(),Level.INFO, "session " + session.getId() + "new validationStoragobject: "+validation.toString());
 		}
 
 	}
@@ -195,7 +195,7 @@ public class Websocket {
 		sessionThreadMapper.put(session.getId(), storageObject);
 
 		{//debug stuff
-			DebugLogger.logEvent(Level.INFO, "session " + session.getId() + "new request has been made");
+			DebugLogger.logEvent(Websocket.class.getName(),Level.INFO, "session " + session.getId() + "new request has been made");
 		}
 
 	}

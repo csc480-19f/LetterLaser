@@ -42,7 +42,7 @@ public class Mailer {
 	public Mailer(String emailAddress, String password) {
 		this.emailAddress = emailAddress;
 		this.password = password; // UNSAFE. Lets encrypt.
-		DebugLogger.logEvent(Level.WARNING,
+		DebugLogger.logEvent(Mailer.class.getName(),Level.WARNING,
 				"Mailer object created. Information is in local storage stored unencrypted.");
 	}
 
@@ -73,7 +73,7 @@ public class Mailer {
 			try {
 				storage = getConnection().getStore(Settings.STORE_TYPE);
 			} catch (NoSuchProviderException e) {
-				DebugLogger.logEvent(Level.WARNING, e.getMessage());
+				DebugLogger.logEvent(Mailer.class.getName(),Level.WARNING, e.getMessage());
 			}
 		}
 
@@ -82,7 +82,7 @@ public class Mailer {
 				storage.connect(Settings.HOST, Settings.EMAIL_ADDRESS, Settings.EMAIL_PWD);
 				//storage.connect(Settings.HOST, emailAddress, password);
 			} catch (MessagingException e) {
-				DebugLogger.logEvent(Level.WARNING, e.getMessage());
+				DebugLogger.logEvent(Mailer.class.getName(),Level.WARNING, e.getMessage());
 			}
 		}
 
@@ -101,7 +101,7 @@ public class Mailer {
 		try {
 			folder = store.getFolder(folderName);
 		} catch (MessagingException e) {
-			DebugLogger.logEvent(Level.WARNING, e.getMessage());
+			DebugLogger.logEvent(Mailer.class.getName(),Level.WARNING, e.getMessage());
 		}
 		return folder;
 	}
@@ -135,7 +135,7 @@ public class Mailer {
 			originFolder.copyMessages(msgs, folder);
 			originFolder.close();
 		} catch (MessagingException e) {
-			DebugLogger.logEvent(Level.WARNING, e.getMessage());
+			DebugLogger.logEvent(Mailer.class.getName(),Level.WARNING, e.getMessage());
 		}
 	}
 
@@ -153,7 +153,7 @@ public class Mailer {
 			Message[] msgs = folder.getMessages();
 			return msgs;
 		} catch (MessagingException e) {
-			DebugLogger.logEvent(Level.WARNING, e.getMessage());
+			DebugLogger.logEvent(Mailer.class.getName(),Level.WARNING, e.getMessage());
 		}
 
 		return null;
@@ -199,9 +199,9 @@ public class Mailer {
 					return part.getFileName().toString();
 			}
 		} catch (MessagingException e) {
-			DebugLogger.logEvent(Level.WARNING, e.getMessage());
+			DebugLogger.logEvent(Mailer.class.getName(),Level.WARNING, e.getMessage());
 		} catch (IOException e) {
-			DebugLogger.logEvent(Level.WARNING, e.getMessage());
+			DebugLogger.logEvent(Mailer.class.getName(),Level.WARNING, e.getMessage());
 		}
 
 		return "";
@@ -221,9 +221,9 @@ public class Mailer {
 			else if (message.isMimeType("multipart/*"))
 				text = getTextFromMimeMultipart((MimeMultipart) message.getContent());
 		} catch (MessagingException e) {
-			DebugLogger.logEvent(Level.WARNING, e.getMessage());
+			DebugLogger.logEvent(Mailer.class.getName(),Level.WARNING, e.getMessage());
 		} catch (IOException e) {
-			DebugLogger.logEvent(Level.WARNING, e.getMessage());
+			DebugLogger.logEvent(Mailer.class.getName(),Level.WARNING, e.getMessage());
 		}
 		return text;
 	}
@@ -249,9 +249,9 @@ public class Mailer {
 					text += getTextFromMimeMultipart((MimeMultipart) bodyPart.getContent());
 			}
 		} catch (MessagingException e) {
-			DebugLogger.logEvent(Level.WARNING, e.getMessage());
+			DebugLogger.logEvent(Mailer.class.getName(),Level.WARNING, e.getMessage());
 		} catch (IOException e) {
-			DebugLogger.logEvent(Level.WARNING, e.getMessage());
+			DebugLogger.logEvent(Mailer.class.getName(),Level.WARNING, e.getMessage());
 		}
 
 		return text;

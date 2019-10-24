@@ -61,13 +61,13 @@ public class Handler implements Runnable {
 	@Override
 	public void run() {
 		{//debug stuff
-			DebugLogger.logEvent(Level.INFO, "session " + session.get().getId() + "handler has started");
+			DebugLogger.logEvent(Handler.class.getName(),Level.INFO, "session " + session.get().getId() + "handler has started");
 		}
 		if(oldThread==null) {
 			while (oldThread.get().isAlive()) {
 				if (Thread.interrupted()) {
 					{//debug stuff
-						DebugLogger.logEvent(Level.INFO, "session " + session.get().getId() + "Thread interupted when waiting for old thread to die");
+						DebugLogger.logEvent(Handler.class.getName(),Level.INFO, "session " + session.get().getId() + "Thread interupted when waiting for old thread to die");
 					}
 					return;
 				}
@@ -76,13 +76,13 @@ public class Handler implements Runnable {
 
 		if (googleAccessToken == null || Thread.interrupted()) {
 			{//debug stuff
-				DebugLogger.logEvent(Level.INFO, "session " + session.get().getId() + "accessToken null or thread interuppeted: "+
+				DebugLogger.logEvent(Handler.class.getName(),Level.INFO, "session " + session.get().getId() + "accessToken null or thread interuppeted: "+
 						"AccessToken: " + googleAccessToken.toString() +" Thread:"+Thread.interrupted());
 			}
 			return;
 		} else if (message.get().get("MessageType").getAsString().equals("StartUp")) {
 			{//debug stuff
-				DebugLogger.logEvent(Level.INFO, "session " + session.get().getId() + " begine sendingFolders");
+				DebugLogger.logEvent(Handler.class.getName(),Level.INFO, "session " + session.get().getId() + " begine sendingFolders");
 			}
 			try {
 				sendFolders();
@@ -94,7 +94,7 @@ public class Handler implements Runnable {
 				handleMessage(message.get());
 			} catch (InterruptedException e) {
 				{//debug stuff
-					DebugLogger.logEvent(Level.INFO, "session " + session.get().getId() + " Thread detected interrupt call thus terminated");
+					DebugLogger.logEvent(Handler.class.getName(),Level.INFO, "session " + session.get().getId() + " Thread detected interrupt call thus terminated");
 				}
 				return;
 			}
@@ -107,7 +107,7 @@ public class Handler implements Runnable {
 		List<UserFavourites> favourites = database.get().getUserFavourites();
 
 		{//debug stuff
-			DebugLogger.logEvent(Level.INFO, "session " + session.get().getId() + "got folders and list of favourites: \n"+
+			DebugLogger.logEvent(Handler.class.getName(),Level.INFO, "session " + session.get().getId() + "got folders and list of favourites: \n"+
 					"folders: "+folders.toString()+
 					"favourites: "+favourites.toString());
 		}
@@ -122,7 +122,7 @@ public class Handler implements Runnable {
 		finalPackage.addProperty("FolderNames", arrayOfFolders);
 
 		{//debug stuff
-			DebugLogger.logEvent(Level.INFO, "session " + session.get().getId() + "message compiled as:\n"+
+			DebugLogger.logEvent(Handler.class.getName(),Level.INFO, "session " + session.get().getId() + "message compiled as:\n"+
 					finalPackage.getAsString());
 		}
 
@@ -132,7 +132,7 @@ public class Handler implements Runnable {
 	private void handleMessage(JsonObject message) throws InterruptedException {
 		// waiting to know if db has data or not: look at ValidationRunnable
 		{//debug stuff
-			DebugLogger.logEvent(Level.INFO, "session " + session.get().getId() + "being handling message: \n"+message.toString());
+			DebugLogger.logEvent(Handler.class.getName(),Level.INFO, "session " + session.get().getId() + "being handling message: \n"+message.toString());
 		}
 
 		while (!hasEmails.get()) {
@@ -140,7 +140,7 @@ public class Handler implements Runnable {
 				Thread.sleep(50);
 			} catch (InterruptedException e) {
 				{//debug stuff
-					DebugLogger.logEvent(Level.INFO, "session " + session.get().getId() + "interrupt called when validation is still preceding, current throwing interruptedException");
+					DebugLogger.logEvent(Handler.class.getName(),Level.INFO, "session " + session.get().getId() + "interrupt called when validation is still preceding, current throwing interruptedException");
 				}
 				throw new InterruptedException();
 			}
@@ -148,7 +148,7 @@ public class Handler implements Runnable {
 
 		String messageType = message.get("MessageType").getAsString();
 		{//debug stuff
-			DebugLogger.logEvent(Level.INFO, "session " + session.get().getId() + "messageType: "+messageType);
+			DebugLogger.logEvent(Handler.class.getName(),Level.INFO, "session " + session.get().getId() + "messageType: "+messageType);
 		}
 		if (messageType.equals("AddFavorite")) {
 			addFavourite(message);
@@ -156,7 +156,7 @@ public class Handler implements Runnable {
 			deleteFavorite(message);
 		} else if (messageType.equals("CallFavorite")) {
 			{//debug stuff
-				DebugLogger.logEvent(Level.INFO, "session " + session.get().getId() + "calling Favorite");
+				DebugLogger.logEvent(Handler.class.getName(),Level.INFO, "session " + session.get().getId() + "calling Favorite");
 			}
 
 			UserFavourites filter = database.get().getUserFavourite(message.get("message").getAsString());
@@ -179,7 +179,7 @@ public class Handler implements Runnable {
 		boolean attachment = filter.get("Attachment").getAsBoolean();
 		boolean seen = filter.get("Seen").getAsBoolean();
 		{//debug stuff
-			DebugLogger.logEvent(Level.INFO, "session " + session.get().getId() + " message\n" + addFav.toString() + "\n" + filter.toString() + "\n"
+			DebugLogger.logEvent(Handler.class.getName(),Level.INFO, "session " + session.get().getId() + " message\n" + addFav.toString() + "\n" + filter.toString() + "\n"
 					+ favoriteName + "\n" + folderName + "\n" + stringDate + "\n" + interval + "\n" + attachment + "\n" + seen + "\n");
 		}
 		try {
@@ -187,7 +187,7 @@ public class Handler implements Runnable {
 			database.get().insertUserFavourites(favoriteName, date, Interval.MONTH, attachment, seen, folderName);
 		} catch (ParseException e) {
 			{//debug stuff
-				DebugLogger.logEvent(Level.SEVERE, "session " + session.get().getId() + " invalid date in addFavourite");
+				DebugLogger.logEvent(Handler.class.getName(),Level.SEVERE, "session " + session.get().getId() + " invalid date in addFavourite");
 			}
 			return;
 		}
@@ -197,7 +197,7 @@ public class Handler implements Runnable {
 		String favName = message.get("FavoriteName").getAsString();
 		database.get().removeUserFavourite(favName);
 		{//debug stuff
-			DebugLogger.logEvent(Level.INFO, "session " + session.get().getId() + " favorite deleted");
+			DebugLogger.logEvent(Handler.class.getName(),Level.INFO, "session " + session.get().getId() + " favorite deleted");
 		}
 	}
 
@@ -235,7 +235,7 @@ public class Handler implements Runnable {
 	private void calculateAndSend(List<Email> emails, EmailAddress user) throws InterruptedException {
 		// Making all the callables and futures and executing them in threads
 		{//debug stuff
-			DebugLogger.logEvent(Level.INFO, "session " + session.get().getId() + " running calcs on:\n"+
+			DebugLogger.logEvent(Handler.class.getName(),Level.INFO, "session " + session.get().getId() + " running calcs on:\n"+
 					emails.toString());
 		}
 
@@ -255,7 +255,7 @@ public class Handler implements Runnable {
 
 		if (Thread.interrupted()) {
 			{//debug stuff
-				DebugLogger.logEvent(Level.INFO, "session " + session.get().getId() + " thread interupted before calc started");
+				DebugLogger.logEvent(Handler.class.getName(),Level.INFO, "session " + session.get().getId() + " thread interupted before calc started");
 			}
 			throw new InterruptedException();
 		}
@@ -289,7 +289,7 @@ public class Handler implements Runnable {
 
 		if (Thread.interrupted()) {
 			{//debug stuff
-				DebugLogger.logEvent(Level.INFO, "session " + session.get().getId() + " thread interrupted before compiling json");
+				DebugLogger.logEvent(Handler.class.getName(),Level.INFO, "session " + session.get().getId() + " thread interrupted before compiling json");
 			}
 			throw new InterruptedException();
 		}
