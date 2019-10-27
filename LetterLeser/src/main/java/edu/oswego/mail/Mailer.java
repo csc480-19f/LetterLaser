@@ -102,8 +102,8 @@ public class Mailer {
 
 		if (!storage.isConnected()) {
 			try {
-				storage.connect(Settings.HOST, Settings.EMAIL_ADDRESS, Settings.EMAIL_PWD);
-				//storage.connect(Settings.HOST, emailAddress, password);
+				//storage.connect(Settings.HOST, Settings.EMAIL_ADDRESS, Settings.EMAIL_PWD);
+				storage.connect(Settings.HOST, emailAddress, password);
 			} catch (MessagingException e) {
 				DebugLogger.logEvent(Mailer.class.getName(),Level.WARNING, e.getMessage());
 			}

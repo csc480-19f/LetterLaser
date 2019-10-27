@@ -1,68 +1,58 @@
 package edu.oswego.Runnables;
 
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.logging.Level;
-
+import javax.json.Json;
 import javax.websocket.Session;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
+import com.google.gson.JsonParser;
 import edu.oswego.database.Database;
-import edu.oswego.debug.DebugLogger;
-import edu.oswego.websocket.StorageObject;
+import edu.oswego.mail.Mailer;
+import edu.oswego.model.UserFolder;
+
+import java.io.IOException;
+import java.util.List;
 
 public class ValidationRunnable implements Runnable {
-	private volatile AtomicReference<Session> session;
-	private volatile AtomicReference<JsonObject> googleAccessToken;
-	private volatile AtomicReference<Database> atomicDatabase;
-	private volatile AtomicBoolean emailStored;
-	private volatile ConcurrentHashMap<String, StorageObject> validationManager;
 
-	public ValidationRunnable(AtomicReference<Session> session, AtomicReference<JsonObject> googleAccessToken,
-			AtomicReference<Database> atomicDatabase, AtomicBoolean emailStored,
-			ConcurrentHashMap<String, StorageObject> validationManager) {
-		this.emailStored = emailStored;
-		this.atomicDatabase = atomicDatabase;
-		this.googleAccessToken = googleAccessToken;
+	private Mailer mailer;
+	private Database database;
+	private boolean validateOrPull;
+	private Session session;
+
+	public ValidationRunnable(Mailer mailer, Database database, boolean validateOrPull, Session session){
+		this.mailer = mailer;
+		this. database = database;
+		this.validateOrPull = validateOrPull;
 		this.session = session;
-		this.validationManager = validationManager;
 	}
 
-	public ValidationRunnable(ValidationRunnable validationRunnable) {
-		this.emailStored = validationRunnable.emailStored;
-		this.atomicDatabase = validationRunnable.atomicDatabase;
-		this.googleAccessToken = validationRunnable.googleAccessToken;
-		this.session = validationRunnable.session;
-		this.validationManager = validationRunnable.validationManager;
+	public boolean getValidateOrPull(){
+		return validateOrPull;
 	}
 
 	@Override
 	public void run() {
-		// TODO check if that is how you get email from google json object
-		String email = googleAccessToken.get().getAsJsonObject("profileObj").get("email").getAsString();
-		Database db = atomicDatabase.get();
-		if (db.hasEmails()) {
-			{//debug stuff
-				DebugLogger.logEvent(ValidationRunnable.class.getName(),Level.INFO, "session " + session.get().getId() + " emails exist in db, setting emailsStored to true");
-			}
-			emailStored.compareAndSet(false, true);
+		if(validateOrPull){
 
-			// TODO validate DB
-
-		} else {
-			{//debug stuff
-				DebugLogger.logEvent(ValidationRunnable.class.getName(),Level.INFO, "session " + session.get().getId() + " emails dont exist in db");
+		}else{
+			List<UserFolder> folders =  database.pull();
+			JsonArray ja = new JsonArray();
+			for(int i=0;i<folders.size();i++){
+				ja.add(folders.get(i).getFolder().getFullName());
 			}
-			db.pull();
-			emailStored.compareAndSet(false, true);
+			JsonObject js = new JsonObject();
+			js.addProperty("messagetype","foldername");
+			js.add("foldername",ja);
+			try {
+				session.getBasicRemote().sendText(js.toString());
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 		}
 
-		validationManager.remove(email);
 	}
 
-	public AtomicBoolean getEmailStored() {
-		return emailStored;
-	}
+
 }

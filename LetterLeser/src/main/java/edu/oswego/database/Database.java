@@ -1,5 +1,6 @@
 package edu.oswego.database;
 
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -16,6 +17,7 @@ import javax.mail.Flags;
 import javax.mail.Folder;
 import javax.mail.Message;
 import javax.mail.MessagingException;
+import javax.websocket.Session;
 
 import edu.oswego.debug.DebugLogger;
 import edu.oswego.mail.Mailer;
@@ -89,6 +91,8 @@ public class Database {
 	 */
 	public Connection getConnection() {
 		try {
+			Class.forName("com.mysql.jdbc.Driver");
+			//connection = DriverManager.getConnection("jdbc:apache:commons:dbcp:test");
 			if (connection == null || connection.isClosed()) {
 				connection = DriverManager.getConnection("jdbc:mysql://" + Settings.DATABASE_HOST + ":"
 						+ Settings.DATABASE_PORT + "/" + Settings.DATABASE_SCHEMA
@@ -98,6 +102,9 @@ public class Database {
 			}
 		} catch (SQLException e) {
 			DebugLogger.logEvent(Database.class.getName(),Level.WARNING, e.getMessage());
+			e.printStackTrace();
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
 		}
 		return connection;
 	}
@@ -105,8 +112,9 @@ public class Database {
 	/**
 	 * Pulls mailer emails into database
 	 */
-	public void pull() {
+	public List<UserFolder> pull() {
 		List<UserFolder> folderList = importFolders();
+
 		List<Integer> emailIdList = new ArrayList<>();
 		List<String> messageList = new ArrayList<>();
 
@@ -153,6 +161,7 @@ public class Database {
 
 		DebugLogger.logEvent(Database.class.getName(),Level.INFO,
 				"Emails have been pulled for " + user.getId() + " <" + user.getEmailAddress() + ">");
+	return folderList;
 	}
 
 	/**
@@ -241,10 +250,7 @@ public class Database {
 
 	/**
 	 * fetches a user (email address object) based on a string email search.
-	 * 
-	 * @param emailAddress
-	 * @see EmailAddress
-	 * @return EmailAddress object
+	 *
 	 */
 	private EmailAddress getUser(String emailAddress) {
 		try {
@@ -493,8 +499,9 @@ public class Database {
 	public List<UserFolder> importFolders() {
 		List<UserFolder> folderList = new ArrayList<>();
 		try {
+			long mill = System.currentTimeMillis();
 			Folder[] folders = mailer.getStorage().getDefaultFolder().list("*");
-
+			System.out.println("time for folders: "+(System.currentTimeMillis()-mill));
 			for (Folder f : folders) {
 				if (!folderExists(f.getFullName(), folderList) && !f.getFullName().equals("[Gmail]")
 						&& !f.getFullName().equals("CSC480_19F") && !f.getFullName().equals("[Gmail]/All Mail")) {

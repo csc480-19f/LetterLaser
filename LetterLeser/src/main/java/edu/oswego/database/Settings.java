@@ -16,12 +16,11 @@ import edu.oswego.debug.DebugLogger;
 
 public class Settings {
 
-	public static String DATABASE_SCHEMA = ""; // should be final when we deploy. Only not final so we can load
-												// credentials
-	public static String DATABASE_USERNAME = "";
-	public static String DATABASE_PASSWORD = "";
-	public static String DATABASE_HOST = "";
-	public static String DATABASE_PORT = "";
+	public static final String DATABASE_SCHEMA = "csc480_19f";
+	public static final String DATABASE_USERNAME = "csc480";
+	public static final String DATABASE_PASSWORD = "csc480";
+	public static final String DATABASE_HOST = "pi.cs.oswego.edu";
+	public static final String DATABASE_PORT = "3306";
 
 	public static final String[] DATABASE_TABLES = new String[] { "email", "email_addr", "filter_settings", "folder",
 			"received_email", "user", "user_email", "user_favourites", "sentiment_score" };
@@ -33,7 +32,7 @@ public class Settings {
 	 * @deprecated
 	 */
 	public static void loadCredentials() {
-		try {
+		/*try {
 			Scanner scanner = new Scanner(new File("credentials.txt"));
 
 			DATABASE_SCHEMA = scanner.nextLine();
@@ -48,7 +47,7 @@ public class Settings {
 			DebugLogger.logEvent(Settings.class.getName(),Level.INFO, "Credentials loaded from local file.");
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
-		}
+		}*/
 	}
 
 }

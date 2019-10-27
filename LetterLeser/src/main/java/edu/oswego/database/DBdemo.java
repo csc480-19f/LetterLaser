@@ -29,7 +29,7 @@ public class DBdemo {
 		Database db = new Database("csc344testacc@gmail.com", mailer);
 
 		// db.truncateTables();
-		db.pull();
+		//db.pull();
 
 		try {
 			Date utilDate = (Date) new SimpleDateFormat("yyyy-MM-dd").parse("2014-01-28");

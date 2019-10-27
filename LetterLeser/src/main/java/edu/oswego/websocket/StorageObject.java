@@ -2,6 +2,8 @@ package edu.oswego.websocket;
 
 import edu.oswego.Runnables.Handler;
 import edu.oswego.Runnables.ValidationRunnable;
+import edu.oswego.database.Database;
+import edu.oswego.mail.Mailer;
 
 public class StorageObject {
 	
@@ -9,14 +11,9 @@ public class StorageObject {
 	private Handler handler;
 	private Thread validationThread;
 	private ValidationRunnable validationRunnable;
-	
-	public StorageObject(Thread handlerThread, Handler handler, Thread validationThread,
-			ValidationRunnable validationRunnable) {
-		this.handlerThread = handlerThread;
-		this.handler = handler;
-		this.validationThread = validationThread;
-		this.validationRunnable = validationRunnable;
-	}
+	private Mailer mailer;
+	private Database database;
+
 
 	public Thread getHanderThread() {
 		return handlerThread;
@@ -49,13 +46,17 @@ public class StorageObject {
 	public void setValidationRunnable(ValidationRunnable validationRunnable) {
 		this.validationRunnable = validationRunnable;
 	}
-	@Override
-	public String toString(){
-		return this.getClass().getName() + "@" + Integer.toHexString(this.hashCode()) + "\n" +
-				handlerThread.getClass().getName() + "@" + Integer.toHexString(handlerThread.hashCode()) + "\n" +
-				handler.getClass().getName() + "@" + Integer.toHexString(handler.hashCode()) + "\n" +
-				validationThread.getClass().getName() + "@" + Integer.toHexString(validationThread.hashCode()) + "\n" +
-				validationRunnable.getClass().getName() + "@" + Integer.toHexString(validationRunnable.hashCode());
+
+	public void setMailer(Mailer mailer){
+		this.mailer=mailer;
 	}
-	
+
+	public Mailer getMailer(){return mailer;}
+
+	public void setDatabase(Database database){
+		this.database = database;
+	}
+
+	public Database getDatabase(){return database;}
+
 }
