@@ -37,12 +37,21 @@ public class ValidationRunnable implements Runnable {
 		if(validateOrPull){
 
 		}else{
+			JsonObject js = new JsonObject();
+			js.addProperty("messagetype","statusupdate");
+			js.addProperty("message","Pulling folders and emails");
+			try {
+				session.getBasicRemote().sendText(js.toString());
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+
 			List<UserFolder> folders =  database.pull();
 			JsonArray ja = new JsonArray();
 			for(int i=0;i<folders.size();i++){
 				ja.add(folders.get(i).getFolder().getFullName());
 			}
-			JsonObject js = new JsonObject();
+			js = new JsonObject();
 			js.addProperty("messagetype","foldername");
 			js.add("foldername",ja);
 			try {

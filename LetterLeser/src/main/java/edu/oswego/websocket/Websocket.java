@@ -95,6 +95,10 @@ public class Websocket {
 					sendMessageToClient(session,js.toString());
 					return;
 				}
+				js = new JsonObject();
+				js.addProperty("messagetype","statusupdate");
+				js.addProperty("message","established connection");
+				sendMessageToClient(session,js.toString());
 
 				database = new Database(email,mailer);
 				sessionMapper.put(email,storageObject);
