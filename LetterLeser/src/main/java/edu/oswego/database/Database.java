@@ -499,9 +499,7 @@ public class Database {
 	public List<UserFolder> importFolders() {
 		List<UserFolder> folderList = new ArrayList<>();
 		try {
-			long mill = System.currentTimeMillis();
 			Folder[] folders = mailer.getStorage().getDefaultFolder().list("*");
-			System.out.println("time for folders: "+(System.currentTimeMillis()-mill));
 			for (Folder f : folders) {
 				if (!folderExists(f.getFullName(), folderList) && !f.getFullName().equals("[Gmail]")
 						&& !f.getFullName().equals("CSC480_19F") && !f.getFullName().equals("[Gmail]/All Mail")) {
