@@ -402,13 +402,13 @@ public class Database {
 	 * @return boolean if operation was completed successfully
 	 * @see #insertFilter
 	 */
-	public boolean insertUserFavourites(String favName, java.util.Date utilDate, Interval intervalRange,
+	public boolean insertUserFavourites(String favName, java.util.Date startDate, java.util.Date endDate, Interval intervalRange,
 			boolean hasAttachment, boolean isSeen, String folderName) {
 		int folderId = getFolderId(folderName);
 		if (folderId == -1)
 			return false;
 
-		int filterId = insertFilter(utilDate, intervalRange.toString(), hasAttachment, isSeen, folderId);
+		int filterId = insertFilter(startDate, endDate, intervalRange.toString(), hasAttachment, isSeen, folderId);
 
 		query("INSERT INTO user_favourites (filter_settings_id, user_id, fav_name) VALUE (" + filterId + ", "
 				+ user.getId() + ", '" + favName + "');");
@@ -430,18 +430,19 @@ public class Database {
 	 * @return database id of filter_settings record
 	 * @see #insertUserFavourites
 	 */
-	private int insertFilter(java.util.Date utilDate, String intervalRange, boolean hasAttachment, boolean isSeen,
+	private int insertFilter(java.util.Date startDate, java.util.Date endDate, String intervalRange, boolean hasAttachment, boolean isSeen,
 			int folderId) {
 		try {
 			PreparedStatement ps = getConnection().prepareStatement(
-					"INSERT INTO filter_settings (start_date, interval_range, has_attachment, is_seen, folder_id) VALUE (?, ?, ?, ?, ?);",
+					"INSERT INTO filter_settings (start_date, end_date, interval_range, has_attachment, is_seen, folder_id) VALUE (?, ?, ?, ?, ?, ?);",
 					Statement.RETURN_GENERATED_KEYS);
 
-			ps.setObject(1, utilDate);
-			ps.setString(2, intervalRange);
-			ps.setBoolean(3, hasAttachment);
-			ps.setBoolean(4, isSeen);
-			ps.setInt(5, folderId);
+			ps.setObject(1, startDate);
+			ps.setObject(2, endDate);
+			ps.setString(3, intervalRange);
+			ps.setBoolean(4, hasAttachment);
+			ps.setBoolean(5, isSeen);
+			ps.setInt(6, folderId);
 
 			if (ps.executeUpdate() == 0)
 				DebugLogger.logEvent(Database.class.getName(),Level.WARNING, "Could not insert filter. No rows affected");

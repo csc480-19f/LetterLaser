@@ -33,10 +33,10 @@ public class DBdemo {
 
 		try {
 			Date utilDate = (Date) new SimpleDateFormat("yyyy-MM-dd").parse("2014-01-28");
-			db.insertUserFavourites("Awesome favs", utilDate, Interval.WEEK, false, false, "Apple Developer");
-			db.insertUserFavourites("Crappy favs", utilDate, Interval.YEAR, true, true, "INBOX");
-			db.insertUserFavourites("Mediocre favs", utilDate, Interval.MONTH, false, true, "Misc/UUP/CELT");
-			db.insertUserFavourites("Jimmys favs", utilDate, Interval.WEEK, true, false, "[Gmail]/Sent Mail");
+			db.insertUserFavourites("Awesome favs", utilDate, utilDate, Interval.WEEK, false, false, "Apple Developer");
+			db.insertUserFavourites("Crappy favs", utilDate, utilDate, Interval.YEAR, true, true, "INBOX");
+			db.insertUserFavourites("Mediocre favs", utilDate, utilDate, Interval.MONTH, false, true, "Misc/UUP/CELT");
+			db.insertUserFavourites("Jimmys favs", utilDate, utilDate, Interval.WEEK, true, false, "[Gmail]/Sent Mail");
 			// db.removeUserFavourite("Awesome favs");
 		} catch (java.text.ParseException e) {
 			e.printStackTrace();

@@ -184,7 +184,8 @@ public class Handler implements Runnable {
 		}
 		try {
 			Date date = new SimpleDateFormat("MM/dd/yyyy").parse(stringDate);
-			database.get().insertUserFavourites(favoriteName, date, Interval.MONTH, attachment, seen, folderName);
+			//TODO: make use of end date for this.
+//			database.get().insertUserFavourites(favoriteName, date, Interval.MONTH, attachment, seen, folderName);
 		} catch (ParseException e) {
 			{//debug stuff
 				DebugLogger.logEvent(Handler.class.getName(),Level.SEVERE, "session " + session.get().getId() + " invalid date in addFavourite");
