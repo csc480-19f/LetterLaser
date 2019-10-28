@@ -115,13 +115,17 @@ public class Database {
 	 */
 	public List<UserFolder> pull() {
 		List<UserFolder> folderList = importFolders();
-
+		
+		if (getValidatedEmails() == mailer.getTotalEmailCount())
+			return folderList;
+		
 		List<Integer> emailIdList = new ArrayList<>();
 		List<String> messageList = new ArrayList<>();
+		List<Integer> msgLengthList = new ArrayList<>();
 
 		DebugLogger.logEvent(Database.class.getName(), Level.INFO, "Pulling emails from " + user.getEmailAddress());
 		int s = 0;
-		int stopper = 20; // limit our pull for testing
+		int stopper = 1; // limit our pull for testing
 
 		for (UserFolder f : folderList) {
 			Message[] msgs = mailer.pullEmails(f.getFolder().getFullName()); // Do not use "[Gmail]/All Mail");
@@ -146,12 +150,17 @@ public class Database {
 					DebugLogger.logEvent(Database.class.getName(), Level.WARNING, e.getMessage());
 				}
 			}
+//			break;
+			// strange ghost email added at the end....?
+			
 			// break;
 			// TODO Mark emails by validation
 			// If not already in folder, copy it over.
 			// NULL POINTER EXCEPTION. FIX DIS yo.
 
-			// mailer.markEmailsInFolder(f.getFolder().getFullName(), msgs);
+			 mailer.markEmailsInFolder(f.getFolder().getFullName(), msgs);
+			 msgLengthList.add(msgs.length);
+//			 break;
 		}
 
 		// TODO get working when phoenix fixes his ssa.
@@ -161,6 +170,11 @@ public class Database {
 		// System.out.println("SS CALC");
 		// calculateSentimentScore(emailIdList.get(i), ss[i]);
 		// }
+		
+		int sum = 0;
+		for (Integer c: msgLengthList) 
+			sum += c;
+		setValidatedEmailCount(sum);
 
 		DebugLogger.logEvent(Database.class.getName(), Level.INFO,
 				"Emails have been pulled for " + user.getId() + " <" + user.getEmailAddress() + ">");
@@ -567,10 +581,9 @@ public class Database {
 	 * @return database id of email record
 	 */
 	private int insertEmail(Message m, List<UserFolder> folderList, List<Integer> emailIdList) {
+		
 		int emailId = -1;
-
-		emailId = getEmailId(m);
-
+		emailId = getEmailId(m); //TODO Duplicates?
 		if (emailId != -1)
 			return emailId;
 
@@ -820,10 +833,9 @@ public class Database {
 	 * @param emailAddress
 	 * @param count
 	 */
-	public void setValidatedEmailCount(String emailAddress, int count) {
-		query("UPDATE user SET validated_emails = " + count + " WHERE email_address = '" + emailAddress + "';");
-		DebugLogger.logEvent(Database.class.getName(), Level.INFO,
-				"Validation count submitted for " + user.getId() + " <" + user.getEmailAddress() + ">");
+	public void setValidatedEmailCount(int count) {
+		query("UPDATE user SET validated_emails = " + count + " WHERE email_address = '" + user.getEmailAddress() + "';");
+		DebugLogger.logEvent(Database.class.getName(), Level.INFO, "Validation count submitted for " + user.getId() + " <" + user.getEmailAddress() + ">");
 	}
 
 	/**

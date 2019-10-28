@@ -28,27 +28,28 @@ public class DBdemo {
 		Mailer mailer = new Mailer("csc344testacc@gmail.com", "");
 		Database db = new Database("csc344testacc@gmail.com", mailer);
 
+		System.out.println(db.getValidatedEmails());
 //		 db.truncateTables();
 		db.pull();
 
-		try {
-			Date utilDate = (Date) new SimpleDateFormat("yyyy-MM-dd").parse("2014-01-28");
-			db.insertUserFavourites("Awesome favs", utilDate, utilDate, Interval.WEEK, false, false, "Apple Developer");
-			db.insertUserFavourites("Crappy favs", utilDate, utilDate, Interval.YEAR, true, true, "INBOX");
-			db.insertUserFavourites("Mediocre favs", utilDate, utilDate, Interval.MONTH, false, true, "Misc/UUP/CELT");
-			db.insertUserFavourites("Jimmys favs", utilDate, utilDate, Interval.WEEK, true, false, "[Gmail]/Sent Mail");
-			// db.removeUserFavourite("Awesome favs");
-		} catch (java.text.ParseException e) {
-			e.printStackTrace();
-		}
+//		try {
+//			Date utilDate = (Date) new SimpleDateFormat("yyyy-MM-dd").parse("2014-01-28");
+//			db.insertUserFavourites("Awesome favs", utilDate, utilDate, Interval.WEEK, false, false, "Apple Developer");
+//			db.insertUserFavourites("Crappy favs", utilDate, utilDate, Interval.YEAR, true, true, "INBOX");
+//			db.insertUserFavourites("Mediocre favs", utilDate, utilDate, Interval.MONTH, false, true, "Misc/UUP/CELT");
+//			db.insertUserFavourites("Jimmys favs", utilDate, utilDate, Interval.WEEK, true, false, "[Gmail]/Sent Mail");
+//			// db.removeUserFavourite("Awesome favs");
+//		} catch (java.text.ParseException e) {
+//			e.printStackTrace();
+//		}
 
 		db.showTables();
-
-		String startDate = Time.parseDateTime(Time.getDate("2010-03-12"));
-		String endDate = Time.parseDateTime(Time.getDate("2014-03-12"));
-		List<Email> emailList = db.getEmailByFilter(null, startDate, endDate, false, "Apple Developer");
-
-		System.out.println(emailList);
+//
+//		String startDate = Time.parseDateTime(Time.getDate("2010-03-12"));
+//		String endDate = Time.parseDateTime(Time.getDate("2014-03-12"));
+//		List<Email> emailList = db.getEmailByFilter(null, startDate, endDate, false, "Apple Developer");
+//
+//		System.out.println(emailList);
 
 		double time = (double) ((System.currentTimeMillis() - ct) * .001);
 		System.out.println("Total runtime: " + time + " seconds\n");
