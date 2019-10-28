@@ -44,34 +44,32 @@ public class Mailer {
 	public Mailer(String emailAddress, String password) {
 		this.emailAddress = emailAddress;
 		this.password = password; // UNSAFE. Lets encrypt.
-		DebugLogger.logEvent(Mailer.class.getName(),Level.WARNING,
+		DebugLogger.logEvent(Mailer.class.getName(), Level.WARNING,
 				"Mailer object created. Information is in local storage stored unencrypted.");
 	}
-	
+
 	/**
 	 * Checks if a a connection can be made with the mailer credentials.
 	 * 
 	 * @return wehther a connection can be made or not.
 	 */
 	public boolean isConnected() {
-		    try {
-		        Properties props = new Properties();
-		        props.put("mail.smtp.starttls.enable","true");
-		        props.put("mail.smtp.auth", "true");
-		        Session session = Session.getInstance(props, null);
-		        Transport transport = session.getTransport("smtp");
-		        transport.connect("smtp.gmail.com", 587, emailAddress, password);
-		        transport.close();
-		        return true;
-		     } 
-		     catch(AuthenticationFailedException e) {
-		           e.printStackTrace();
-		     }
-		     catch(MessagingException e) {
-		           e.printStackTrace();
-		     }
-		    
-		    return false;
+		try {
+			Properties props = new Properties();
+			props.put("mail.smtp.starttls.enable", "true");
+			props.put("mail.smtp.auth", "true");
+			Session session = Session.getInstance(props, null);
+			Transport transport = session.getTransport("smtp");
+			transport.connect("smtp.gmail.com", 587, emailAddress, password);
+			transport.close();
+			return true;
+		} catch (AuthenticationFailedException e) {
+			e.printStackTrace();
+		} catch (MessagingException e) {
+			e.printStackTrace();
+		}
+
+		return false;
 	}
 
 	/**
@@ -101,16 +99,16 @@ public class Mailer {
 			try {
 				storage = getConnection().getStore(Settings.STORE_TYPE);
 			} catch (NoSuchProviderException e) {
-				DebugLogger.logEvent(Mailer.class.getName(),Level.WARNING, e.getMessage());
+				DebugLogger.logEvent(Mailer.class.getName(), Level.WARNING, e.getMessage());
 			}
 		}
 
 		if (!storage.isConnected()) {
 			try {
-				//storage.connect(Settings.HOST, Settings.EMAIL_ADDRESS, Settings.EMAIL_PWD);
+				// storage.connect(Settings.HOST, Settings.EMAIL_ADDRESS, Settings.EMAIL_PWD);
 				storage.connect(Settings.HOST, emailAddress, password);
 			} catch (MessagingException e) {
-				DebugLogger.logEvent(Mailer.class.getName(),Level.WARNING, e.getMessage());
+				DebugLogger.logEvent(Mailer.class.getName(), Level.WARNING, e.getMessage());
 			}
 		}
 
@@ -129,9 +127,26 @@ public class Mailer {
 		try {
 			folder = store.getFolder(folderName);
 		} catch (MessagingException e) {
-			DebugLogger.logEvent(Mailer.class.getName(),Level.WARNING, e.getMessage());
+			DebugLogger.logEvent(Mailer.class.getName(), Level.WARNING, e.getMessage());
 		}
 		return folder;
+	}
+
+	public int getTotalEmailCount() {
+		int sum = 0;
+		try {
+			Folder[] folders = getStorage().getDefaultFolder().list("*");
+			for (Folder f : folders) {
+				if (!f.getFullName().equals("[Gmail]") && !f.getFullName().equals("CSC480_19F")
+						&& !f.getFullName().equals("[Gmail]/All Mail")) {
+					sum += f.getMessageCount();
+				}
+			}
+		} catch (MessagingException e) {
+			e.printStackTrace();
+		}
+		
+		return sum;
 	}
 
 	/**
@@ -143,6 +158,13 @@ public class Mailer {
 	 */
 	public void markEmailsInFolder(String originFolderName, Message[] msgs) { // TODO change this to javaxmail folder
 		// MAKE HIDDEN FOLDER... maybe subscribed?
+
+		if (msgs == null)
+			if (msgs.length == 0)
+				return;
+
+		System.out.println(originFolderName + "::" + msgs.length);
+
 		Folder folder = null;
 		try {
 			folder = getStorage().getFolder("CSC480_19F");
@@ -160,10 +182,11 @@ public class Mailer {
 			originFolder.open(Folder.READ_WRITE);
 			// MUST CHECK IF MESSAGE ALREADY EXISTS IN FOLDER OR NOT. ONLY COPY IF NOT. DID
 			// NOT DO YET.
-			originFolder.copyMessages(msgs, folder);
-			originFolder.close();
+			if (msgs.length > 0)
+				originFolder.copyMessages(msgs, folder);
+			// originFolder.close();
 		} catch (MessagingException e) {
-			DebugLogger.logEvent(Mailer.class.getName(),Level.WARNING, e.getMessage());
+			DebugLogger.logEvent(Mailer.class.getName(), Level.WARNING, e.getMessage());
 		}
 	}
 
@@ -181,7 +204,7 @@ public class Mailer {
 			Message[] msgs = folder.getMessages();
 			return msgs;
 		} catch (MessagingException e) {
-			DebugLogger.logEvent(Mailer.class.getName(),Level.WARNING, e.getMessage());
+			DebugLogger.logEvent(Mailer.class.getName(), Level.WARNING, e.getMessage());
 		}
 
 		return null;
@@ -227,9 +250,9 @@ public class Mailer {
 					return part.getFileName().toString();
 			}
 		} catch (MessagingException e) {
-			DebugLogger.logEvent(Mailer.class.getName(),Level.WARNING, e.getMessage());
+			DebugLogger.logEvent(Mailer.class.getName(), Level.WARNING, e.getMessage());
 		} catch (IOException e) {
-			DebugLogger.logEvent(Mailer.class.getName(),Level.WARNING, e.getMessage());
+			DebugLogger.logEvent(Mailer.class.getName(), Level.WARNING, e.getMessage());
 		}
 
 		return "";
@@ -249,9 +272,9 @@ public class Mailer {
 			else if (message.isMimeType("multipart/*"))
 				text = getTextFromMimeMultipart((MimeMultipart) message.getContent());
 		} catch (MessagingException e) {
-			DebugLogger.logEvent(Mailer.class.getName(),Level.WARNING, e.getMessage());
+			DebugLogger.logEvent(Mailer.class.getName(), Level.WARNING, e.getMessage());
 		} catch (IOException e) {
-			DebugLogger.logEvent(Mailer.class.getName(),Level.WARNING, e.getMessage());
+			DebugLogger.logEvent(Mailer.class.getName(), Level.WARNING, e.getMessage());
 		}
 		return text;
 	}
@@ -277,9 +300,9 @@ public class Mailer {
 					text += getTextFromMimeMultipart((MimeMultipart) bodyPart.getContent());
 			}
 		} catch (MessagingException e) {
-			DebugLogger.logEvent(Mailer.class.getName(),Level.WARNING, e.getMessage());
+			DebugLogger.logEvent(Mailer.class.getName(), Level.WARNING, e.getMessage());
 		} catch (IOException e) {
-			DebugLogger.logEvent(Mailer.class.getName(),Level.WARNING, e.getMessage());
+			DebugLogger.logEvent(Mailer.class.getName(), Level.WARNING, e.getMessage());
 		}
 
 		return text;
