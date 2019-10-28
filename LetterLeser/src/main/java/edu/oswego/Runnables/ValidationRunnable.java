@@ -28,10 +28,6 @@ public class ValidationRunnable implements Runnable {
 		this.session = session;
 	}
 
-	public boolean getValidateOrPull(){
-		return validateOrPull;
-	}
-
 	@Override
 	public void run() {
 		if(validateOrPull){
