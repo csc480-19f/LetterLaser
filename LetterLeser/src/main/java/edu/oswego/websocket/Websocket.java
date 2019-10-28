@@ -14,6 +14,7 @@ import javax.websocket.OnMessage;
 import javax.websocket.OnOpen;
 import javax.websocket.Session;
 import javax.websocket.server.ServerEndpoint;
+import javax.xml.crypto.Data;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -63,7 +64,7 @@ public class Websocket {
 
 		String messageType = jsonMessage.get("messagetype").getAsString();
 		String email = jsonMessage.get("email").getAsString();
-
+		StorageObject storageObject = sessionMapper.get(email);
 		if (messageType.equals("filter")) {
 
 
@@ -76,7 +77,6 @@ public class Websocket {
 
 			Mailer mailer;
 			Database database;
-			StorageObject storageObject = sessionMapper.get(email);
 
 			if(storageObject==null){
 				storageObject = new StorageObject();
@@ -149,11 +149,26 @@ public class Websocket {
 		} else if(messageType.equals("refresh")){
 			databaseValidation(session);
 		} else if(messageType.equals("addfavorite")){
+			Database database = storageObject.getDatabase();
+			String favoriteName = jsonMessage.get("favoritename").getAsString();
+			JsonObject filter = jsonMessage.get("filter").getAsJsonObject();
+			String foldername = filter.get("foldername").getAsString();
+			String startDate = filter.get("date").getAsString();
 
+
+			boolean attachment = filter.get("attachment").getAsBoolean();
+			boolean seen = filter.get("seen").getAsBoolean();
+			database.insertUserFavourites();
 		} else if(messageType.equals("callfavorite")){
+			Database database = storageObject.getDatabase();
 
 		} else if(messageType.equals("removefavorite")){
-
+			Database database = storageObject.getDatabase();
+			database.removeUserFavourite(jsonMessage.get("favoritename").getAsString());
+			JsonObject js = new JsonObject();
+			js.addProperty("messagetype","statusupdate");
+			js.addProperty("message","Favorite has been removed");
+			sendMessageToClient(session,js.toString());
 		} else if(messageType.equals("logout")){
 
 		} else{
