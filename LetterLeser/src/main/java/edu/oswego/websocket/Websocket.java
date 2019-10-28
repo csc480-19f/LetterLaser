@@ -1,6 +1,7 @@
 package edu.oswego.websocket;
 
 import java.io.IOException;
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -27,7 +28,12 @@ import edu.oswego.debug.DebugLogger;
 import edu.oswego.mail.Mailer;
 import edu.oswego.model.UserFavourites;
 import edu.oswego.model.UserFolder;
+import edu.oswego.props.Interval;
 import edu.oswego.props.MessageType;
+import org.joda.time.DateTime;
+import org.joda.time.Years;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
 
 @ServerEndpoint("/engine")
 public class Websocket {
@@ -85,20 +91,20 @@ public class Websocket {
 				JsonObject js = new JsonObject();
 				js.addProperty("messagetype","statusupdate");
 				js.addProperty("message","establising connection");
-				sendMessageToClient(session,js.toString());
+				sendMessageToClient(session,js);
 
 				boolean connectedToDatabase = mailer.isConnected();
 				if(!connectedToDatabase){
 					js = new JsonObject();
 					js.addProperty("messagetype","statusupdate");
 					js.addProperty("message","invalid credentials");
-					sendMessageToClient(session,js.toString());
+					sendMessageToClient(session,js);
 					return;
 				}
 				js = new JsonObject();
 				js.addProperty("messagetype","statusupdate");
 				js.addProperty("message","established connection");
-				sendMessageToClient(session,js.toString());
+				sendMessageToClient(session,js);
 
 				database = new Database(email,mailer);
 				sessionMapper.put(email,storageObject);
@@ -125,12 +131,12 @@ public class Websocket {
 				js.addProperty("messagetype","logininfo");
 				js.add("foldername",ja1);
 				js.add("favoritename",ja2);
-				sendMessageToClient(session,js.toString());
+				sendMessageToClient(session,js);
 			}else{
 				js = new JsonObject();
 				js.addProperty("messagetype","statusupdate");
 				js.addProperty("message","nothing found in database, preforming fresh import");
-				sendMessageToClient(session,js.toString());
+				sendMessageToClient(session,js);
 				if(storageObject.getValidationRunnable()==null) {
 					ValidationRunnable vr = new ValidationRunnable(mailer, database, false, session);
 					Thread thread = new Thread(vr);
@@ -142,25 +148,31 @@ public class Websocket {
 					js = new JsonObject();
 					js.addProperty("messagetype","statusupdate");
 					js.addProperty("message","Validating Database already in progress");
-					sendMessageToClient(session,js.toString());
+					sendMessageToClient(session,js);
 				}
 			}
 
 		} else if(messageType.equals("refresh")){
-			databaseValidation(session);
+
 		} else if(messageType.equals("addfavorite")){
 			Database database = storageObject.getDatabase();
 			String favoriteName = jsonMessage.get("favoritename").getAsString();
 			JsonObject filter = jsonMessage.get("filter").getAsJsonObject();
 			String foldername = filter.get("foldername").getAsString();
-			String startDate = filter.get("date").getAsString();
+			String sd = filter.get("date").getAsString();
+			String interval = filter.get("interval").getAsString();
 
-
+			DateTime startDate = new DateTime(DateTimeFormat.forPattern("MM/dd/yyyy HH:mm").parseMillis(sd));
+			DateTime endDate = getEndDate(startDate,interval);
 			boolean attachment = filter.get("attachment").getAsBoolean();
 			boolean seen = filter.get("seen").getAsBoolean();
-			database.insertUserFavourites();
+			database.insertUserFavourites(favoriteName,startDate.toDate(),endDate.toDate(), Interval.parse(interval),attachment,seen,foldername);JsonObject js = new JsonObject();
+			js.addProperty("messagetype","statusupdate");
+			js.addProperty("message","Favorite has been added");
+			sendMessageToClient(session,js);
 		} else if(messageType.equals("callfavorite")){
 			Database database = storageObject.getDatabase();
+			String favname = jsonMessage.get("favoritename").getAsString();
 
 		} else if(messageType.equals("removefavorite")){
 			Database database = storageObject.getDatabase();
@@ -168,7 +180,7 @@ public class Websocket {
 			JsonObject js = new JsonObject();
 			js.addProperty("messagetype","statusupdate");
 			js.addProperty("message","Favorite has been removed");
-			sendMessageToClient(session,js.toString());
+			sendMessageToClient(session,js);
 		} else if(messageType.equals("logout")){
 
 		} else{
@@ -177,7 +189,7 @@ public class Websocket {
 			js.addProperty("message","invalid messagetype\n" +
 					"please send one of these options:\n" +
 					"login, filter, refresh, addfavorite, callfavorite, removefavorite or logout");
-			sendMessageToClient(session,js.toString());
+			sendMessageToClient(session,js);
 		}
 
 	}
@@ -200,6 +212,16 @@ public class Websocket {
 	 * all private functional methods are below
 	 */
 
+	private DateTime getEndDate(DateTime startDate,String interval){
+		if(interval.equals("year")){
+			return startDate.plusYears(1);
+		}else if(interval.equals("month")){
+			return startDate.plusMonths(1);
+		}else{//week
+			return startDate.plusWeeks(1);
+		}
+	}
+
 	private void databaseValidation(Session session) {
 
 
@@ -210,9 +232,9 @@ public class Websocket {
 
 	}
 
-	private void sendMessageToClient(Session session, String returnMessage){
+	private void sendMessageToClient(Session session, JsonObject returnMessage){
 		try{
-			session.getBasicRemote().sendText(returnMessage);
+			session.getBasicRemote().sendText(returnMessage.toString());
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

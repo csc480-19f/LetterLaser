@@ -4,9 +4,10 @@ package edu.oswego.mail;
  * Settings file for Mailer
  * 
  * @author Jimmy Nguyen
- * @since 10/23/2019
+ * @since 10/28/2019
  *
  */
+@SuppressWarnings("ALL")
 public class Settings {
 
 	public static final String STORE_TYPE = "imaps";
@@ -16,8 +17,4 @@ public class Settings {
 
 	private Settings() {} // Cannot instantiate an object
 	
-	// Will not need when we get authkey. This is for testing.
-	public static String EMAIL_ADDRESS = "";
-	public static String EMAIL_PWD = "";
-
 }

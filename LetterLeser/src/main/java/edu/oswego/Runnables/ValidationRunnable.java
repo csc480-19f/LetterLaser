@@ -54,6 +54,7 @@ public class ValidationRunnable implements Runnable {
 			js = new JsonObject();
 			js.addProperty("messagetype","foldername");
 			js.add("foldername",ja);
+			js.add("favoritename",new JsonArray());
 			try {
 				session.getBasicRemote().sendText(js.toString());
 			} catch (IOException e) {

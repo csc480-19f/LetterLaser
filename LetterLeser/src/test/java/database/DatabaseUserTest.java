@@ -59,10 +59,10 @@ class DatabaseUserTest {
 		try {
 			db.query("INSERT INTO folder (fold_name) VALUES ('Apple Developer'), ('INBOX'), ('Misc/UUP/CELT'), ('[Gmail]/Sent Mail');");
 			Date utilDate = (Date) new SimpleDateFormat("yyyy-MM-dd").parse("2015-03-14");
-			db.insertUserFavourites("Awesome favs", utilDate, Interval.WEEK, false, false, "Apple Developer");
-			db.insertUserFavourites("Crappy favs", utilDate, Interval.YEAR, true, true, "INBOX");
-			db.insertUserFavourites("Mediocre favs", utilDate, Interval.MONTH, false, true, "Misc/UUP/CELT");
-			db.insertUserFavourites("Jimmys favs", utilDate, Interval.WEEK, true, false, "[Gmail]/Sent Mail");
+			db.insertUserFavourites("Awesome favs", utilDate, utilDate, Interval.WEEK, false, false, "Apple Developer");
+			db.insertUserFavourites("Crappy favs", utilDate, utilDate, Interval.YEAR, true, true, "INBOX");
+			db.insertUserFavourites("Mediocre favs", utilDate, utilDate, Interval.MONTH, false, true, "Misc/UUP/CELT");
+			db.insertUserFavourites("Jimmys favs", utilDate, utilDate, Interval.WEEK, true, false, "[Gmail]/Sent Mail");
 			
 			db.removeUserFavourite("Jimmys favs");
 			System.out.println("DB ADDEDS");

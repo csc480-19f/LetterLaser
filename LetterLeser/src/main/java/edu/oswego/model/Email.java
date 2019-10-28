@@ -10,11 +10,13 @@ import edu.oswego.sentiment.SentimentScore;
  * Email object based on SQL table model: email
  * 
  * @author Jimmy Nguyen
- * @since 10/23/2019
+ * @since 10/28/2019
  *
  */
 
 public class Email {
+	
+	//TODO: get rid of setters that aren't being used.
 
 	private int id;
 	private Date dateReceived;

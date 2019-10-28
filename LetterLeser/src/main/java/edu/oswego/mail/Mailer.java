@@ -25,7 +25,7 @@ import edu.oswego.debug.DebugLogger;
  * settings.
  * 
  * @author Jimmy Nguyen
- * @since 10/23/2019
+ * @since 10/27/2019
  */
 
 public class Mailer {
@@ -48,6 +48,11 @@ public class Mailer {
 				"Mailer object created. Information is in local storage stored unencrypted.");
 	}
 	
+	/**
+	 * Checks if a a connection can be made with the mailer credentials.
+	 * 
+	 * @return wehther a connection can be made or not.
+	 */
 	public boolean isConnected() {
 		    try {
 		        Properties props = new Properties();

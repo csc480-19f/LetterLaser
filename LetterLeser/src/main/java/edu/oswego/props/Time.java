@@ -1,20 +1,17 @@
 package edu.oswego.props;
 
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 
 /**
  * Converts a string date into a Date object in a valid SQL format.
  * 
  * @author Jimmy Nguyen
- * @since 10/23/2019
+ * @since 10/28/2019
  *
  */
 
 public class Time {
-
-	private static SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
 	private Time() {} // Cannot instantiate an object
 
@@ -41,7 +38,7 @@ public class Time {
 	 * @return String date in SQL format
 	 */
 	public static String parseDateTime(Date date) {
-		return sdf.format(date);
+		return new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(date);
 	}
 
 }
