@@ -54,9 +54,7 @@ public class Handler implements Runnable {
 		this.oldThread = new AtomicReference<>(oldThread);
 	}
 
-	public String getEmail() {
-		return googleAccessToken.get().getAsJsonObject("profileObj").get("email").getAsString();
-	}
+
 
 	@Override
 	public void run() {

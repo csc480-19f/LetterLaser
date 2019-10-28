@@ -170,6 +170,17 @@ public class Websocket {
 			js.addProperty("messagetype","statusupdate");
 			js.addProperty("message","Favorite has been added");
 			sendMessageToClient(session,js);
+
+			List<UserFavourites> favourites = database.getUserFavourites();
+			JsonArray ja = new JsonArray();
+			for(int i=0;i<favourites.size();i++){
+				ja.add(favourites.get(i).getName());
+			}
+			js = new JsonObject();
+			js.addProperty("messagetype","favoritename");
+			js.add("favoritename",ja);
+			sendMessageToClient(session,js);
+
 		} else if(messageType.equals("callfavorite")){
 			Database database = storageObject.getDatabase();
 			String favname = jsonMessage.get("favoritename").getAsString();
@@ -180,6 +191,16 @@ public class Websocket {
 			JsonObject js = new JsonObject();
 			js.addProperty("messagetype","statusupdate");
 			js.addProperty("message","Favorite has been removed");
+			sendMessageToClient(session,js);
+
+			List<UserFavourites> favourites = database.getUserFavourites();
+			JsonArray ja = new JsonArray();
+			for(int i=0;i<favourites.size();i++){
+				ja.add(favourites.get(i).getName());
+			}
+			js = new JsonObject();
+			js.addProperty("messagetype","favoritename");
+			js.add("favoritename",ja);
 			sendMessageToClient(session,js);
 		} else if(messageType.equals("logout")){
 
