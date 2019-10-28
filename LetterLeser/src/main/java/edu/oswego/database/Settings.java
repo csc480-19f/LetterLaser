@@ -23,6 +23,7 @@ public class Settings {
 	public static String DATABASE_HOST = "";
 	public static String DATABASE_PORT = "";
 
+
 	public static final String[] DATABASE_TABLES = new String[] { "email", "email_addr", "filter_settings", "folder",
 			"received_email", "user", "user_email", "user_favourites", "sentiment_score" };
 	
