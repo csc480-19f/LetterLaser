@@ -25,7 +25,7 @@ public class DBdemo {
 		long ct = System.currentTimeMillis();
 		Settings.loadCredentials();
 
-		Mailer mailer = new Mailer("csc344testacc@gmail.com", "PASS");
+		Mailer mailer = new Mailer("csc344testacc@gmail.com", "INSERT_PASSWORD_HERE");
 		Database db = new Database("csc344testacc@gmail.com", mailer);
 
 		// db.truncateTables();

@@ -1,7 +1,7 @@
 package edu.oswego.sentiment;
 
 public class SentimentScore {
-	
+
 	private double positive, negative, neutral, compound;
 
 	public SentimentScore(double positive, double negative, double neutral, double compound) {
@@ -42,5 +42,5 @@ public class SentimentScore {
 	public void setCompound(double compound) {
 		this.compound = compound;
 	}
-	
+
 }

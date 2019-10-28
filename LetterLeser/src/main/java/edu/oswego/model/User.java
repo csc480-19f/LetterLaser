@@ -6,7 +6,7 @@ import java.util.List;
  * User object based on SQL table model: user
  * 
  * @author Jimmy Nguyen
- * @since 10/23/2019
+ * @since 10/28/2019
  *
  */
 
@@ -24,16 +24,8 @@ public class User {
 		return emailAddress;
 	}
 
-	public void setEmailAddress(EmailAddress emailAddress) {
-		this.emailAddress = emailAddress;
-	}
-
 	public List<UserFavourites> getUserFavourites() {
 		return userFavourites;
 	}
 
-	public void setUserFavourites(List<UserFavourites> userFavourites) {
-		this.userFavourites = userFavourites;
-	}
-	
 }

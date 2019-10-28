@@ -11,16 +11,17 @@ import edu.oswego.debug.DebugLogger;
  * Simple static class to access credentials from other classes.
  * 
  * @author Jimmy Nguyen
- * @since 10/08/2019
+ * @since 10/28/2019
  */
 
 public class Settings {
 
-	public static final String DATABASE_SCHEMA = "csc480_19f";
-	public static final String DATABASE_USERNAME = "csc480";
-	public static final String DATABASE_PASSWORD = "csc480";
-	public static final String DATABASE_HOST = "pi.cs.oswego.edu";
-	public static final String DATABASE_PORT = "3306";
+	// all of these will be final when we release. No loadCredentials.
+	public static String DATABASE_SCHEMA = "";
+	public static String DATABASE_USERNAME = "";
+	public static String DATABASE_PASSWORD = "";
+	public static String DATABASE_HOST = "";
+	public static String DATABASE_PORT = "";
 
 	public static final String[] DATABASE_TABLES = new String[] { "email", "email_addr", "filter_settings", "folder",
 			"received_email", "user", "user_email", "user_favourites", "sentiment_score" };
@@ -32,7 +33,7 @@ public class Settings {
 	 * @deprecated
 	 */
 	public static void loadCredentials() {
-		/*try {
+		try {
 			Scanner scanner = new Scanner(new File("credentials.txt"));
 
 			DATABASE_SCHEMA = scanner.nextLine();
@@ -40,14 +41,12 @@ public class Settings {
 			DATABASE_PASSWORD = scanner.nextLine();
 			DATABASE_HOST = scanner.nextLine();
 			DATABASE_PORT = scanner.nextLine();
-			edu.oswego.mail.Settings.EMAIL_ADDRESS = scanner.nextLine();
-			edu.oswego.mail.Settings.EMAIL_PWD = scanner.nextLine();
 
 			scanner.close();
 			DebugLogger.logEvent(Settings.class.getName(),Level.INFO, "Credentials loaded from local file.");
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
-		}*/
+		}
 	}
 
 }
