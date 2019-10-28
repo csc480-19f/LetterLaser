@@ -1,5 +1,7 @@
 package edu.oswego.Runnables;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 import edu.oswego.model.Email;
 
 import java.util.ArrayList;
