@@ -1,6 +1,6 @@
 # Letter Leser Engine
 
-Letter Leser written in Java 8 and Javascript. Handles mail calculation and meta data onto the database.
+Letter Leser written in Java 8, Javascript, and Python. Handles mail calculation and meta data onto the database.
 
 ## Getting Started
 
