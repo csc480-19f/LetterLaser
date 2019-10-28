@@ -1,5 +1,7 @@
 package edu.oswego.Runnables;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 import edu.oswego.model.Email;
 import edu.oswego.sentiment.AnalyzeThis;
 
@@ -26,6 +28,12 @@ public class SentimentScoreCallable implements Callable {
                 positive += 1;
             }
         }
-	return (positive / emails.size())*100;
-    }
+
+        int num = positive / emails.size() * 100;
+        JsonArray nums = new JsonArray();
+        nums.add(num);
+        JsonObject obj = new JsonObject();
+        obj.add("SentimentScore", nums);
+		return obj;
+	}
 }
