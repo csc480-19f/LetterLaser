@@ -191,7 +191,7 @@ public class Database {
 	 * @param folderName
 	 * @return List of Email objects
 	 */
-	public List<Email> getEmailByFilter(String fileName, String startDate, String endDate, boolean seen,
+	public List<Email> getEmailByFilter(boolean hasAttachment, String startDate, String endDate, boolean seen,
 			String folderName) {
 		List<Email> emailList = new ArrayList<>();
 		List<String> filterStatements = new ArrayList<>();
@@ -199,10 +199,8 @@ public class Database {
 		String selectionStatement = "SELECT * FROM email JOIN user_email on user_email.id = " + user.getId()
 				+ " WHERE ";
 
-		if (fileName != null) {
+		if (hasAttachment)
 			filterStatements.add("has_attachment = 1");
-			filterStatements.add("file_name = '" + fileName + "'");
-		}
 		if (seen)
 			filterStatements.add("seen = 1");
 		if (startDate != null)
