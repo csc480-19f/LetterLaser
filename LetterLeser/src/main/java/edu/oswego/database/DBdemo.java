@@ -25,11 +25,11 @@ public class DBdemo {
 		long ct = System.currentTimeMillis();
 		Settings.loadCredentials();
 
-		Mailer mailer = new Mailer("csc344testacc@gmail.com", "INSERT_PASSWORD_HERE");
+		Mailer mailer = new Mailer("csc344testacc@gmail.com", "");
 		Database db = new Database("csc344testacc@gmail.com", mailer);
 
-		// db.truncateTables();
-		//db.pull();
+//		 db.truncateTables();
+		db.pull();
 
 		try {
 			Date utilDate = (Date) new SimpleDateFormat("yyyy-MM-dd").parse("2014-01-28");
@@ -43,7 +43,6 @@ public class DBdemo {
 		}
 
 		db.showTables();
-		// db.truncateTables();
 
 		String startDate = Time.parseDateTime(Time.getDate("2010-03-12"));
 		String endDate = Time.parseDateTime(Time.getDate("2014-03-12"));
@@ -53,6 +52,8 @@ public class DBdemo {
 
 		double time = (double) ((System.currentTimeMillis() - ct) * .001);
 		System.out.println("Total runtime: " + time + " seconds\n");
+		
+//		db.truncateTables();
 	}
 
 	public static boolean needsUpdate(Database db, Mailer mailer) {
