@@ -1,6 +1,9 @@
 package edu.oswego.Runnables;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 import edu.oswego.model.Email;
+
 import java.util.List;
 import java.util.concurrent.Callable;
 
