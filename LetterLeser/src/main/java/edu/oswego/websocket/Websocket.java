@@ -72,8 +72,10 @@ public class Websocket {
 		String email = jsonMessage.get("email").getAsString();
 		StorageObject storageObject = sessionMapper.get(email);
 		if (messageType.equals("filter")) {
-
-
+			Database database = storageObject.getDatabase();
+			Handler handler = new Handler(session,database,email,jsonMessage.get("filter").getAsJsonObject());
+			Thread thread = new Thread(handler);
+			thread.start();
 
 		} else if (messageType.equals("login")) {
 			{//debug stuff
@@ -185,8 +187,10 @@ public class Websocket {
 			Database database = storageObject.getDatabase();
 			String favname = jsonMessage.get("favoritename").getAsString();
 			UserFavourites userFavourites = database.getUserFavourite(favname);
-			Handler handler = new Handler(database,userFavourites);
-			Thread threawd = new Thread(handler);
+			Handler handler = new Handler(session,database,email,userFavourites);
+			Thread thread = new Thread(handler);
+			thread.start();
+
 		} else if(messageType.equals("removefavorite")){
 			Database database = storageObject.getDatabase();
 			database.removeUserFavourite(jsonMessage.get("favoritename").getAsString());
