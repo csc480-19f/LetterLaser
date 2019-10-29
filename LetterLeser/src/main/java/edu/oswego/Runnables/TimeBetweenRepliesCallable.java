@@ -1,5 +1,7 @@
 package edu.oswego.Runnables;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 import edu.oswego.model.Email;
 
 import java.util.ArrayList;
@@ -133,7 +135,19 @@ public class TimeBetweenRepliesCallable implements Callable {
 			times[1][q] /= totals[1][q];
 		}
 
-		return times;
+		JsonObject finalRet = new JsonObject();
+		JsonObject combined = new JsonObject();
+		JsonArray sent = new JsonArray();
+		JsonArray rece = new JsonArray();
+		for(int q = 0; q < 7; q++){
+			sent.add(times[0][q]);
+			rece.add(times[1][q]);
+		}
+		combined.add("SentEmails", sent);
+		combined.add("ReceivedEmails", rece);
+		finalRet.add("TimeBetweenReplies", combined);
+
+		return finalRet;
 	}
 
 	/**

@@ -1,6 +1,9 @@
 package edu.oswego.Runnables;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 import edu.oswego.model.Email;
+
 import java.util.List;
 import java.util.concurrent.Callable;
 
@@ -33,7 +36,17 @@ public class SnRCallable implements Callable {
 			else stats[1][findDay(e)]++;
 		}
 
-		return stats;
+		JsonObject finalRet = new JsonObject();
+		JsonArray complete = new JsonArray();
+		for(int q = 0; q < 7; q++){
+			JsonArray row = new JsonArray();
+			for(int w = 0; w < 6; w++){
+				row.add(retVal[q][w]);
+			}
+			complete.add(row);
+		}
+		finalRet.add("NumberOfEmails", complete);
+		return finalRet;
 	}
 
 	/**
