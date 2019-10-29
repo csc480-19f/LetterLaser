@@ -1,16 +1,9 @@
 package edu.oswego.database;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.List;
-
 import javax.mail.Folder;
 import javax.mail.MessagingException;
 
 import edu.oswego.mail.Mailer;
-import edu.oswego.model.Email;
-import edu.oswego.props.Interval;
-import edu.oswego.props.Time;
 
 /**
  * Test class demonstrating some database functionality.
@@ -25,8 +18,8 @@ public class DBdemo {
 		long ct = System.currentTimeMillis();
 		Settings.loadCredentials();
 
-		Mailer mailer = new Mailer("csc344testacc@gmail.com", "");
-		Database db = new Database("csc344testacc@gmail.com", mailer);
+		Mailer mailer = new Mailer(edu.oswego.mail.Settings.EMAIL_ADDRESS, edu.oswego.mail.Settings.EMAIL_PWD);
+		Database db = new Database(edu.oswego.mail.Settings.EMAIL_ADDRESS, mailer);
 
 		System.out.println(db.getValidatedEmails());
 //		 db.truncateTables();

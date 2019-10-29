@@ -16,13 +16,13 @@ public class UserFavourites {
 	
 	private int id;
 	private String name;
-	private Date startDate;
+	private Date startDate, endDate;
 	private Interval intervalRange;
 	private boolean hasAttachment;
 	private boolean isSeen;
 	private UserFolder folder;
 	
-	public UserFavourites(int id, String name, Date startDate, Interval intervalRange, boolean hasAttachment,
+	public UserFavourites(int id, String name, Date startDate, Date endDate, Interval intervalRange, boolean hasAttachment,
 			boolean isSeen, UserFolder folder) {
 		this.id = id;
 		this.name = name;
@@ -43,6 +43,10 @@ public class UserFavourites {
 
 	public Date getStartDate() {
 		return startDate;
+	}
+	
+	public Date getEndDate() {
+		return endDate;
 	}
 
 	public Interval getIntervalRange() {

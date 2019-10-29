@@ -113,10 +113,10 @@ public class Database {
 	 */
 	public List<UserFolder> pull() {
 		List<UserFolder> folderList = importFolders();
-		
+
 		if (getValidatedEmails() == mailer.getTotalEmailCount())
 			return folderList;
-		
+
 		List<Integer> emailIdList = new ArrayList<>();
 		List<String> messageList = new ArrayList<>();
 		List<Integer> msgLengthList = new ArrayList<>();
@@ -148,17 +148,17 @@ public class Database {
 					DebugLogger.logEvent(Database.class.getName(), Level.WARNING, e.getMessage());
 				}
 			}
-//			break;
+			// break;
 			// strange ghost email added at the end....?
-			
+
 			// break;
 			// TODO Mark emails by validation
 			// If not already in folder, copy it over.
 			// NULL POINTER EXCEPTION. FIX DIS yo.
 
-			 mailer.markEmailsInFolder(f.getFolder().getFullName(), msgs);
-			 msgLengthList.add(msgs.length);
-//			 break;
+			mailer.markEmailsInFolder(f.getFolder().getFullName(), msgs);
+			msgLengthList.add(msgs.length);
+			// break;
 		}
 
 		// TODO get working when phoenix fixes his ssa.
@@ -168,9 +168,9 @@ public class Database {
 		// System.out.println("SS CALC");
 		// calculateSentimentScore(emailIdList.get(i), ss[i]);
 		// }
-		
+
 		int sum = 0;
-		for (Integer c: msgLengthList) 
+		for (Integer c : msgLengthList)
 			sum += c;
 		setValidatedEmailCount(sum);
 
@@ -352,9 +352,9 @@ public class Database {
 				while (rs2.next()) {
 					DebugLogger.logEvent(Database.class.getName(), Level.INFO,
 							"Favourites fetched for " + user.getId() + " <" + user.getEmailAddress() + ">");
-					return new UserFavourites(rs.getInt(1), rs.getString(2), rs2.getDate(2),
-							Interval.parse(rs2.getString(3)), rs2.getBoolean(4), rs2.getBoolean(5),
-							getFolderById(rs2.getInt(6)));
+					return new UserFavourites(rs.getInt(1), rs.getString(2), rs2.getDate(2), rs2.getDate(3),
+							Interval.parse(rs2.getString(4)), rs2.getBoolean(5), rs2.getBoolean(6),
+							getFolderById(rs2.getInt(7)));
 				}
 
 				rs2.close();
@@ -387,9 +387,9 @@ public class Database {
 								Statement.RETURN_GENERATED_KEYS)
 						.executeQuery();
 				while (rs2.next())
-					ufList.add(new UserFavourites(rs.getInt(1), rs.getString(2), rs2.getDate(2),
-							Interval.parse(rs2.getString(3)), rs2.getBoolean(4), rs2.getBoolean(5),
-							getFolderById(rs2.getInt(6))));
+					ufList.add(new UserFavourites(rs.getInt(1), rs.getString(2), rs2.getDate(2), rs2.getDate(3),
+							Interval.parse(rs2.getString(4)), rs2.getBoolean(5), rs2.getBoolean(6),
+							getFolderById(rs2.getInt(7))));
 
 				rs2.close();
 			}
@@ -576,9 +576,9 @@ public class Database {
 	 * @return database id of email record
 	 */
 	private int insertEmail(Message m, List<UserFolder> folderList, List<Integer> emailIdList) {
-		
+
 		int emailId = -1;
-		emailId = getEmailId(m); //TODO Duplicates?
+		emailId = getEmailId(m); // TODO Duplicates?
 		if (emailId != -1)
 			return emailId;
 
@@ -829,8 +829,10 @@ public class Database {
 	 * @param count
 	 */
 	public void setValidatedEmailCount(int count) {
-		query("UPDATE user SET validated_emails = " + count + " WHERE email_address = '" + user.getEmailAddress() + "';");
-		DebugLogger.logEvent(Database.class.getName(), Level.INFO, "Validation count submitted for " + user.getId() + " <" + user.getEmailAddress() + ">");
+		query("UPDATE user SET validated_emails = " + count + " WHERE email_address = '" + user.getEmailAddress()
+				+ "';");
+		DebugLogger.logEvent(Database.class.getName(), Level.INFO,
+				"Validation count submitted for " + user.getId() + " <" + user.getEmailAddress() + ">");
 	}
 
 	/**
