@@ -1,12 +1,11 @@
 package edu.oswego.Runnables;
 
-import javax.json.Json;
+
 import javax.websocket.Session;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
-import com.google.gson.JsonParser;
 import edu.oswego.database.Database;
 import edu.oswego.mail.Mailer;
 import edu.oswego.model.UserFolder;

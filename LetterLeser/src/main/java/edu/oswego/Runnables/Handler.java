@@ -30,7 +30,7 @@ public class Handler implements Runnable {
 		if(jsonObject!=null){
 
 		}else if(userFavourites!=null){
-
+			List<Email> emails = database.getEmailByFilter();
 		}else{
 
 		}

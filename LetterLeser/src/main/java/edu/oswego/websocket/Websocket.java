@@ -184,7 +184,9 @@ public class Websocket {
 		} else if(messageType.equals("callfavorite")){
 			Database database = storageObject.getDatabase();
 			String favname = jsonMessage.get("favoritename").getAsString();
-
+			UserFavourites userFavourites = database.getUserFavourite(favname);
+			Handler handler = new Handler(database,userFavourites);
+			Thread threawd = new Thread(handler);
 		} else if(messageType.equals("removefavorite")){
 			Database database = storageObject.getDatabase();
 			database.removeUserFavourite(jsonMessage.get("favoritename").getAsString());
