@@ -9,7 +9,7 @@ import edu.oswego.mail.Mailer;
  * Test class demonstrating some database functionality.
  * 
  * @author nguyen
- * @since 10/23/2019
+ * @since 10/29/2019
  * @deprecated
  */
 public class DBdemo {

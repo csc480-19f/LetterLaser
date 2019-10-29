@@ -19,6 +19,7 @@ import edu.oswego.mail.Mailer;
 import edu.oswego.model.UserFavourites;
 import edu.oswego.props.Interval;
 
+
 class DatabaseUserTest {
 
 	private Database db;
@@ -27,15 +28,14 @@ class DatabaseUserTest {
 	@BeforeEach
 	void setUp() throws Exception {
 		Settings.loadCredentials();
-		mailer = new Mailer("email here", "passwordh ere");
-		db = new Database("csc344testacc@gmail.com", mailer);
-		db.truncateTables();
+		mailer = new Mailer(edu.oswego.mail.Settings.EMAIL_ADDRESS, edu.oswego.mail.Settings.EMAIL_PWD);
+//		db = new Database(); // this will truncate/reset all tables
+		db = new Database(edu.oswego.mail.Settings.EMAIL_ADDRESS, mailer);
 	}
 
 	@AfterEach
 	void tearDown() throws Exception {
-//		db.truncateTables();
-//		mailer.getStorage().close();
+		db.truncateTables();
 	}
 
 	@Test
@@ -46,12 +46,12 @@ class DatabaseUserTest {
 		try {
 			ResultSet rs = db.getConnection().prepareStatement("SELECT id FROM user WHERE email_address = 'first@gmail.com';").executeQuery();
 			while (rs.next())
-				id = rs.getInt(1);
+				id = rs.getInt(1); // ID 1 is the edu.oswego.mail.Settings.EMAIL_ADDRESS. That's why we are 2.
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
 		
-		assertEquals(id, 1);
+		assertEquals(id, 2);
 	}
 	
 	@Test
@@ -65,16 +65,26 @@ class DatabaseUserTest {
 			db.insertUserFavourites("Jimmys favs", utilDate, utilDate, Interval.WEEK, true, false, "[Gmail]/Sent Mail");
 			
 			db.removeUserFavourite("Jimmys favs");
-			System.out.println("DB ADDEDS");
-			
 		} catch (ParseException e) {
 			e.printStackTrace();
 		}
 
-		List<UserFavourites> favList = db.getUserFavourites();
-		System.out.println(favList.size());
-		
+		List<UserFavourites> favList = db.getUserFavourites(); // We should have 3 user favs. I inserted 4 and removed one.
 		assertEquals(favList.size(), 3);
+	}
+	
+	@Test
+	void testUserInsertion() {
+		ResultSet rs;
+		int id = -1;
+		try {
+			rs = db.getConnection().prepareStatement("SELECT id FROM user WHERE email_address = '" + db.getUser().getEmailAddress() + "';").executeQuery();
+			while (rs.next())
+				id = rs.getInt(1);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		assertEquals(id, 1);
 	}
 
 }
