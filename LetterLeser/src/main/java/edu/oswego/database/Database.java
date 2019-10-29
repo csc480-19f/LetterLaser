@@ -84,12 +84,13 @@ public class Database {
 
 	/**
 	 * Used just to truncate tables
+	 * 
 	 * @deprecated
 	 */
 	public Database() {
 		truncateTables();
 	}
-	
+
 	/**
 	 * Create and establish a database connection
 	 * 

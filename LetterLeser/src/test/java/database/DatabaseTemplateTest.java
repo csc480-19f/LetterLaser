@@ -16,13 +16,11 @@ import edu.oswego.mail.Mailer;
 class DatabaseTemplateTest {
 
 	private Database db;
-	private Mailer mailer;
 
 	@BeforeEach
 	void setUp() throws Exception {
 		Settings.loadCredentials();
-		mailer = new Mailer(edu.oswego.mail.Settings.EMAIL_ADDRESS, edu.oswego.mail.Settings.EMAIL_PWD);
-		db = new Database(edu.oswego.mail.Settings.EMAIL_ADDRESS, mailer);
+		db = new Database(edu.oswego.mail.Settings.EMAIL_ADDRESS, new Mailer(edu.oswego.mail.Settings.EMAIL_ADDRESS, edu.oswego.mail.Settings.EMAIL_PWD));
 	}
 
 	@AfterEach
