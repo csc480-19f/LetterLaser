@@ -52,7 +52,7 @@ public class Handler implements Runnable {
 			performCalculations(emails);
 		}else if(userFavourites!=null){
 			List<Email> emails;// = database.getEmailByFilter();
-			performCalculations(emails);
+			//performCalculations(emails);
 		}else{
 
 		}
@@ -95,12 +95,14 @@ public class Handler implements Runnable {
 
 			JsonObject js = new JsonObject();
 			js.addProperty("messagetype","graphs");
-			js.addProperty("sentimentscore",sentiment);
-			js.add("emailbydomain",domain);
-			js.add("emailbyfolder",folder);
-			js.add("emailssentandrecieved",sendNRec);
-			js.add("numberofemails",numOfMail);
-			js.add("timebetweenreplies",timeBetween);
+			JsonObject graph = new JsonObject();
+			graph.addProperty("sentimentscore",sentiment);
+			graph.add("emailbydomain",domain);
+			graph.add("emailbyfolder",folder);
+			graph.add("emailssentandrecieved",sendNRec);
+			graph.add("numberofemails",numOfMail);
+			graph.add("timebetweenreplies",timeBetween);
+			js.add("graphs",graph);
 
 			session.getBasicRemote().sendText(js.toString());
 		} catch (InterruptedException e) {

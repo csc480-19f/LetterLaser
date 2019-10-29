@@ -41,7 +41,7 @@ public class SnRCallable implements Callable {
 		for(int q = 0; q < 7; q++){
 			JsonArray row = new JsonArray();
 			for(int w = 0; w < 6; w++){
-				row.add(retVal[q][w]);
+				row.add(stats[q][w]);
 			}
 			complete.add(row);
 		}
