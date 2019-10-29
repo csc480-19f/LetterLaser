@@ -1,0 +1,14 @@
+Oct 29, 2019 7:10:22 PM edu.oswego.debug.DebugLogger logEvent
+WARNING: Mailer object created. Information is in local storage stored unencrypted.
+Oct 29, 2019 7:10:23 PM edu.oswego.debug.DebugLogger logEvent
+WARNING: Communications link failure
+
+The last packet sent successfully to the server was 0 milliseconds ago. The driver has not received any packets from the server.
+Oct 29, 2019 7:14:11 PM edu.oswego.debug.DebugLogger logEvent
+INFO: Credentials loaded from local file.
+Oct 29, 2019 7:14:11 PM edu.oswego.debug.DebugLogger logEvent
+WARNING: Mailer object created. Information is in local storage stored unencrypted.
+Oct 29, 2019 7:14:17 PM edu.oswego.debug.DebugLogger logEvent
+INFO: Connection has been established with database.
+Oct 29, 2019 7:14:17 PM edu.oswego.debug.DebugLogger logEvent
+INFO: Database obj created for: 1 <csc344testacc@gmail.com>
