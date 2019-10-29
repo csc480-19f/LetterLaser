@@ -30,10 +30,6 @@ public class SentimentScoreCallable implements Callable {
         }
 
         int num = positive / emails.size() * 100;
-        JsonArray nums = new JsonArray();
-        nums.add(num);
-        JsonObject obj = new JsonObject();
-        obj.add("SentimentScore", nums);
-		return obj;
+		return num;
 	}
 }

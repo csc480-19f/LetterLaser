@@ -43,7 +43,6 @@ public class NumOfEmailsCallable implements Callable {
 			// And adds 1 to the value at that location.
 		}
 
-		JsonObject finalRet = new JsonObject();
 		JsonArray complete = new JsonArray();
 		for(int q = 0; q < 7; q++){
 			JsonArray row = new JsonArray();
@@ -52,8 +51,7 @@ public class NumOfEmailsCallable implements Callable {
 			}
 			complete.add(row);
 		}
-		finalRet.add("NumberOfEmails", complete);
-		return finalRet;
+		return complete;
 	}
 
 	/**
