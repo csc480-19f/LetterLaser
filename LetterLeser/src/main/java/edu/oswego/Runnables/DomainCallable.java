@@ -17,14 +17,22 @@ public class DomainCallable implements Callable {
 	}
 
 	@Override
-	public Object call() throws Exception {
+	public Object call() {
 		HashMap<String, Integer> domains = new HashMap<>();
-		/*
-		 * for(Email e : emails){ List<EmailAddress> senders = e.getFrom();
-		 * for(EmailAddress ea : senders){ String domain =
-		 * ea.getEmailAddress().split("@")[1]; Integer x = domains.putIfAbsent(domain,
-		 * 1); if (x != null) domains.replace(domain, ++x); } }
-		 */
+
+		for(Email e : emails){
+		    List<EmailAddress> senders = e.getFrom();
+            for(EmailAddress ea : senders){
+                String domain = ea.getEmailAddress().split("@")[1];
+                if(domains.containsKey(domain)){
+                    int x = domains.get(domain);
+                    domains.put(domain,++x);
+                }else{
+                    domains.put(domain,1);
+                }
+            }
+		}
+
 
 		JsonObject emailsByDomain = new JsonObject();
 		JsonArray domainObjs = new JsonArray();
