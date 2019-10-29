@@ -135,7 +135,6 @@ public class TimeBetweenRepliesCallable implements Callable {
 			times[1][q] /= totals[1][q];
 		}
 
-		JsonObject finalRet = new JsonObject();
 		JsonObject combined = new JsonObject();
 		JsonArray sent = new JsonArray();
 		JsonArray rece = new JsonArray();
@@ -145,9 +144,8 @@ public class TimeBetweenRepliesCallable implements Callable {
 		}
 		combined.add("SentEmails", sent);
 		combined.add("ReceivedEmails", rece);
-		finalRet.add("TimeBetweenReplies", combined);
 
-		return finalRet;
+		return combined;
 	}
 
 	/**

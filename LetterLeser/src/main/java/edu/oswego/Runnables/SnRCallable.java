@@ -11,10 +11,11 @@ public class SnRCallable implements Callable {
 	private List<Email> emails;
 	private String user;
 
-	private static final double oneDay = 86400000;
+	private final double oneDay = 86400000;
 
 	/**
 	 * @author Phoenix Boisnier
+	 * @param emails
 	 */
 	public SnRCallable(List<Email> emails, String userEmail) {
 		this.emails = emails;
@@ -36,17 +37,17 @@ public class SnRCallable implements Callable {
 			else stats[1][findDay(e)]++;
 		}
 
-		JsonObject finalRet = new JsonObject();
-		JsonArray complete = new JsonArray();
+		JsonObject combined = new JsonObject();
+		JsonArray sent = new JsonArray();
+		JsonArray rece = new JsonArray();
 		for(int q = 0; q < 7; q++){
-			JsonArray row = new JsonArray();
-			for(int w = 0; w < 6; w++){
-				row.add(stats[q][w]);
-			}
-			complete.add(row);
+			sent.add(stats[0][q]);
+			rece.add(stats[1][q]);
 		}
-		finalRet.add("NumberOfEmails", complete);
-		return finalRet;
+		combined.add("SentEmails", sent);
+		combined.add("ReceivedEmails", rece);
+
+		return combined;
 	}
 
 	/**

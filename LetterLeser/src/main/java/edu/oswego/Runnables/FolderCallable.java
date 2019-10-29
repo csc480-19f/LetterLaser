@@ -35,7 +35,6 @@ public class FolderCallable implements Callable {
 		HashMap<String, String> relationships = fm.folderToParent;
 		ArrayList<String> keys = fm.keyRing;
 
-		JsonObject finalRet = new JsonObject();
 		JsonArray emailsByFolder = new JsonArray();
 		for(String s : keys){
 			JsonObject folderObj = new JsonObject();
@@ -50,9 +49,7 @@ public class FolderCallable implements Callable {
 			folderObj.add("Contributions", contributions);
 			emailsByFolder.add(folderObj);
 		}
-		finalRet.add("EmailsByFolder", emailsByFolder);
-
-		return finalRet;
+		return emailsByFolder;
 	}
 
 }
