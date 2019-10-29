@@ -1,6 +1,5 @@
 package edu.oswego.database;
 
-import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -17,7 +16,6 @@ import javax.mail.Flags;
 import javax.mail.Folder;
 import javax.mail.Message;
 import javax.mail.MessagingException;
-import javax.websocket.Session;
 
 import edu.oswego.debug.DebugLogger;
 import edu.oswego.mail.Mailer;
