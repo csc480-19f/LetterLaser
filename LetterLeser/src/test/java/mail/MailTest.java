@@ -17,6 +17,7 @@ public class MailTest {
 	void setUp() throws Exception {
 		Settings.loadCredentials();
 		mailer = new Mailer(edu.oswego.mail.Settings.EMAIL_ADDRESS, edu.oswego.mail.Settings.EMAIL_PWD);
+		
 	}
 
 	@AfterEach
