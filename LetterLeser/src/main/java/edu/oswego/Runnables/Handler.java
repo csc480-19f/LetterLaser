@@ -1,6 +1,5 @@
 package edu.oswego.Runnables;
 
-
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import edu.oswego.database.Database;
@@ -15,7 +14,6 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
 
-
 public class Handler implements Runnable {
 	private Database database;
 	private JsonObject jsonObject;
@@ -23,48 +21,49 @@ public class Handler implements Runnable {
 	private String email;
 	private Session session;
 
-	public Handler(Session session, Database database, String email, JsonObject jsonObject){
+	public Handler(Session session, Database database, String email, JsonObject jsonObject) {
 		this.session = session;
 		this.database = database;
 		this.jsonObject = jsonObject;
 		this.email = email;
 	}
-	public Handler(Session session, Database database, String email, UserFavourites userFavourites){
+
+	public Handler(Session session, Database database, String email, UserFavourites userFavourites) {
 		this.session = session;
 		this.database = database;
 		this.userFavourites = userFavourites;
 		this.email = email;
 	}
 
-
 	@Override
 	public void run() {
 
-		if(jsonObject!=null){
+		if (jsonObject != null) {
 			String folderName = jsonObject.get("foldername").getAsString();
 			String sd = jsonObject.get("date").getAsString();
 			String interval = jsonObject.get("interval").getAsString();
 			boolean attachment = jsonObject.get("attachment").getAsBoolean();
 			boolean seen = jsonObject.get("seen").getAsBoolean();
 			DateTime startDate = new DateTime(DateTimeFormat.forPattern("MM/dd/yyyy HH:mm").parseMillis(sd));
-			DateTime endDate = getEndDate(startDate,interval);
-			List<Email> emails = database.getEmailByFilter(attachment,startDate.toDate().toString(),endDate.toDate().toString(),seen,folderName);
+			DateTime endDate = getEndDate(startDate, interval);
+			List<Email> emails = database.getEmailByFilter(attachment, startDate.toDate().toString(),
+					endDate.toDate().toString(), seen, folderName);
 			performCalculations(emails);
-		}else if(userFavourites!=null){
+		} else if (userFavourites != null) {
 			List<Email> emails;// = database.getEmailByFilter();
-			//performCalculations(emails);
-		}else{
+			// performCalculations(emails);
+		} else {
 
 		}
 	}
 
-	private void performCalculations(List<Email> emailList){
+	private void performCalculations(List<Email> emailList) {
 		SentimentScoreCallable sentimentScoreCallable = new SentimentScoreCallable(emailList);
 		DomainCallable domainCallable = new DomainCallable(emailList);
 		FolderCallable folderCallable = new FolderCallable(emailList);
 		NumOfEmailsCallable numOfEmailsCallable = new NumOfEmailsCallable(emailList);
-		SnRCallable snRCallable = new SnRCallable(emailList,email);
-		TimeBetweenRepliesCallable timeBetweenRepliesCallable = new TimeBetweenRepliesCallable(emailList,email);
+		SnRCallable snRCallable = new SnRCallable(emailList, email);
+		TimeBetweenRepliesCallable timeBetweenRepliesCallable = new TimeBetweenRepliesCallable(emailList, email);
 
 		FutureTask ssc = new FutureTask(sentimentScoreCallable);
 		FutureTask dc = new FutureTask(domainCallable);
@@ -94,15 +93,15 @@ public class Handler implements Runnable {
 			JsonObject timeBetween = (JsonObject) tbrc.get();
 
 			JsonObject js = new JsonObject();
-			js.addProperty("messagetype","graphs");
+			js.addProperty("messagetype", "graphs");
 			JsonObject graph = new JsonObject();
-			graph.addProperty("sentimentscore",sentiment);
-			graph.add("emailbydomain",domain);
-			graph.add("emailbyfolder",folder);
-			graph.add("emailssentandrecieved",sendNRec);
-			graph.add("numberofemails",numOfMail);
-			graph.add("timebetweenreplies",timeBetween);
-			js.add("graphs",graph);
+			graph.addProperty("sentimentscore", sentiment);
+			graph.add("emailbydomain", domain);
+			graph.add("emailbyfolder", folder);
+			graph.add("emailssentandrecieved", sendNRec);
+			graph.add("numberofemails", numOfMail);
+			graph.add("timebetweenreplies", timeBetween);
+			js.add("graphs", graph);
 
 			session.getBasicRemote().sendText(js.toString());
 		} catch (InterruptedException e) {
@@ -115,16 +114,14 @@ public class Handler implements Runnable {
 
 	}
 
-	private DateTime getEndDate(DateTime startDate,String interval){
-		if(interval.equals("year")){
+	private DateTime getEndDate(DateTime startDate, String interval) {
+		if (interval.equals("year")) {
 			return startDate.plusYears(1);
-		}else if(interval.equals("month")){
+		} else if (interval.equals("month")) {
 			return startDate.plusMonths(1);
-		}else{//week
+		} else {// week
 			return startDate.plusWeeks(1);
 		}
 	}
-
-
 
 }

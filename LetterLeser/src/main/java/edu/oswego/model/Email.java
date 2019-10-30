@@ -98,10 +98,6 @@ public class Email {
 		return from;
 	}
 
-	public void setFrom(List<EmailAddress> from) {
-		this.from = from;
-	}
-
 	@Override
 	public String toString() {
 		return "Email [id=" + id + ", dateReceived=" + dateReceived + ", subject=" + subject + ", size=" + size

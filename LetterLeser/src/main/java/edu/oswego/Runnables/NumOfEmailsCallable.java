@@ -44,9 +44,9 @@ public class NumOfEmailsCallable implements Callable {
 		}
 
 		JsonArray complete = new JsonArray();
-		for(int q = 0; q < 7; q++){
+		for (int q = 0; q < 7; q++) {
 			JsonArray row = new JsonArray();
-			for(int w = 0; w < 6; w++){
+			for (int w = 0; w < 6; w++) {
 				row.add(retVal[q][w]);
 			}
 			complete.add(row);
@@ -64,7 +64,7 @@ public class NumOfEmailsCallable implements Callable {
 	 */
 	private int findHour(Email e) {
 		double hoursLong = e.getDateReceived().getTime() % oneDay;
-		return ((int) hoursLong) / (int)fourHours;
+		return ((int) hoursLong) / (int) fourHours;
 	}
 
 	/**

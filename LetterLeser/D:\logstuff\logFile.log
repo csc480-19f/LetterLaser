@@ -1178,3 +1178,317 @@ Oct 29, 2019 7:42:18 PM edu.oswego.debug.DebugLogger logEvent
 SEVERE: sentiment_score has been truncated completely
 Oct 29, 2019 7:42:18 PM edu.oswego.debug.DebugLogger logEvent
 SEVERE: Database tables have been truncated completely.
+Oct 29, 2019 7:46:22 PM edu.oswego.debug.DebugLogger logEvent
+INFO: Credentials loaded from local file.
+Oct 29, 2019 7:46:22 PM edu.oswego.debug.DebugLogger logEvent
+WARNING: Mailer object created. Information is in local storage stored unencrypted.
+Oct 29, 2019 7:46:23 PM edu.oswego.debug.DebugLogger logEvent
+INFO: Connection has been established with database.
+Oct 29, 2019 7:46:23 PM edu.oswego.debug.DebugLogger logEvent
+INFO: New user created 1 <csc344testacc@gmail.com>
+Oct 29, 2019 7:46:23 PM edu.oswego.debug.DebugLogger logEvent
+INFO: Database obj created for: 1 <csc344testacc@gmail.com>
+Oct 29, 2019 7:46:23 PM edu.oswego.debug.DebugLogger logEvent
+INFO: Query made for statement: USE csc480_19f;
+Oct 29, 2019 7:46:23 PM edu.oswego.debug.DebugLogger logEvent
+INFO: Query made for statement: INSERT INTO user (email_address) VALUE ('first@gmail.com');
+Oct 29, 2019 7:46:23 PM edu.oswego.debug.DebugLogger logEvent
+INFO: Query made for statement: TRUNCATE TABLE email;
+Oct 29, 2019 7:46:23 PM edu.oswego.debug.DebugLogger logEvent
+SEVERE: email has been truncated completely
+Oct 29, 2019 7:46:23 PM edu.oswego.debug.DebugLogger logEvent
+INFO: Query made for statement: TRUNCATE TABLE email_addr;
+Oct 29, 2019 7:46:23 PM edu.oswego.debug.DebugLogger logEvent
+SEVERE: email_addr has been truncated completely
+Oct 29, 2019 7:46:23 PM edu.oswego.debug.DebugLogger logEvent
+INFO: Query made for statement: TRUNCATE TABLE filter_settings;
+Oct 29, 2019 7:46:23 PM edu.oswego.debug.DebugLogger logEvent
+SEVERE: filter_settings has been truncated completely
+Oct 29, 2019 7:46:24 PM edu.oswego.debug.DebugLogger logEvent
+INFO: Query made for statement: TRUNCATE TABLE folder;
+Oct 29, 2019 7:46:24 PM edu.oswego.debug.DebugLogger logEvent
+SEVERE: folder has been truncated completely
+Oct 29, 2019 7:46:24 PM edu.oswego.debug.DebugLogger logEvent
+INFO: Query made for statement: TRUNCATE TABLE received_email;
+Oct 29, 2019 7:46:24 PM edu.oswego.debug.DebugLogger logEvent
+SEVERE: received_email has been truncated completely
+Oct 29, 2019 7:46:24 PM edu.oswego.debug.DebugLogger logEvent
+INFO: Query made for statement: TRUNCATE TABLE user;
+Oct 29, 2019 7:46:24 PM edu.oswego.debug.DebugLogger logEvent
+SEVERE: user has been truncated completely
+Oct 29, 2019 7:46:24 PM edu.oswego.debug.DebugLogger logEvent
+INFO: Query made for statement: TRUNCATE TABLE user_email;
+Oct 29, 2019 7:46:24 PM edu.oswego.debug.DebugLogger logEvent
+SEVERE: user_email has been truncated completely
+Oct 29, 2019 7:46:24 PM edu.oswego.debug.DebugLogger logEvent
+INFO: Query made for statement: TRUNCATE TABLE user_favourites;
+Oct 29, 2019 7:46:24 PM edu.oswego.debug.DebugLogger logEvent
+SEVERE: user_favourites has been truncated completely
+Oct 29, 2019 7:46:25 PM edu.oswego.debug.DebugLogger logEvent
+INFO: Query made for statement: TRUNCATE TABLE sentiment_score;
+Oct 29, 2019 7:46:25 PM edu.oswego.debug.DebugLogger logEvent
+SEVERE: sentiment_score has been truncated completely
+Oct 29, 2019 7:46:25 PM edu.oswego.debug.DebugLogger logEvent
+SEVERE: Database tables have been truncated completely.
+Oct 29, 2019 7:46:38 PM edu.oswego.debug.DebugLogger logEvent
+INFO: Credentials loaded from local file.
+Oct 29, 2019 7:46:38 PM edu.oswego.debug.DebugLogger logEvent
+WARNING: Mailer object created. Information is in local storage stored unencrypted.
+Oct 29, 2019 7:46:38 PM edu.oswego.debug.DebugLogger logEvent
+INFO: Connection has been established with database.
+Oct 29, 2019 7:46:38 PM edu.oswego.debug.DebugLogger logEvent
+INFO: New user created 1 <csc344testacc@gmail.com>
+Oct 29, 2019 7:46:38 PM edu.oswego.debug.DebugLogger logEvent
+INFO: Database obj created for: 1 <csc344testacc@gmail.com>
+Oct 29, 2019 7:46:38 PM edu.oswego.debug.DebugLogger logEvent
+INFO: Query made for statement: INSERT INTO user (email_address) VALUE ('first@gmail.com');
+Oct 29, 2019 7:46:39 PM edu.oswego.debug.DebugLogger logEvent
+INFO: Query made for statement: TRUNCATE TABLE email;
+Oct 29, 2019 7:46:39 PM edu.oswego.debug.DebugLogger logEvent
+SEVERE: email has been truncated completely
+Oct 29, 2019 7:46:39 PM edu.oswego.debug.DebugLogger logEvent
+INFO: Query made for statement: TRUNCATE TABLE email_addr;
+Oct 29, 2019 7:46:39 PM edu.oswego.debug.DebugLogger logEvent
+SEVERE: email_addr has been truncated completely
+Oct 29, 2019 7:46:39 PM edu.oswego.debug.DebugLogger logEvent
+INFO: Query made for statement: TRUNCATE TABLE filter_settings;
+Oct 29, 2019 7:46:39 PM edu.oswego.debug.DebugLogger logEvent
+SEVERE: filter_settings has been truncated completely
+Oct 29, 2019 7:46:39 PM edu.oswego.debug.DebugLogger logEvent
+INFO: Query made for statement: TRUNCATE TABLE folder;
+Oct 29, 2019 7:46:39 PM edu.oswego.debug.DebugLogger logEvent
+SEVERE: folder has been truncated completely
+Oct 29, 2019 7:46:39 PM edu.oswego.debug.DebugLogger logEvent
+INFO: Query made for statement: TRUNCATE TABLE received_email;
+Oct 29, 2019 7:46:39 PM edu.oswego.debug.DebugLogger logEvent
+SEVERE: received_email has been truncated completely
+Oct 29, 2019 7:46:40 PM edu.oswego.debug.DebugLogger logEvent
+INFO: Query made for statement: TRUNCATE TABLE user;
+Oct 29, 2019 7:46:40 PM edu.oswego.debug.DebugLogger logEvent
+SEVERE: user has been truncated completely
+Oct 29, 2019 7:46:40 PM edu.oswego.debug.DebugLogger logEvent
+INFO: Query made for statement: TRUNCATE TABLE user_email;
+Oct 29, 2019 7:46:40 PM edu.oswego.debug.DebugLogger logEvent
+SEVERE: user_email has been truncated completely
+Oct 29, 2019 7:46:40 PM edu.oswego.debug.DebugLogger logEvent
+INFO: Query made for statement: TRUNCATE TABLE user_favourites;
+Oct 29, 2019 7:46:40 PM edu.oswego.debug.DebugLogger logEvent
+SEVERE: user_favourites has been truncated completely
+Oct 29, 2019 7:46:40 PM edu.oswego.debug.DebugLogger logEvent
+INFO: Query made for statement: TRUNCATE TABLE sentiment_score;
+Oct 29, 2019 7:46:40 PM edu.oswego.debug.DebugLogger logEvent
+SEVERE: sentiment_score has been truncated completely
+Oct 29, 2019 7:46:40 PM edu.oswego.debug.DebugLogger logEvent
+SEVERE: Database tables have been truncated completely.
+Oct 29, 2019 7:50:05 PM edu.oswego.debug.DebugLogger logEvent
+INFO: Credentials loaded from local file.
+Oct 29, 2019 7:50:05 PM edu.oswego.debug.DebugLogger logEvent
+WARNING: Mailer object created. Information is in local storage stored unencrypted.
+Oct 29, 2019 7:50:05 PM edu.oswego.debug.DebugLogger logEvent
+INFO: Connection has been established with database.
+Oct 29, 2019 7:50:05 PM edu.oswego.debug.DebugLogger logEvent
+INFO: New user created 1 <csc344testacc@gmail.com>
+Oct 29, 2019 7:50:05 PM edu.oswego.debug.DebugLogger logEvent
+INFO: Database obj created for: 1 <csc344testacc@gmail.com>
+Oct 29, 2019 7:50:05 PM edu.oswego.debug.DebugLogger logEvent
+INFO: Query made for statement: INSERT INTO folder (fold_name) VALUES ('Apple Developer'), ('INBOX'), ('Misc/UUP/CELT'), ('[Gmail]/Sent Mail');
+Oct 29, 2019 7:50:06 PM edu.oswego.debug.DebugLogger logEvent
+INFO: Query made for statement: INSERT INTO user_favourites (filter_settings_id, user_id, fav_name) VALUE (1, 1, 'Awesome favs');
+Oct 29, 2019 7:50:06 PM edu.oswego.debug.DebugLogger logEvent
+INFO: User Favourite added for 1 <csc344testacc@gmail.com>
+Oct 29, 2019 7:50:06 PM edu.oswego.debug.DebugLogger logEvent
+INFO: Query made for statement: INSERT INTO user_favourites (filter_settings_id, user_id, fav_name) VALUE (2, 1, 'Crappy favs');
+Oct 29, 2019 7:50:06 PM edu.oswego.debug.DebugLogger logEvent
+INFO: User Favourite added for 1 <csc344testacc@gmail.com>
+Oct 29, 2019 7:50:06 PM edu.oswego.debug.DebugLogger logEvent
+INFO: Query made for statement: INSERT INTO user_favourites (filter_settings_id, user_id, fav_name) VALUE (3, 1, 'Mediocre favs');
+Oct 29, 2019 7:50:06 PM edu.oswego.debug.DebugLogger logEvent
+INFO: User Favourite added for 1 <csc344testacc@gmail.com>
+Oct 29, 2019 7:50:06 PM edu.oswego.debug.DebugLogger logEvent
+INFO: Query made for statement: INSERT INTO user_favourites (filter_settings_id, user_id, fav_name) VALUE (4, 1, 'Jimmys favs');
+Oct 29, 2019 7:50:06 PM edu.oswego.debug.DebugLogger logEvent
+INFO: User Favourite added for 1 <csc344testacc@gmail.com>
+Oct 29, 2019 7:50:07 PM edu.oswego.debug.DebugLogger logEvent
+INFO: Favourites fetched for 1 <csc344testacc@gmail.com>
+Oct 29, 2019 7:50:07 PM edu.oswego.debug.DebugLogger logEvent
+INFO: Query made for statement: TRUNCATE TABLE email;
+Oct 29, 2019 7:50:07 PM edu.oswego.debug.DebugLogger logEvent
+SEVERE: email has been truncated completely
+Oct 29, 2019 7:50:08 PM edu.oswego.debug.DebugLogger logEvent
+INFO: Query made for statement: TRUNCATE TABLE email_addr;
+Oct 29, 2019 7:50:08 PM edu.oswego.debug.DebugLogger logEvent
+SEVERE: email_addr has been truncated completely
+Oct 29, 2019 7:50:08 PM edu.oswego.debug.DebugLogger logEvent
+INFO: Query made for statement: TRUNCATE TABLE filter_settings;
+Oct 29, 2019 7:50:08 PM edu.oswego.debug.DebugLogger logEvent
+SEVERE: filter_settings has been truncated completely
+Oct 29, 2019 7:50:08 PM edu.oswego.debug.DebugLogger logEvent
+INFO: Query made for statement: TRUNCATE TABLE folder;
+Oct 29, 2019 7:50:08 PM edu.oswego.debug.DebugLogger logEvent
+SEVERE: folder has been truncated completely
+Oct 29, 2019 7:50:08 PM edu.oswego.debug.DebugLogger logEvent
+INFO: Query made for statement: TRUNCATE TABLE received_email;
+Oct 29, 2019 7:50:08 PM edu.oswego.debug.DebugLogger logEvent
+SEVERE: received_email has been truncated completely
+Oct 29, 2019 7:50:08 PM edu.oswego.debug.DebugLogger logEvent
+INFO: Query made for statement: TRUNCATE TABLE user;
+Oct 29, 2019 7:50:08 PM edu.oswego.debug.DebugLogger logEvent
+SEVERE: user has been truncated completely
+Oct 29, 2019 7:50:08 PM edu.oswego.debug.DebugLogger logEvent
+INFO: Query made for statement: TRUNCATE TABLE user_email;
+Oct 29, 2019 7:50:08 PM edu.oswego.debug.DebugLogger logEvent
+SEVERE: user_email has been truncated completely
+Oct 29, 2019 7:50:09 PM edu.oswego.debug.DebugLogger logEvent
+INFO: Query made for statement: TRUNCATE TABLE user_favourites;
+Oct 29, 2019 7:50:09 PM edu.oswego.debug.DebugLogger logEvent
+SEVERE: user_favourites has been truncated completely
+Oct 29, 2019 7:50:09 PM edu.oswego.debug.DebugLogger logEvent
+INFO: Query made for statement: TRUNCATE TABLE sentiment_score;
+Oct 29, 2019 7:50:09 PM edu.oswego.debug.DebugLogger logEvent
+SEVERE: sentiment_score has been truncated completely
+Oct 29, 2019 7:50:09 PM edu.oswego.debug.DebugLogger logEvent
+SEVERE: Database tables have been truncated completely.
+Oct 29, 2019 7:50:12 PM edu.oswego.debug.DebugLogger logEvent
+INFO: Credentials loaded from local file.
+Oct 29, 2019 7:50:12 PM edu.oswego.debug.DebugLogger logEvent
+WARNING: Mailer object created. Information is in local storage stored unencrypted.
+Oct 29, 2019 7:50:12 PM edu.oswego.debug.DebugLogger logEvent
+INFO: Connection has been established with database.
+Oct 29, 2019 7:50:12 PM edu.oswego.debug.DebugLogger logEvent
+INFO: New user created 1 <csc344testacc@gmail.com>
+Oct 29, 2019 7:50:12 PM edu.oswego.debug.DebugLogger logEvent
+INFO: Database obj created for: 1 <csc344testacc@gmail.com>
+Oct 29, 2019 7:50:12 PM edu.oswego.debug.DebugLogger logEvent
+INFO: Query made for statement: INSERT INTO folder (fold_name) VALUES ('Apple Developer'), ('INBOX'), ('Misc/UUP/CELT'), ('[Gmail]/Sent Mail');
+Oct 29, 2019 7:50:12 PM edu.oswego.debug.DebugLogger logEvent
+INFO: Query made for statement: INSERT INTO user_favourites (filter_settings_id, user_id, fav_name) VALUE (1, 1, 'Awesome favs');
+Oct 29, 2019 7:50:12 PM edu.oswego.debug.DebugLogger logEvent
+INFO: User Favourite added for 1 <csc344testacc@gmail.com>
+Oct 29, 2019 7:50:12 PM edu.oswego.debug.DebugLogger logEvent
+INFO: Query made for statement: INSERT INTO user_favourites (filter_settings_id, user_id, fav_name) VALUE (2, 1, 'Crappy favs');
+Oct 29, 2019 7:50:12 PM edu.oswego.debug.DebugLogger logEvent
+INFO: User Favourite added for 1 <csc344testacc@gmail.com>
+Oct 29, 2019 7:50:13 PM edu.oswego.debug.DebugLogger logEvent
+INFO: Query made for statement: INSERT INTO user_favourites (filter_settings_id, user_id, fav_name) VALUE (3, 1, 'Mediocre favs');
+Oct 29, 2019 7:50:13 PM edu.oswego.debug.DebugLogger logEvent
+INFO: User Favourite added for 1 <csc344testacc@gmail.com>
+Oct 29, 2019 7:50:13 PM edu.oswego.debug.DebugLogger logEvent
+INFO: Query made for statement: INSERT INTO user_favourites (filter_settings_id, user_id, fav_name) VALUE (4, 1, 'Jimmys favs');
+Oct 29, 2019 7:50:13 PM edu.oswego.debug.DebugLogger logEvent
+INFO: User Favourite added for 1 <csc344testacc@gmail.com>
+Oct 29, 2019 7:50:13 PM edu.oswego.debug.DebugLogger logEvent
+INFO: Query made for statement: DELETE FROM user_favourites WHERE fav_name = 'Jimmys favs' AND user_id = 1;
+Oct 29, 2019 7:50:13 PM edu.oswego.debug.DebugLogger logEvent
+INFO: User favourite removal submitted for 1 <csc344testacc@gmail.com>
+Oct 29, 2019 7:50:14 PM edu.oswego.debug.DebugLogger logEvent
+INFO: Favourites fetched for 1 <csc344testacc@gmail.com>
+Oct 29, 2019 7:50:14 PM edu.oswego.debug.DebugLogger logEvent
+INFO: Query made for statement: TRUNCATE TABLE email;
+Oct 29, 2019 7:50:14 PM edu.oswego.debug.DebugLogger logEvent
+SEVERE: email has been truncated completely
+Oct 29, 2019 7:50:14 PM edu.oswego.debug.DebugLogger logEvent
+INFO: Query made for statement: TRUNCATE TABLE email_addr;
+Oct 29, 2019 7:50:14 PM edu.oswego.debug.DebugLogger logEvent
+SEVERE: email_addr has been truncated completely
+Oct 29, 2019 7:50:15 PM edu.oswego.debug.DebugLogger logEvent
+INFO: Query made for statement: TRUNCATE TABLE filter_settings;
+Oct 29, 2019 7:50:15 PM edu.oswego.debug.DebugLogger logEvent
+SEVERE: filter_settings has been truncated completely
+Oct 29, 2019 7:50:15 PM edu.oswego.debug.DebugLogger logEvent
+INFO: Query made for statement: TRUNCATE TABLE folder;
+Oct 29, 2019 7:50:15 PM edu.oswego.debug.DebugLogger logEvent
+SEVERE: folder has been truncated completely
+Oct 29, 2019 7:50:15 PM edu.oswego.debug.DebugLogger logEvent
+INFO: Query made for statement: TRUNCATE TABLE received_email;
+Oct 29, 2019 7:50:15 PM edu.oswego.debug.DebugLogger logEvent
+SEVERE: received_email has been truncated completely
+Oct 29, 2019 7:50:15 PM edu.oswego.debug.DebugLogger logEvent
+INFO: Query made for statement: TRUNCATE TABLE user;
+Oct 29, 2019 7:50:15 PM edu.oswego.debug.DebugLogger logEvent
+SEVERE: user has been truncated completely
+Oct 29, 2019 7:50:15 PM edu.oswego.debug.DebugLogger logEvent
+INFO: Query made for statement: TRUNCATE TABLE user_email;
+Oct 29, 2019 7:50:15 PM edu.oswego.debug.DebugLogger logEvent
+SEVERE: user_email has been truncated completely
+Oct 29, 2019 7:50:15 PM edu.oswego.debug.DebugLogger logEvent
+INFO: Query made for statement: TRUNCATE TABLE user_favourites;
+Oct 29, 2019 7:50:15 PM edu.oswego.debug.DebugLogger logEvent
+SEVERE: user_favourites has been truncated completely
+Oct 29, 2019 7:50:16 PM edu.oswego.debug.DebugLogger logEvent
+INFO: Query made for statement: TRUNCATE TABLE sentiment_score;
+Oct 29, 2019 7:50:16 PM edu.oswego.debug.DebugLogger logEvent
+SEVERE: sentiment_score has been truncated completely
+Oct 29, 2019 7:50:16 PM edu.oswego.debug.DebugLogger logEvent
+SEVERE: Database tables have been truncated completely.
+Oct 29, 2019 7:50:21 PM edu.oswego.debug.DebugLogger logEvent
+INFO: Credentials loaded from local file.
+Oct 29, 2019 7:50:21 PM edu.oswego.debug.DebugLogger logEvent
+WARNING: Mailer object created. Information is in local storage stored unencrypted.
+Oct 29, 2019 7:50:21 PM edu.oswego.debug.DebugLogger logEvent
+INFO: Connection has been established with database.
+Oct 29, 2019 7:50:21 PM edu.oswego.debug.DebugLogger logEvent
+INFO: New user created 1 <csc344testacc@gmail.com>
+Oct 29, 2019 7:50:21 PM edu.oswego.debug.DebugLogger logEvent
+INFO: Database obj created for: 1 <csc344testacc@gmail.com>
+Oct 29, 2019 7:50:21 PM edu.oswego.debug.DebugLogger logEvent
+INFO: Query made for statement: INSERT INTO folder (fold_name) VALUES ('Apple Developer'), ('INBOX'), ('Misc/UUP/CELT'), ('[Gmail]/Sent Mail');
+Oct 29, 2019 7:50:22 PM edu.oswego.debug.DebugLogger logEvent
+INFO: Query made for statement: INSERT INTO user_favourites (filter_settings_id, user_id, fav_name) VALUE (1, 1, 'Awesome favs');
+Oct 29, 2019 7:50:22 PM edu.oswego.debug.DebugLogger logEvent
+INFO: User Favourite added for 1 <csc344testacc@gmail.com>
+Oct 29, 2019 7:50:22 PM edu.oswego.debug.DebugLogger logEvent
+INFO: Query made for statement: INSERT INTO user_favourites (filter_settings_id, user_id, fav_name) VALUE (2, 1, 'Crappy favs');
+Oct 29, 2019 7:50:22 PM edu.oswego.debug.DebugLogger logEvent
+INFO: User Favourite added for 1 <csc344testacc@gmail.com>
+Oct 29, 2019 7:50:22 PM edu.oswego.debug.DebugLogger logEvent
+INFO: Query made for statement: INSERT INTO user_favourites (filter_settings_id, user_id, fav_name) VALUE (3, 1, 'Mediocre favs');
+Oct 29, 2019 7:50:22 PM edu.oswego.debug.DebugLogger logEvent
+INFO: User Favourite added for 1 <csc344testacc@gmail.com>
+Oct 29, 2019 7:50:22 PM edu.oswego.debug.DebugLogger logEvent
+INFO: Query made for statement: INSERT INTO user_favourites (filter_settings_id, user_id, fav_name) VALUE (4, 1, 'Jimmys favs');
+Oct 29, 2019 7:50:22 PM edu.oswego.debug.DebugLogger logEvent
+INFO: User Favourite added for 1 <csc344testacc@gmail.com>
+Oct 29, 2019 7:50:22 PM edu.oswego.debug.DebugLogger logEvent
+INFO: Query made for statement: DELETE FROM user_favourites WHERE fav_name = 'Jimmys favs' AND user_id = 1;
+Oct 29, 2019 7:50:22 PM edu.oswego.debug.DebugLogger logEvent
+INFO: User favourite removal submitted for 1 <csc344testacc@gmail.com>
+Oct 29, 2019 7:50:23 PM edu.oswego.debug.DebugLogger logEvent
+INFO: Favourites fetched for 1 <csc344testacc@gmail.com>
+Oct 29, 2019 7:50:23 PM edu.oswego.debug.DebugLogger logEvent
+INFO: Query made for statement: TRUNCATE TABLE email;
+Oct 29, 2019 7:50:23 PM edu.oswego.debug.DebugLogger logEvent
+SEVERE: email has been truncated completely
+Oct 29, 2019 7:50:23 PM edu.oswego.debug.DebugLogger logEvent
+INFO: Query made for statement: TRUNCATE TABLE email_addr;
+Oct 29, 2019 7:50:23 PM edu.oswego.debug.DebugLogger logEvent
+SEVERE: email_addr has been truncated completely
+Oct 29, 2019 7:50:23 PM edu.oswego.debug.DebugLogger logEvent
+INFO: Query made for statement: TRUNCATE TABLE filter_settings;
+Oct 29, 2019 7:50:23 PM edu.oswego.debug.DebugLogger logEvent
+SEVERE: filter_settings has been truncated completely
+Oct 29, 2019 7:50:23 PM edu.oswego.debug.DebugLogger logEvent
+INFO: Query made for statement: TRUNCATE TABLE folder;
+Oct 29, 2019 7:50:23 PM edu.oswego.debug.DebugLogger logEvent
+SEVERE: folder has been truncated completely
+Oct 29, 2019 7:50:24 PM edu.oswego.debug.DebugLogger logEvent
+INFO: Query made for statement: TRUNCATE TABLE received_email;
+Oct 29, 2019 7:50:24 PM edu.oswego.debug.DebugLogger logEvent
+SEVERE: received_email has been truncated completely
+Oct 29, 2019 7:50:24 PM edu.oswego.debug.DebugLogger logEvent
+INFO: Query made for statement: TRUNCATE TABLE user;
+Oct 29, 2019 7:50:24 PM edu.oswego.debug.DebugLogger logEvent
+SEVERE: user has been truncated completely
+Oct 29, 2019 7:50:24 PM edu.oswego.debug.DebugLogger logEvent
+INFO: Query made for statement: TRUNCATE TABLE user_email;
+Oct 29, 2019 7:50:24 PM edu.oswego.debug.DebugLogger logEvent
+SEVERE: user_email has been truncated completely
+Oct 29, 2019 7:50:24 PM edu.oswego.debug.DebugLogger logEvent
+INFO: Query made for statement: TRUNCATE TABLE user_favourites;
+Oct 29, 2019 7:50:24 PM edu.oswego.debug.DebugLogger logEvent
+SEVERE: user_favourites has been truncated completely
+Oct 29, 2019 7:50:24 PM edu.oswego.debug.DebugLogger logEvent
+INFO: Query made for statement: TRUNCATE TABLE sentiment_score;
+Oct 29, 2019 7:50:24 PM edu.oswego.debug.DebugLogger logEvent
+SEVERE: sentiment_score has been truncated completely
+Oct 29, 2019 7:50:24 PM edu.oswego.debug.DebugLogger logEvent
+SEVERE: Database tables have been truncated completely.

@@ -24,16 +24,8 @@ public class UserFolder {
 		return id;
 	}
 
-	public void setId(int id) {
-		this.id = id;
-	}
-
 	public Folder getFolder() {
 		return folder;
-	}
-
-	public void setFolder(Folder folder) {
-		this.folder = folder;
 	}
 
 	@Override

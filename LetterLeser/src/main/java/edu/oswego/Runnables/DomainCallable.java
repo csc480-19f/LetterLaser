@@ -20,19 +20,18 @@ public class DomainCallable implements Callable {
 	public Object call() {
 		HashMap<String, Integer> domains = new HashMap<>();
 
-		for(Email e : emails){
-		    List<EmailAddress> senders = e.getFrom();
-            for(EmailAddress ea : senders){
-                String domain = ea.getEmailAddress().split("@")[1];
-                if(domains.containsKey(domain)){
-                    int x = domains.get(domain);
-                    domains.put(domain,++x);
-                }else{
-                    domains.put(domain,1);
-                }
-            }
+		for (Email e : emails) {
+			List<EmailAddress> senders = e.getFrom();
+			for (EmailAddress ea : senders) {
+				String domain = ea.getEmailAddress().split("@")[1];
+				if (domains.containsKey(domain)) {
+					int x = domains.get(domain);
+					domains.put(domain, ++x);
+				} else {
+					domains.put(domain, 1);
+				}
+			}
 		}
-
 
 		JsonObject emailsByDomain = new JsonObject();
 		JsonArray domainObjs = new JsonArray();
