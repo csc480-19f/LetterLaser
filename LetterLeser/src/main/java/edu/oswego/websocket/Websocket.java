@@ -117,6 +117,10 @@ public class Websocket {
 			} else {
 				mailer = storageObject.getMailer();
 				database = storageObject.getDatabase();
+				JsonObject js = new JsonObject();
+				js.addProperty("messagetype", "statusupdate");
+				js.addProperty("message", "established connection");
+				sendMessageToClient(session, js);
 			}
 
 			JsonObject js = new JsonObject();
@@ -140,7 +144,7 @@ public class Websocket {
 				js.addProperty("messagetype", "statusupdate");
 				js.addProperty("message", "nothing found in database, preforming fresh import");
 				sendMessageToClient(session, js);
-				if (storageObject.getValidationRunnable() == null) {
+				if (storageObject.getValidationRunnable() == null || !storageObject.getValidationThread().isAlive()) {
 					ValidationRunnable vr = new ValidationRunnable(mailer, database, false, session);
 					Thread thread = new Thread(vr);
 					thread.start();

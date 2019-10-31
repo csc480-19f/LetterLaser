@@ -18,12 +18,12 @@ public enum Interval {
 	 * @param interval
 	 * @return Interval object
 	 */
-	public static Interval parse(String interval) {
-		if (interval.equals("WEEK"))
+	public static Interval parse(String interval) {//KEEP EVERYTHING LOWERCASE
+		if (interval.equals("week"))
 			return WEEK;
-		else if (interval.equals("MONTH"))
+		else if (interval.equals("month"))
 			return MONTH;
-		else if (interval.equals("YEAR"))
+		else if (interval.equals("year"))
 			return YEAR;
 
 		return null;

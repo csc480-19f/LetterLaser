@@ -7,6 +7,8 @@ import com.google.gson.JsonObject;
 
 import edu.oswego.database.Database;
 import edu.oswego.mail.Mailer;
+import edu.oswego.model.User;
+import edu.oswego.model.UserFavourites;
 import edu.oswego.model.UserFolder;
 
 import java.io.IOException;
@@ -29,6 +31,27 @@ public class ValidationRunnable implements Runnable {
 	@Override
 	public void run() {
 		if (validateOrPull) {
+			JsonObject js = new JsonObject();
+			js.addProperty("messagetype", "statusupdate");
+			js.addProperty("message", "validating emails");
+			try {
+				session.getBasicRemote().sendText(js.toString());
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+
+			database.pull();
+
+			js = new JsonObject();
+			js.addProperty("messagetype", "updatestatus");
+			js.addProperty("message", "finished validating");
+			try {
+				session.getBasicRemote().sendText(js.toString());
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+
+
 
 		} else {
 			JsonObject js = new JsonObject();
@@ -55,6 +78,9 @@ public class ValidationRunnable implements Runnable {
 				e.printStackTrace();
 			}
 		}
+
+
+
 
 	}
 
