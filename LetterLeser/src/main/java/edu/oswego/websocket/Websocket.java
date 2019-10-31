@@ -44,7 +44,7 @@ public class Websocket {
 	public void onOpen(Session session) {
 		DebugLogger.logEvent(Websocket.class.getName(), Level.INFO,
 				"session " + session.getId() + " opened Connection");
-		// System.out.println("Session " + session.getId() + " been established");
+		System.out.println("Session " + session.getId() + " been established");
 	}
 
 	// This method allows you to message a specific user.
@@ -111,6 +111,8 @@ public class Websocket {
 				sendMessageToClient(session, js);
 
 				database = new Database(email, mailer);
+				storageObject.setDatabase(database);
+				storageObject.setMailer(mailer);
 				sessionMapper.put(email, storageObject);
 			} else {
 				mailer = storageObject.getMailer();
@@ -252,14 +254,6 @@ public class Websocket {
 		} else {// week
 			return startDate.plusWeeks(1);
 		}
-	}
-
-	private void databaseValidation(Session session) {
-
-	}
-
-	private void newRequest(Session session, JsonObject message, StorageObject storageObject) {
-
 	}
 
 	private void sendMessageToClient(Session session, JsonObject returnMessage) {

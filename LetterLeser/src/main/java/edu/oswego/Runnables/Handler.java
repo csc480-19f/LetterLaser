@@ -8,6 +8,7 @@ import edu.oswego.model.UserFavourites;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 
+import javax.json.Json;
 import javax.websocket.Session;
 import java.io.IOException;
 import java.util.List;
@@ -39,16 +40,27 @@ public class Handler implements Runnable {
 	public void run() {
 
 		if (jsonObject != null) {
-			String folderName = jsonObject.get("foldername").getAsString();
-			String sd = jsonObject.get("date").getAsString();
-			String interval = jsonObject.get("interval").getAsString();
-			boolean attachment = jsonObject.get("attachment").getAsBoolean();
-			boolean seen = jsonObject.get("seen").getAsBoolean();
-			DateTime startDate = new DateTime(DateTimeFormat.forPattern("MM/dd/yyyy HH:mm").parseMillis(sd));
-			DateTime endDate = getEndDate(startDate, interval);
-			List<Email> emails = database.getEmailByFilter(attachment, startDate.toDate().toString(),
-					endDate.toDate().toString(), seen, folderName);
-			performCalculations(emails);
+			try {
+				String folderName = jsonObject.get("foldername").getAsString();
+				String sd = jsonObject.get("date").getAsString();
+				String interval = jsonObject.get("interval").getAsString();
+				boolean attachment = jsonObject.get("attachment").getAsBoolean();
+				boolean seen = jsonObject.get("seen").getAsBoolean();
+				DateTime startDate = new DateTime(DateTimeFormat.forPattern("MM/dd/yyyy HH:mm").parseMillis(sd));
+				DateTime endDate = getEndDate(startDate, interval);
+				List<Email> emails = database.getEmailByFilter(attachment, startDate.toDate().toString(),
+						endDate.toDate().toString(), seen, folderName);
+				performCalculations(emails);
+			}catch(IllegalArgumentException iae){
+				JsonObject js = new JsonObject();
+				js.addProperty("messagetype","statusupdate");
+				js.addProperty("message","IllegalArgument for DATETIME");
+				try {
+					session.getBasicRemote().sendText(js.toString());
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
 		} else if (userFavourites != null) {
 			List<Email> emails;// = database.getEmailByFilter();
 			// performCalculations(emails);
