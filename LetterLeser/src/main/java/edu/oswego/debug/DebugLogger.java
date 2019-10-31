@@ -12,18 +12,18 @@ public class DebugLogger {
     private static String localFilePath = "D:\\logstuff\\logFile.log";//fill this for your local path if you want to debug on pc and replace piFilePath in filehandler constructor
 
     public static void logEvent(String name, Level level,String event){
-        logger = Logger.getLogger(name);
-        logger.setUseParentHandlers(false);
-        try {
-            //first var is the path to log file and second is to append or not (true is to append, replaces old file);
-            fh = new FileHandler(localFilePath,true);
-            logger.addHandler(fh);
-            fh.setFormatter(new SimpleFormatter());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        logger.log(level,event);
-        fh.close();
+//        logger = Logger.getLogger(name);
+//        logger.setUseParentHandlers(false);
+//        try {
+//            //first var is the path to log file and second is to append or not (true is to append, replaces old file);
+//            fh = new FileHandler(localFilePath,true);
+//            logger.addHandler(fh);
+//            fh.setFormatter(new SimpleFormatter());
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//        logger.log(level,event);
+//        fh.close();
     }
 
 }

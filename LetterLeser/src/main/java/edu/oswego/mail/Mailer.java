@@ -218,7 +218,7 @@ public class Mailer {
 	 */
 	public boolean hasAttachment(Message m) {
 		try {
-			if (m.getContentType().contains("multipart")) {
+			if (m.getContentType().contains("multipart") && m.getContent() instanceof Multipart) {
 				Multipart multiPart = (Multipart) m.getContent();
 				for (int i = 0; i < multiPart.getCount(); i++) {
 					MimeBodyPart part = (MimeBodyPart) multiPart.getBodyPart(i);
