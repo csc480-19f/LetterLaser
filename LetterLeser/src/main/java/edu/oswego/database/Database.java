@@ -99,7 +99,6 @@ public class Database {
 	public Connection getConnection() {
 		try {
 			Class.forName("com.mysql.cj.jdbc.Driver");
-			// connection = DriverManager.getConnection("jdbc:apache:commons:dbcp:test");
 			if (connection == null || connection.isClosed()) {
 				connection = DriverManager.getConnection("jdbc:mysql://" + Settings.DATABASE_HOST + ":"
 						+ Settings.DATABASE_PORT + "/" + Settings.DATABASE_SCHEMA
@@ -924,8 +923,8 @@ public class Database {
 	public boolean hasEmails() {
 		try {
 			ResultSet queryTbl = getConnection().prepareStatement("SELECT * from user "
-					+ "JOIN user_email ON user.id = user_email.id "
-					+ "JOIN email ON email.id = user_email.email_id WHERE email = " + user.getEmailAddress() + ";")
+					+ "JOIN user_email ON user_email.user_id = user.id "
+					+ "JOIN email ON email.id = user_email.email_id WHERE email_address = " + user.getEmailAddress() + ";")
 					.executeQuery();
 			int size = 0;
 
