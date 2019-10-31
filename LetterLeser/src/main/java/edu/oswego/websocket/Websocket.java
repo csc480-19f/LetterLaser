@@ -164,28 +164,33 @@ public class Websocket {
 			String foldername = filter.get("foldername").getAsString();
 			String sd = filter.get("date").getAsString();
 			String interval = filter.get("interval").getAsString();
+			try {
+				DateTime startDate = new DateTime(DateTimeFormat.forPattern("MM/dd/yyyy HH:mm").parseMillis(sd));
+				DateTime endDate = getEndDate(startDate, interval);
+				boolean attachment = filter.get("attachment").getAsBoolean();
+				boolean seen = filter.get("seen").getAsBoolean();
+				database.insertUserFavourites(favoriteName, startDate.toDate(), endDate.toDate(), Interval.parse(interval),
+						attachment, seen, foldername);
+				JsonObject js = new JsonObject();
+				js.addProperty("messagetype", "statusupdate");
+				js.addProperty("message", "Favorite has been added");
+				sendMessageToClient(session, js);
 
-			DateTime startDate = new DateTime(DateTimeFormat.forPattern("MM/dd/yyyy HH:mm").parseMillis(sd));
-			DateTime endDate = getEndDate(startDate, interval);
-			boolean attachment = filter.get("attachment").getAsBoolean();
-			boolean seen = filter.get("seen").getAsBoolean();
-			database.insertUserFavourites(favoriteName, startDate.toDate(), endDate.toDate(), Interval.parse(interval),
-					attachment, seen, foldername);
-			JsonObject js = new JsonObject();
-			js.addProperty("messagetype", "statusupdate");
-			js.addProperty("message", "Favorite has been added");
-			sendMessageToClient(session, js);
-
-			List<UserFavourites> favourites = database.getUserFavourites();
-			JsonArray ja = new JsonArray();
-			for (int i = 0; i < favourites.size(); i++) {
-				ja.add(favourites.get(i).getName());
+				List<UserFavourites> favourites = database.getUserFavourites();
+				JsonArray ja = new JsonArray();
+				for (int i = 0; i < favourites.size(); i++) {
+					ja.add(favourites.get(i).getName());
+				}
+				js = new JsonObject();
+				js.addProperty("messagetype", "favoritename");
+				js.add("favoritename", ja);
+				sendMessageToClient(session, js);
+			}catch(IllegalArgumentException iae){
+				JsonObject js = new JsonObject();
+				js.addProperty("messagetype","statusupdate");
+				js.addProperty("message","invalid dateTime");
+				sendMessageToClient(session, js);
 			}
-			js = new JsonObject();
-			js.addProperty("messagetype", "favoritename");
-			js.add("favoritename", ja);
-			sendMessageToClient(session, js);
-
 		} else if (messageType.equals("callfavorite")) {
 			Database database = storageObject.getDatabase();
 			String favname = jsonMessage.get("favoritename").getAsString();
