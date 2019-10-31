@@ -62,14 +62,28 @@ public class Handler implements Runnable {
 				}
 			}
 		} else if (userFavourites != null) {
-			List<Email> emails;// = database.getEmailByFilter();
-			// performCalculations(emails);
+			List<Email> emails = database.getEmailByFilter(userFavourites.isHasAttachment(),userFavourites.getStartDate().toString(),userFavourites.getEndDate().toString(),userFavourites.isSeen(),userFavourites.getFolder().getFolder().getName());
+			performCalculations(emails);
 		} else {
-
+			System.out.println("no userfav or json so no calc can be preformed");
 		}
 	}
 
 	private void performCalculations(List<Email> emailList) {
+		if(emailList.isEmpty()){
+			JsonObject js = new JsonObject();
+			js.addProperty("messagetype", "statusupdate");
+
+			js.addProperty("message", "no emails obtained with current filter");
+
+			try {
+				session.getBasicRemote().sendText(js.toString());
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			return;
+		}
+
 		SentimentScoreCallable sentimentScoreCallable = new SentimentScoreCallable(emailList);
 		DomainCallable domainCallable = new DomainCallable(emailList);
 		FolderCallable folderCallable = new FolderCallable(emailList);
