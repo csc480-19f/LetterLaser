@@ -166,7 +166,7 @@ public class Websocket {
 			js.add("foldername", ja1);
 			js.add("favoritename", ja2);
 			if (storageObject.getValidationRunnable() == null || !storageObject.getValidationThread().isAlive()) {
-				refresh(storageObject,email,mailer,database,false,session);
+				refresh(storageObject,email,mailer,database,true,session);
 			} else {
 				js = new JsonObject();
 				js.addProperty("messagetype", "statusupdate");
