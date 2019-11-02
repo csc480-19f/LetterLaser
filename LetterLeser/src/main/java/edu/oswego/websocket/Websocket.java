@@ -178,6 +178,7 @@ public class Websocket {
 			js.addProperty("messagetype", "statusupdate");
 			js.addProperty("message", "nothing found in database, preforming fresh import");
 			sendMessageToClient(session, js);
+			refresh(storageObject,email,mailer,database,false,session);
 		}
 
 	}
@@ -207,8 +208,14 @@ public class Websocket {
 	 * @param session
 	 */
 	private void refresh(StorageObject storageObject,String email,Mailer mailer, Database database, boolean validateOrPull, Session session){
+		if(storageObject!=null&&storageObject.getValidationThread()!=null&&storageObject.getValidationThread().isAlive()){
+			JsonObject js = new JsonObject();
+			js.addProperty("messagetype","statusupdate");
+			js.addProperty("message","validation already occuring");
+			sendMessageToClient(session,js);
+		}
 		ValidationRunnable vr = new ValidationRunnable(mailer,database,validateOrPull,session);
-		Thread thread = new Thread();
+		Thread thread = new Thread(vr);
 		thread.start();
 		storageObject.setValidationRunnable(vr);
 		storageObject.setValidationThread(thread);

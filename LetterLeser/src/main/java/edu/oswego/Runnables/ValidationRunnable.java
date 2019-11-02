@@ -62,23 +62,16 @@ public class ValidationRunnable implements Runnable {
 				e.printStackTrace();
 			}
 
+
 			List<UserFolder> folders = database.pull();
 			List<UserFavourites> favourites = database.getUserFavourites();
 			JsonArray ja = new JsonArray();
 			JsonArray ja1 = new JsonArray();
-			for (int i = 0; i < folders.size() && i<favourites.size(); i++) {
-				try {
-					String name = folders.get(i).getFolder().getFullName();
-					ja.add(name);
-				}catch(Exception e){
-
-				}
-				try {
-					String name = favourites.get(i).getName();
-					ja1.add(name);
-				}catch(Exception e){
-
-				}
+			for (int i = 0; i < folders.size(); i++) {
+					ja.add(folders.get(i).getFolder().getFullName());
+			}
+			for(int i=0;i<favourites.size();i++){
+				ja.add(favourites.get(i).getName());
 			}
 			js = new JsonObject();
 			js.addProperty("messagetype", "foldername");
