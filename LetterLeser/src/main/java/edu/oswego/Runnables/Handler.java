@@ -62,7 +62,7 @@ public class Handler implements Runnable {
 				}
 			}
 		} else if (userFavourites != null) {
-			List<Email> emails = database.getEmailByFilter(userFavourites.isHasAttachment(),userFavourites.getStartDate().toString(),userFavourites.getEndDate().toString(),userFavourites.isSeen(),userFavourites.getFolder().getFolder().getName());
+			List<Email> emails = database.getEmailByFilter(userFavourites.isHasAttachment(),userFavourites.getStartDate().toString(),userFavourites.getEndDate().toString(),userFavourites.isSeen(),userFavourites.getFolder().getFolder().getFullName());
 			performCalculations(emails);
 		} else {
 			System.out.println("no userfav or json so no calc can be preformed");
