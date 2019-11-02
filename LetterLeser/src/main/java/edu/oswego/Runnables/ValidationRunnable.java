@@ -7,7 +7,6 @@ import com.google.gson.JsonObject;
 
 import edu.oswego.database.Database;
 import edu.oswego.mail.Mailer;
-import edu.oswego.model.User;
 import edu.oswego.model.UserFavourites;
 import edu.oswego.model.UserFolder;
 
