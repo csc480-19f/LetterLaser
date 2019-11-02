@@ -27,7 +27,6 @@ public class ValidationRunnable implements Runnable {
 		this.validateOrPull = validateOrPull;
 		this.session = session;
 	}
-
 	@Override
 	public void run() {
 		if (validateOrPull) {
