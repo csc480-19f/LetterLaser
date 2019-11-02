@@ -20,6 +20,10 @@ public class DBdemo {
 
 		Mailer mailer = new Mailer(edu.oswego.mail.Settings.EMAIL_ADDRESS, edu.oswego.mail.Settings.EMAIL_PWD);
 		Database db = new Database(edu.oswego.mail.Settings.EMAIL_ADDRESS, mailer);
+		
+		System.out.println(db.hasEmails());
+		if (true)
+			return;
 
 		System.out.println(db.getValidatedEmails());
 //		 db.truncateTables();

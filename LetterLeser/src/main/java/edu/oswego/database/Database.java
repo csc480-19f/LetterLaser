@@ -221,6 +221,7 @@ public class Database {
 			if (i < (filterStatements.size() - 1))
 				selectionStatement += " AND ";
 		}
+		
 		selectionStatement += ";";
 
 		try {
@@ -924,8 +925,7 @@ public class Database {
 		try {
 			ResultSet queryTbl = getConnection().prepareStatement("SELECT * from user "
 					+ "JOIN user_email ON user_email.user_id = user.id "
-					+ "JOIN email ON email.id = user_email.email_id WHERE email_address = " + user.getEmailAddress() + ";")
-					.executeQuery();
+					+ "JOIN email ON email.id = user_email.email_id WHERE email_address = '" + user.getEmailAddress() + "';").executeQuery();
 			int size = 0;
 
 			while (queryTbl.next()) {
