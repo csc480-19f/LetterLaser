@@ -7,16 +7,23 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.Scanner;
 
-//TODO Determine the final path locations of the python file and its output and which file is using that info.
-
 /**
  * This class holds methods that execute python code.
  */
 public class AnalyzeThis {
-	
-	public static SentimentScore[] process(String[] emails) {
+    private static final String pathToSentimentOnPi = "~/javaServer/apache-tomcat-9.0.26/webapps/LetterLeser/WEB-INF/classes/edu/oswego/sentiment/";
+    //if we run into issues with other dir then we use the hard coded one above
+
+	private static SentimentScore[] process(String[] emails) {
 		return getScoresObjects(sentimize(emails));
 	}
+	private final static String pathToSentiment = System.getProperty("user.dir")+File.separator+"LetterLeser"+File.separator+"src"+File.separator+"main"+File.separator+"java"
+            +File.separator+"edu"+File.separator+"oswego"+File.separator+"sentiment"+File.separator;
+    private final static File sentimentPerEmail = new File(pathToSentiment+"SentimentPerEmail.py");
+    private final static File sentimentByEmail = new File(pathToSentiment+"SentimentByEmail.py");
+    private final static File sentenceCounter = new File(pathToSentiment+"SentenceCounter.py");
+    private final static File output = new File(pathToSentiment+"output");
+
 
     /**
      * This returns the results from the sentiment analysis of the list of emails.
@@ -25,7 +32,6 @@ public class AnalyzeThis {
      */
     private static double[][][] sentimize(String[] emails){
         ArrayList<ArrayList<ArrayList<Double>>> retVal = new ArrayList<>();
-
         //This section feeds the python code the enciphered .txt file and demands the sentiment results.
         String filePath = AnalyzeThis.encipher(emails);
         File input = new File("output.txt");
