@@ -22,6 +22,7 @@ class GetFolderIdTest {
 	private Database db;
 	private Mailer mailer;
 
+	
 	@BeforeEach
 	void setUp() throws Exception {
 		Settings.loadCredentials();
