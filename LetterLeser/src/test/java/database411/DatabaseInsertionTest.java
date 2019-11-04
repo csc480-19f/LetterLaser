@@ -42,7 +42,6 @@ public class DatabaseInsertionTest {
 		assertEquals(id, 2);
 	}
 	
-	//Valid: emailAddress is a valid string within the character limit and contains only valid characters  
 	
 	
 }

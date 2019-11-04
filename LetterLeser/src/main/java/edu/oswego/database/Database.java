@@ -39,6 +39,12 @@ public class Database {
 	private EmailAddress user;
 	private Mailer mailer;
 
+	
+	public Email getEmailById(int id) {
+		
+		return null;
+	}
+	
 	/**
 	 * Experimental purposes only.
 	 * 
@@ -869,7 +875,6 @@ public class Database {
 	 * Creates a database query. This is a dangerous operation if unchecked.
 	 * 
 	 * @param statement
-	 * @deprecated
 	 */
 	public void query(String statement) {
 		try {
