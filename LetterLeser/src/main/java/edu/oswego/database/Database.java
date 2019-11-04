@@ -327,7 +327,7 @@ public class Database {
 	 * @param id
 	 * @return UserFolder object
 	 */
-	private UserFolder getFolderById(int id) {
+	public UserFolder getFolderById(int id) {
 		try {
 			ResultSet generatedKeys = getConnection().prepareStatement("SELECT * FROM folder WHERE id = " + id + ";")
 					.executeQuery();
