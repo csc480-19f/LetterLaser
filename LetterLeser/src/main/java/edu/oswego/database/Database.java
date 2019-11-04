@@ -275,7 +275,7 @@ public class Database {
 	 * fetches a user (email address object) based on a string email search.
 	 *
 	 */
-	private EmailAddress getUser(String emailAddress) {
+	public EmailAddress getUser(String emailAddress) {
 		try {
 			ResultSet rs = getConnection()
 					.prepareStatement("SELECT * FROM user WHERE email_address = '" + emailAddress + "';",
@@ -308,7 +308,7 @@ public class Database {
 	 * @param folderName
 	 * @return database id number of the folder
 	 */
-	private int getFolderId(String folderName) {
+	public int getFolderId(String folderName) {
 		try {
 			ResultSet generatedKeys = getConnection()
 					.prepareStatement("SELECT id FROM folder WHERE fold_name = '" + folderName + "';").executeQuery();

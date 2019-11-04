@@ -50,10 +50,10 @@ public class MailTest {
 		assertEquals(folder.exists(), false);
 	}
 	
-	@Test 
+	@Test
 	void testTotalEmailCount() {
 		int num = mailer.getTotalEmailCount();
-		assertEquals(num, 13692);
+		assertEquals(num, 13693);
 	}
 
 }

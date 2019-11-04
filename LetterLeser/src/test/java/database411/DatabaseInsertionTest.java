@@ -1,4 +1,4 @@
-package database;
+package database411;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Test;
 import edu.oswego.database.Database;
 import edu.oswego.database.Settings;
 import edu.oswego.mail.Mailer;
+import edu.oswego.model.EmailAddress;
 
 public class DatabaseInsertionTest {
 	
@@ -40,5 +41,8 @@ public class DatabaseInsertionTest {
 		
 		assertEquals(id, 2);
 	}
+	
+	//Valid: emailAddress is a valid string within the character limit and contains only valid characters  
+	
 	
 }

@@ -1,4 +1,4 @@
-package database;
+package database411;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -16,6 +16,7 @@ import edu.oswego.mail.Mailer;
 class DatabaseTemplateTest {
 
 	private Database db;
+	private Mailer mailer;
 
 	@BeforeEach
 	void setUp() throws Exception {

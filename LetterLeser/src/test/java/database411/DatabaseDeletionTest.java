@@ -1,4 +1,4 @@
-package database;
+package database411;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -17,7 +17,7 @@ import edu.oswego.mail.Mailer;
 import edu.oswego.model.UserFavourites;
 import edu.oswego.props.Interval;
 
-public class DatabaseGetTest {
+public class DatabaseDeletionTest {
 
 	private Database db;
 
@@ -31,17 +31,19 @@ public class DatabaseGetTest {
 	void tearDown() throws Exception {
 		db.truncateTables();
 	}
-
+	
+	// 10.2
 	@Test
-	void testFindUserFavourites() throws ParseException {
+	void testUserFavouriteRemoval() throws ParseException {
 		db.query("INSERT INTO folder (fold_name) VALUES ('Apple Developer'), ('INBOX'), ('Misc/UUP/CELT'), ('[Gmail]/Sent Mail');");
 		Date utilDate = (Date) new SimpleDateFormat("yyyy-MM-dd").parse("2015-03-14");
 		db.insertUserFavourites("Awesome favs", utilDate, utilDate, Interval.WEEK, false, false, "Apple Developer");
 		db.insertUserFavourites("Crappy favs", utilDate, utilDate, Interval.YEAR, true, true, "INBOX");
 		db.insertUserFavourites("Mediocre favs", utilDate, utilDate, Interval.MONTH, false, true, "Misc/UUP/CELT");
 		db.insertUserFavourites("Jimmys favs", utilDate, utilDate, Interval.WEEK, true, false, "[Gmail]/Sent Mail");
-
-		assertEquals(db.getUserFavourites().size(), 4);
+		db.removeUserFavourite("Jimmys favs");
+		
+		assertEquals(db.getUserFavourites().size(), 3);
 	}
 
 }
