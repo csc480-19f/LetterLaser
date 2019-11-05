@@ -31,6 +31,20 @@ public class Email {
 	private List<EmailAddress> from;
 
 	public Email(int id, Date dateReceived, String subject, double size, boolean isSeen, String fileName,
+			boolean hasAttachment) {
+		this.id = id;
+		this.dateReceived = dateReceived;
+		this.subject = subject;
+		this.size = size;
+		this.isSeen = isSeen;
+		this.fileName = fileName;
+		this.hasAttachment = hasAttachment;
+		this.sentimentScore = null;
+		this.folder = null;
+		this.from = new ArrayList<>();
+	}
+	
+	public Email(int id, Date dateReceived, String subject, double size, boolean isSeen, String fileName,
 			boolean hasAttachment, SentimentScore sentimentScore, UserFolder folder) {
 		this.id = id;
 		this.dateReceived = dateReceived;

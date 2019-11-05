@@ -39,17 +39,37 @@ public class Database {
 	private EmailAddress user;
 	private Mailer mailer;
 
-	
-	//TODO getEmailById for JUnit testing
+	// TODO getEmailById for JUnit testing
+	// THIS ID IS EMAIL ID NOT USER
 	public Email getEmailById(int id) {
 		try {
-			ResultSet queryTbl = getConnection().prepareStatement("show tables").executeQuery();
+			ResultSet rs = getConnection().prepareStatement("SELECT * FROM email WHERE id = " + id + ";").executeQuery();
+			while (rs.next()) {
+				return new Email(rs.getInt(1), rs.getDate(2), rs.getString(3), rs.getDouble(4), rs.getBoolean(5),
+						rs.getString(6), rs.getBoolean(7));
+			}
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
+		
 		return null;
 	}
 	
+	
+	public List<Email> getUserEmails() {
+		List<Email> emailList = new ArrayList<>();
+		try {
+			ResultSet rs = getConnection().prepareStatement("SELECT * FROM user_email WHERE user_id = " + user.getId() + ";").executeQuery();
+			while (rs.next()) {
+				emailList.add(getEmailById(rs.getInt(3)));
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		
+		return emailList;
+	}
+
 	/**
 	 * Experimental purposes only.
 	 * 
@@ -184,12 +204,12 @@ public class Database {
 		}
 
 		// TODO CHECK IF THIS WORKS
-//		String[] mArr = messageList.toArray(new String[messageList.size()]);
-//		SentimentScore[] ss = AnalyzeThis.process(mArr);
-//		for (int i = 0; i < emailIdList.size(); i++) {
-//			System.out.println("SS CALC");
-//			calculateSentimentScore(emailIdList.get(i), ss[i]);
-//		}
+		// String[] mArr = messageList.toArray(new String[messageList.size()]);
+		// SentimentScore[] ss = AnalyzeThis.process(mArr);
+		// for (int i = 0; i < emailIdList.size(); i++) {
+		// System.out.println("SS CALC");
+		// calculateSentimentScore(emailIdList.get(i), ss[i]);
+		// }
 
 		int sum = 0;
 		for (Integer c : msgLengthList)
@@ -234,7 +254,7 @@ public class Database {
 			if (i < (filterStatements.size() - 1))
 				selectionStatement += " AND ";
 		}
-		
+
 		selectionStatement += ";";
 
 		try {
@@ -934,9 +954,11 @@ public class Database {
 	 */
 	public boolean hasEmails() {
 		try {
-			ResultSet queryTbl = getConnection().prepareStatement("SELECT * from user "
-					+ "JOIN user_email ON user_email.user_id = user.id "
-					+ "JOIN email ON email.id = user_email.email_id WHERE email_address = '" + user.getEmailAddress() + "';").executeQuery();
+			ResultSet queryTbl = getConnection()
+					.prepareStatement("SELECT * from user " + "JOIN user_email ON user_email.user_id = user.id "
+							+ "JOIN email ON email.id = user_email.email_id WHERE email_address = '"
+							+ user.getEmailAddress() + "';")
+					.executeQuery();
 			int size = 0;
 
 			while (queryTbl.next()) {
