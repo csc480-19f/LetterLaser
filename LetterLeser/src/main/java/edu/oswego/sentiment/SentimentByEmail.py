@@ -172,7 +172,7 @@ for i in range(0, len(emails)):
     score = sid.polarity_scores(inputEmail)
     combinedScores.append(score)
 
-fileName = dirpath+"outVADER2.txt"
+fileName = dirpath+"outVADER2" +sys.argv[2]+ ".txt"
 outputFile = open(fileName, "w+")
 for q in range(0, len(combinedScores)):
     outputFile.write("{0} {1} {2} {3} ".format(combinedScores[q].get("neg"), combinedScores[q].get("neu"),
