@@ -36,13 +36,17 @@ import edu.oswego.sentiment.SentimentScore;
 
 public class Database {
 
-	private Connection connection;
 	private EmailAddress user;
 	private Mailer mailer;
 
 	
+	//TODO getEmailById for JUnit testing
 	public Email getEmailById(int id) {
-		
+		try {
+			ResultSet queryTbl = getConnection().prepareStatement("show tables").executeQuery();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
 		return null;
 	}
 	
@@ -104,6 +108,7 @@ public class Database {
 	 * @return JavaMail Connection object
 	 */
 	public Connection getConnection() {
+		Connection connection = null;
 		try {
 			Class.forName("com.mysql.cj.jdbc.Driver");
 			if (connection == null || connection.isClosed()) {
@@ -118,6 +123,7 @@ public class Database {
 			DebugLogger.logEvent(Database.class.getName(), Level.WARNING, e.getMessage());
 			e.printStackTrace();
 		} catch (ClassNotFoundException e) {
+			DebugLogger.logEvent(Database.class.getName(), Level.WARNING, e.getMessage());
 			e.printStackTrace();
 		}
 		return connection;
@@ -173,16 +179,17 @@ public class Database {
 
 			mailer.markEmailsInFolder(f.getFolder().getFullName(), msgs);
 			msgLengthList.add(msgs.length);
+			// semes to work so far...
 			// break;
 		}
 
-		// TODO get working when phoenix fixes his ssa.
-//		 String[] mArr = messageList.toArray(new String[messageList.size()]);
-//		 SentimentScore[] ss = AnalyzeThis.singleScoreSentimize(mArr);
-//		 for (int i = 0; i < emailIdList.size(); i++) {
-//		 System.out.println("SS CALC");
-//		 calculateSentimentScore(emailIdList.get(i), ss[i]);
-//		 }
+		// TODO CHECK IF THIS WORKS
+//		String[] mArr = messageList.toArray(new String[messageList.size()]);
+//		SentimentScore[] ss = AnalyzeThis.process(mArr);
+//		for (int i = 0; i < emailIdList.size(); i++) {
+//			System.out.println("SS CALC");
+//			calculateSentimentScore(emailIdList.get(i), ss[i]);
+//		}
 
 		int sum = 0;
 		for (Integer c : msgLengthList)
