@@ -24,6 +24,7 @@ import edu.oswego.model.EmailAddress;
 import edu.oswego.model.UserFavourites;
 import edu.oswego.model.UserFolder;
 import edu.oswego.props.Interval;
+import edu.oswego.sentiment.AnalyzeThis;
 import edu.oswego.sentiment.SentimentScore;
 
 /**
@@ -39,6 +40,12 @@ public class Database {
 	private EmailAddress user;
 	private Mailer mailer;
 
+	
+	public Email getEmailById(int id) {
+		
+		return null;
+	}
+	
 	/**
 	 * Experimental purposes only.
 	 * 
@@ -170,12 +177,12 @@ public class Database {
 		}
 
 		// TODO get working when phoenix fixes his ssa.
-		// String[] mArr = messageList.toArray(new String[messageList.size()]);
-		// SentimentScore[] ss = AnalyzeThis.singleScoreSentimize(mArr);
-		// for (int i = 0; i < emailIdList.size(); i++) {
-		// System.out.println("SS CALC");
-		// calculateSentimentScore(emailIdList.get(i), ss[i]);
-		// }
+//		 String[] mArr = messageList.toArray(new String[messageList.size()]);
+//		 SentimentScore[] ss = AnalyzeThis.singleScoreSentimize(mArr);
+//		 for (int i = 0; i < emailIdList.size(); i++) {
+//		 System.out.println("SS CALC");
+//		 calculateSentimentScore(emailIdList.get(i), ss[i]);
+//		 }
 
 		int sum = 0;
 		for (Integer c : msgLengthList)
@@ -189,8 +196,7 @@ public class Database {
 
 	/**
 	 * Aggregates all emails under the param conditions
-	 * 
-	 * @param fileName
+	 *
 	 * @param startDate
 	 * @param endDate
 	 * @param seen
@@ -327,7 +333,7 @@ public class Database {
 	 * @param id
 	 * @return UserFolder object
 	 */
-	private UserFolder getFolderById(int id) {
+	public UserFolder getFolderById(int id) {
 		try {
 			ResultSet generatedKeys = getConnection().prepareStatement("SELECT * FROM folder WHERE id = " + id + ";")
 					.executeQuery();
@@ -833,8 +839,7 @@ public class Database {
 
 	/**
 	 * Sets validated amount of emails (in CSC480_19f folder) for user after a pull
-	 * 
-	 * @param emailAddress
+	 *
 	 * @param count
 	 */
 	public void setValidatedEmailCount(int count) {
@@ -869,7 +874,6 @@ public class Database {
 	 * Creates a database query. This is a dangerous operation if unchecked.
 	 * 
 	 * @param statement
-	 * @deprecated
 	 */
 	public void query(String statement) {
 		try {

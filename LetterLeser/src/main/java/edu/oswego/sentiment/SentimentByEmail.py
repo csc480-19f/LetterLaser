@@ -1,3 +1,5 @@
+import os
+
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
 import sys
 
@@ -145,6 +147,10 @@ def vigOut(phrase, keyword):
 # This is where our emails are contained.
 emailFile = open(sys.argv[1], 'r')
 
+sep = os.path.sep
+
+dirpath = os.getcwd()+sep+"LetterLeser"+sep+"src"+sep+"main"+sep+"java"+sep+"edu"+sep+"oswego"+sep+"sentiment"+sep
+
 # This is where we put them.
 emails = []
 # And this will be our results.
@@ -166,8 +172,8 @@ for i in range(0, len(emails)):
     score = sid.polarity_scores(inputEmail)
     combinedScores.append(score)
 
-# TODO This may need to be changed to reflect the file path for the java files, otherwise, send the file path.
-outputFile = open("outVADER2.txt", "w+")
+fileName = dirpath+"outVADER2.txt"
+outputFile = open(fileName, "w+")
 for q in range(0, len(combinedScores)):
     outputFile.write("{0} {1} {2} {3} ".format(combinedScores[q].get("neg"), combinedScores[q].get("neu"),
                                                combinedScores[q].get("pos"), combinedScores[q].get("compound")))
