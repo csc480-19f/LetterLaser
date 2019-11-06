@@ -8,12 +8,15 @@ import edu.oswego.model.UserFavourites;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 
-import javax.json.Json;
 import javax.websocket.Session;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 public class Handler implements Runnable {
 	private Database database;
@@ -110,15 +113,16 @@ public class Handler implements Runnable {
 		t5.start();
 		Thread t6 = new Thread(tbrc);
 		t6.start();
+		JsonObject js = new JsonObject();
 		try {
-			int sentiment = (int) ssc.get();
-			JsonArray domain = (JsonArray) dc.get();
-			JsonArray folder = (JsonArray) fc.get();
-			JsonArray numOfMail = (JsonArray) noec.get();
-			JsonObject sendNRec = (JsonObject) snrc.get();
-			JsonObject timeBetween = (JsonObject) tbrc.get();
+			int sentiment = (int) ssc.get(20, TimeUnit.SECONDS);
+			JsonArray domain = (JsonArray) dc.get(20, TimeUnit.SECONDS);
+			JsonArray folder = (JsonArray) fc.get(20, TimeUnit.SECONDS);
+			JsonArray numOfMail = (JsonArray) noec.get(20, TimeUnit.SECONDS);
+			JsonObject sendNRec = (JsonObject) snrc.get(20, TimeUnit.SECONDS);
+			JsonObject timeBetween = (JsonObject) tbrc.get(20, TimeUnit.SECONDS);
 
-			JsonObject js = new JsonObject();
+			js = new JsonObject();
 			js.addProperty("messagetype", "graphs");
 			JsonObject graph = new JsonObject();
 			graph.addProperty("sentimentscore", sentiment);
@@ -129,11 +133,35 @@ public class Handler implements Runnable {
 			graph.add("timebetweenreplies", timeBetween);
 			js.add("graphs", graph);
 
-			session.getBasicRemote().sendText(js.toString());
+
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		} catch (ExecutionException e) {
 			e.printStackTrace();
+		} catch (TimeoutException e) {
+			StringWriter sw = new StringWriter();
+			PrintWriter pw = new PrintWriter(sw);
+			e.printStackTrace(pw);
+			js = new JsonObject();
+			js.addProperty("messagetype","statusupdate");
+			js.addProperty("message","request ended\n" +
+					"TimeoutException Occurred\n" +
+					"StackTrace:\n" +
+					sw.toString());
+		}catch(Exception e){
+			StringWriter sw = new StringWriter();
+			PrintWriter pw = new PrintWriter(sw);
+			e.printStackTrace(pw);
+			js = new JsonObject();
+			js.addProperty("messagetype","statusupdate");
+			js.addProperty("message","request ended\n" +
+					"unknown exception Occurred\n" +
+					"StackTrace:\n" +
+					sw.toString());
+		}
+
+		try {
+			session.getBasicRemote().sendText(js.toString());
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

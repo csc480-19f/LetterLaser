@@ -15,7 +15,24 @@ public class AnalyzeThis {
     private final static String pathToSentiment = System.getProperty("user.dir")+File.separator+"LetterLeser"+File.separator+"src"+File.separator+"main"+File.separator+"java"
             +File.separator+"edu"+File.separator+"oswego"+File.separator+"sentiment"+File.separator;
     private final static File sentimentByEmail = new File(pathToSentiment+"SentimentByEmail.py");
-    private final static File output = new File(pathToSentiment+"output");
+    private SentimentScore[] scores;
+
+    /**
+     * This class is used to evaluate sentiment of a list of strings.
+     * @param emails The list of emails to be analyzed.
+     * @param userEmail The user's email address; used to make filenames unique.
+     */
+    public AnalyzeThis(String[] emails, String userEmail){
+        scores = process(emails, userEmail);
+    }
+
+    /**
+     * This method will return the list of sentiment scores associated with the emails used to construct the class.
+     * @return
+     */
+    public SentimentScore[] getScores(){
+        return scores;
+    }
 
     //private final static File output = new File(pathToSentiment+"output");
 
@@ -24,14 +41,15 @@ public class AnalyzeThis {
      * @param emails The list of emails to be analyzed.
      * @return An array of emails' corresponding sentiment score objects.
      */
-    public static SentimentScore[] process(String[] emails){
+    private SentimentScore[] process(String[] emails, String userEmail){
         SentimentScore[] scores = new SentimentScore[emails.length];
 
         //This section feeds the python code the enciphered .txt file and demands the sentiment results.
-        String filePath = AnalyzeThis.encipher(emails);
+        String filePath = AnalyzeThis.encipher(emails, userEmail);
 
         try {
-            Process p = Runtime.getRuntime().exec("python " + sentimentByEmail.getPath() + " " + filePath);
+            Process p = Runtime.getRuntime().exec("python " + sentimentByEmail.getPath() + " " + filePath +
+                    " " + userEmail);
             BufferedReader in = new BufferedReader(new InputStreamReader(p.getInputStream()), 8);
             String vals = in.readLine();
             File input = new File(vals);
@@ -61,10 +79,10 @@ public class AnalyzeThis {
      * @param emails The strings to be enciphered.
      * @return The path name of the file.
      */
-    private static String encipher(String[] emails){
+    private static String encipher(String[] emails, String userEmail){
         //This section creates the file and enciphers it.
 
-        File pyIn = new File(pathToSentiment+"pythonInput.txt");
+        File pyIn = new File(pathToSentiment+"pythonInput" + userEmail + ".txt");
         try{
             pyIn.createNewFile();
             FileWriter write = new FileWriter(pyIn);
