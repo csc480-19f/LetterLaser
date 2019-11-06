@@ -2,6 +2,7 @@ package database411;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import edu.oswego.database.Database;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -9,6 +10,8 @@ import org.junit.jupiter.api.Test;
 import edu.oswego.database.Settings;
 import edu.oswego.mail.Mailer;
 import edu.oswego.model.UserFolder;
+
+import java.sql.SQLException;
 
 /**
  * USE THIS AS A TEMPLATE
@@ -34,14 +37,14 @@ class GetFolderById {
 
 	
 	@Test
-	void testFolderIdExists() {
+	void testFolderIdExists() throws SQLException, ClassNotFoundException {
 		db.query("INSERT INTO folder (fold_name) VALUE ('testFolder');");
 		UserFolder foldName = db.getFolderById(1);
 		assertEquals(foldName.getId(), 1);
 	}
 	
 	@Test
-	void testFolderIdNoExists() {
+	void testFolderIdNoExists() throws SQLException, ClassNotFoundException {
 		db.query("INSERT INTO folder (fold_name) VALUE ('testFolder');");
 		UserFolder foldName = db.getFolderById(2);
 		assertEquals(foldName, null);

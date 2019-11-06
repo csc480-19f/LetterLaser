@@ -1,11 +1,14 @@
 package database411;
 
+import edu.oswego.database.Database;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import edu.oswego.database.Settings;
 import edu.oswego.mail.Mailer;
+
+import java.sql.SQLException;
 
 /**
  * 29.1
@@ -30,7 +33,7 @@ public class GetEmailIdTest {
 	}
 	
 	@Test
-	void getEmailId() {
+	void getEmailId() throws SQLException, ClassNotFoundException {
 		db.query("INSERT INTO folder ('fold_name') VALUE ('fake folder')");
 		db.query("INSERT INTO email (date_received, subject, size, seen, has_attachment, file_name, folder_id)"
 				+ "VALUE (CURDATE(), 'asd', 1, 1, 1, 'asdasd.txt', 1)");

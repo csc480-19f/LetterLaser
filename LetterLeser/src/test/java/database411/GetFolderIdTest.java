@@ -2,6 +2,7 @@ package database411;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import edu.oswego.database.Database;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -9,6 +10,8 @@ import org.junit.jupiter.api.Test;
 import edu.oswego.database.Settings;
 import edu.oswego.mail.Mailer;
 import edu.oswego.model.EmailAddress;
+
+import java.sql.SQLException;
 
 /**
  * USE THIS AS A TEMPLATE
@@ -35,7 +38,7 @@ class GetFolderIdTest {
 	
 	// 1.1
 		@Test
-		void testValidEmailAddress() {
+		void testValidEmailAddress() throws SQLException, ClassNotFoundException {
 			String email = "kleafasffaf@edu.com";
 			db = new Database(email, mailer);
 			EmailAddress emailAddress = db.getUser(email);
@@ -75,14 +78,14 @@ class GetFolderIdTest {
 		
 		// 10.1
 		@Test
-		void testFolderExists() {
+		void testFolderExists() throws SQLException, ClassNotFoundException {
 			db.query("INSERT INTO folder (fold_name) VALUE ('popsac');");
 			int id = db.getFolderId("popsac");
 			assertEquals(id, 1);
 		}
 		
 		@Test
-		void testFolderNotExists() {
+		void testFolderNotExists() throws SQLException, ClassNotFoundException {
 			db.query("INSERT INTO folder (fold_name) VALUE ('popsac');");
 			int id = db.getFolderId("poopsac");
 			assertEquals(id, -1);

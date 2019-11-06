@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import edu.oswego.database.Database;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -29,7 +30,7 @@ public class DatabaseInsertionTest {
 	}
 	
 	@Test
-	void testInsertUser() throws SQLException {
+	void testInsertUser() throws SQLException, ClassNotFoundException {
 		db.query("INSERT INTO user (email_address) VALUE ('first@gmail.com');");
 		int id = -1;
 		
