@@ -1,9 +1,12 @@
 package database;
 
-import edu.oswego.database.Database;
+import java.sql.SQLException;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
+import edu.oswego.database.Database;
 import edu.oswego.database.Settings;
 import edu.oswego.mail.Mailer;
 
@@ -26,6 +29,16 @@ class ReceivedEmailTest {
 	@AfterEach
 	void tearDown() throws Exception {
 		db.truncateTables();
+	}
+	
+	@Test
+	void testReceivedEmail() throws ClassNotFoundException, SQLException {
+		db.query("INSERT INTO email (date_received) VALUE (CURDATE());");
+		db.query("INSERT INTO email_addr (email_address) VALUE ('poopsac@uranus.org')");
+		db.query("INSERT INTO received_email (email_id, email_addr_id) VALUE (1, 2)");
+		
+		//getRecipient
+		//getAllRecipients
 	}
 
 }

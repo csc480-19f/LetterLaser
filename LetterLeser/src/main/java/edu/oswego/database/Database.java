@@ -40,6 +40,16 @@ public class Database {
 	private Connection validation;
 	private EmailAddress user;
 	private Mailer mailer;
+	
+	public EmailAddress getRecipient() {
+		return null;
+		
+	}
+	
+	public List<EmailAddress> getAllRecipients() {
+		return null;
+		
+	}
 
 	/**
 	 * Gets a single email by the email id attribute in the database
@@ -341,7 +351,8 @@ public class Database {
 				return new EmailAddress(rs.getInt(1), rs.getString(2));
 
 		} finally {
-			rs.close();
+			if (rs != null)
+				rs.close();
 		}
 
 		return new EmailAddress(insertUser(emailAddress), emailAddress);
@@ -958,7 +969,8 @@ public class Database {
 			ps.execute();
 			DebugLogger.logEvent(Database.class.getName(), Level.INFO, "Query made for statement: " + statement);
 		} finally {
-			ps.close();
+			if (ps != null)
+				ps.close();
 		}
 	}
 

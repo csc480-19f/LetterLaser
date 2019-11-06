@@ -72,9 +72,5 @@ public class FolderTest {
 		
 		assertEquals(folder == null, true);
 	}
-	
-	
-	
-
 
 }
