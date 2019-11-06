@@ -83,6 +83,7 @@ public class AnalyzeThis {
         //This section creates the file and enciphers it.
 
         File pyIn = new File(pathToSentiment+"pythonInput" + userEmail + ".txt");
+
         try{
             pyIn.createNewFile();
             FileWriter write = new FileWriter(pyIn);
@@ -101,6 +102,7 @@ public class AnalyzeThis {
             write.close();
         }
         catch(IOException e) {
+            e.printStackTrace();
             System.out.println("Oh no!");
         }
 
@@ -133,7 +135,7 @@ public class AnalyzeThis {
      */
     public static int evaluateSentiment(SentimentScore s){
         if(s.getCompound() <= -0.05) return 0;
-        if(s.getCompound() > -0.05) return 1;
+        if(s.getCompound() > -0.05 && s.getCompound() < 5.0/12.0) return 1;
         if(s.getCompound() >= 5.0/12.0) return 2;
         return -1;
     }
