@@ -16,10 +16,10 @@ import edu.oswego.model.UserFolder;
 /**
  * All test for folders go here.
  * @author Jimmy Nguyen
- *
+ * @since 11/06/2019
  */
 
-public class DatabaseFolderTest {
+public class FolderTest {
 	
 	private Database db;
 	private Mailer mailer;
@@ -45,6 +45,15 @@ public class DatabaseFolderTest {
 	}
 	
 	@Test
+	void testInsertFolderFail() throws ClassNotFoundException, SQLException {
+		db.query("INSERT INTO folder (fold_name) VALUE (153);");
+		int id = db.getFolderId("Bald Rat");
+		UserFolder folder = db.getFolderById(id);
+
+		assertEquals(folder == null, true);
+	}
+	
+	@Test
 	void testGetFolder() throws ClassNotFoundException, SQLException {
 		String folderName = "Kirstan is Evil";
 		db.query("INSERT INTO folder (fold_name) VALUE ('" + folderName + "');");
@@ -53,6 +62,19 @@ public class DatabaseFolderTest {
 		
 		assertEquals(folder == null, false);
 	}
+	
+	@Test
+	void testGetFolderFail() throws ClassNotFoundException, SQLException {
+		String folderName = "Kirstan is Evil";
+		db.query("INSERT INTO folder (fold_name) VALUE ('" + folderName + "');");
+		int id = db.getFolderId("Kirstan hates tanks");
+		UserFolder folder = db.getFolderById(id);
+		
+		assertEquals(folder == null, true);
+	}
+	
+	
+	
 
 
 }

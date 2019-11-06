@@ -13,7 +13,7 @@ import edu.oswego.mail.Mailer;
  * @author nguyen
  * @deprecated
  */
-class DatabaseTemplateTest {
+class UserTest {
 
 	private Database db;
 	private Mailer mailer;
