@@ -1,4 +1,4 @@
-package database411;
+package database;
 
 import edu.oswego.database.Database;
 import org.junit.jupiter.api.AfterEach;
