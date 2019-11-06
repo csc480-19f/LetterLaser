@@ -1,4 +1,4 @@
-package websocket4130;
+package Websocket4131;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -13,7 +13,7 @@ import edu.oswego.mail.Mailer;
  * @author nguyen
  * @deprecated
  */
-class OnErrorTest {
+class OnCloseTest {
 
 	private Database db;
 	private Mailer mailer;
