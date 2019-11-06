@@ -2,6 +2,7 @@ package edu.oswego.websocket;
 
 import edu.oswego.Runnables.Handler;
 import edu.oswego.Runnables.ValidationRunnable;
+import edu.oswego.database.Database;
 import edu.oswego.mail.Mailer;
 
 public class StorageObject {

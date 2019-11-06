@@ -6,6 +6,7 @@ import javax.websocket.Session;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
+import edu.oswego.database.Database;
 import edu.oswego.mail.Mailer;
 import edu.oswego.model.UserFavourites;
 import edu.oswego.model.UserFolder;
@@ -29,16 +30,23 @@ public class ValidationRunnable implements Runnable {
 	}
 	@Override
 	public void run() {
+		Thread.currentThread().setName("validation");
 		if (validateOrPull) {
 			sendUpdateStatusMessage(session,"validating emails");
 
 			try {
-				database.pull(2);
+				database.pull();
 			} catch (SQLException e) {
 				e.printStackTrace();
+				sendUpdateStatusMessage(session,"sqlException:\n"+e.getMessage());
 				return;
 			} catch (MessagingException e) {
 				e.printStackTrace();
+				sendUpdateStatusMessage(session,"MessageingException:\n"+e.getMessage());
+				return;
+			} catch (ClassNotFoundException e) {
+				e.printStackTrace();
+				sendUpdateStatusMessage(session,"ClassNotFoundException:\n"+e.getMessage());
 				return;
 			}
 
@@ -49,8 +57,25 @@ public class ValidationRunnable implements Runnable {
 		} else {
 			sendUpdateStatusMessage(session,"Pulling folders and emails");
 
-			List<UserFolder> folders = database.pull(2);
-			List<UserFavourites> favourites = database.getUserFavourites(2);
+
+			List<UserFolder> folders;
+			List<UserFavourites> favourites;
+			try {
+				folders = database.pull();
+				favourites = database.getUserFavourites();
+			} catch (SQLException e) {
+				e.printStackTrace();
+				sendUpdateStatusMessage(session,"sqlException:\n"+e.getMessage());
+				return;
+			} catch (MessagingException e) {
+				e.printStackTrace();
+				sendUpdateStatusMessage(session,"MessageingException:\n"+e.getMessage());
+				return;
+			} catch (ClassNotFoundException e) {
+				e.printStackTrace();
+				sendUpdateStatusMessage(session,"ClassNotFoundException:\n"+e.getMessage());
+				return;
+			}
 
 
 			JsonArray ja = new JsonArray();

@@ -2,6 +2,7 @@ package edu.oswego.Runnables;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import edu.oswego.database.Database;
 import edu.oswego.model.Email;
 import edu.oswego.model.UserFavourites;
 import org.joda.time.DateTime;
@@ -11,6 +12,7 @@ import javax.websocket.Session;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
@@ -40,6 +42,7 @@ public class Handler implements Runnable {
 
 	@Override
 	public void run() {
+		Thread.currentThread().setName("hanlder");
 
 		if (jsonObject != null) {
 			try {
@@ -53,22 +56,22 @@ public class Handler implements Runnable {
 				List<Email> emails = database.getEmailByFilter(attachment, startDate.toDate().toString(),
 						endDate.toDate().toString(), seen, folderName);
 				performCalculations(emails);
-			}catch(IllegalArgumentException iae){
-				JsonObject js = new JsonObject();
-				js.addProperty("messagetype","statusupdate");
-				js.addProperty("message","IllegalArgument for DATETIME");
-				try {
-					session.getBasicRemote().sendText(js.toString());
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
+			}catch(IllegalArgumentException | SQLException | ClassNotFoundException e){
+				sendErrorMessage(session,"error:\n" + e.getMessage());
 			}
 		} else if (userFavourites != null) {
-			List<Email> emails = database.getEmailByFilter(userFavourites.isHasAttachment(),userFavourites.getStartDate().toString(),userFavourites.getEndDate().toString(),userFavourites.isSeen(),userFavourites.getFolder().getFolder().getFullName());
+			List<Email> emails = null;
+			try {
+				emails = database.getEmailByFilter(userFavourites.isHasAttachment(),userFavourites.getStartDate().toString(),userFavourites.getEndDate().toString(),userFavourites.isSeen(),userFavourites.getFolder().getFolder().getFullName());
+			} catch (SQLException | ClassNotFoundException e) {
+				e.printStackTrace();
+				sendErrorMessage(session,"error:\n" + e.getMessage());
+			}
 			performCalculations(emails);
 		} else {
 			System.out.println("no userfav or json so no calc can be preformed");
 		}
+
 	}
 
 	private void performCalculations(List<Email> emailList) {
@@ -174,6 +177,28 @@ public class Handler implements Runnable {
 			return startDate.plusMonths(1);
 		} else {// week
 			return startDate.plusWeeks(1);
+		}
+	}
+
+	private void sendUpdateStatusMessage(Session session,String message){
+		JsonObject js = new JsonObject();
+		js.addProperty("messagetype","statusupdate");
+		js.addProperty("message",message);
+		sendMessageToClient(session,js);
+	}
+
+	private void sendErrorMessage(Session session,String errorMessage){
+		JsonObject js = new JsonObject();
+		js.addProperty("messagetype","error");
+		js.addProperty("message",errorMessage);
+		sendMessageToClient(session,js);
+	}
+
+	private void sendMessageToClient(Session session, JsonObject returnMessage) {
+		try {
+			session.getBasicRemote().sendText(returnMessage.toString());
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
 	}
 
