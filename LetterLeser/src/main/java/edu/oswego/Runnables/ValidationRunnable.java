@@ -1,16 +1,17 @@
 package edu.oswego.Runnables;
 
+import javax.mail.MessagingException;
 import javax.websocket.Session;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
-import edu.oswego.database.Database;
 import edu.oswego.mail.Mailer;
 import edu.oswego.model.UserFavourites;
 import edu.oswego.model.UserFolder;
 
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.List;
 
 public class ValidationRunnable implements Runnable {
@@ -29,41 +30,29 @@ public class ValidationRunnable implements Runnable {
 	@Override
 	public void run() {
 		if (validateOrPull) {
-			JsonObject js = new JsonObject();
-			js.addProperty("messagetype", "statusupdate");
-			js.addProperty("message", "validating emails");
+			sendUpdateStatusMessage(session,"validating emails");
+
 			try {
-				session.getBasicRemote().sendText(js.toString());
-			} catch (IOException e) {
+				database.pull(2);
+			} catch (SQLException e) {
 				e.printStackTrace();
+				return;
+			} catch (MessagingException e) {
+				e.printStackTrace();
+				return;
 			}
 
-			database.pull();
-
-			js = new JsonObject();
-			js.addProperty("messagetype", "updatestatus");
-			js.addProperty("message", "finished validating");
-			try {
-				session.getBasicRemote().sendText(js.toString());
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
+			sendUpdateStatusMessage(session,"finished validating");
 
 
 
 		} else {
-			JsonObject js = new JsonObject();
-			js.addProperty("messagetype", "statusupdate");
-			js.addProperty("message", "Pulling folders and emails");
-			try {
-				session.getBasicRemote().sendText(js.toString());
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
+			sendUpdateStatusMessage(session,"Pulling folders and emails");
+
+			List<UserFolder> folders = database.pull(2);
+			List<UserFavourites> favourites = database.getUserFavourites(2);
 
 
-			List<UserFolder> folders = database.pull();
-			List<UserFavourites> favourites = database.getUserFavourites();
 			JsonArray ja = new JsonArray();
 			JsonArray ja1 = new JsonArray();
 			for (int i = 0; i < folders.size(); i++) {
@@ -72,20 +61,36 @@ public class ValidationRunnable implements Runnable {
 			for(int i=0;i<favourites.size();i++){
 				ja.add(favourites.get(i).getName());
 			}
-			js = new JsonObject();
+			JsonObject js = new JsonObject();
 			js.addProperty("messagetype", "foldername");
 			js.add("foldername", ja);
 			js.add("favoritename", ja1);
-			try {
-				session.getBasicRemote().sendText(js.toString());
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
+			sendMessageToClient(session,js);
 		}
 
 
 
 
+	}
+
+	private void sendUpdateStatusMessage(Session session,String message){
+		JsonObject js = new JsonObject();
+		js.addProperty("messagetype","statusupdate");
+		js.addProperty("message",message);
+		sendMessageToClient(session,js);
+	}
+
+	/**
+	 * Method to send message over to gui
+	 * @param session
+	 * @param returnMessage
+	 */
+	private void sendMessageToClient(Session session, JsonObject returnMessage) {
+		try {
+			session.getBasicRemote().sendText(returnMessage.toString());
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 }

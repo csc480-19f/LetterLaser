@@ -1,8 +1,10 @@
 package edu.oswego.websocket;
 
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
+import javax.mail.MessagingException;
 import javax.websocket.OnClose;
 import javax.websocket.OnError;
 import javax.websocket.OnMessage;
@@ -16,7 +18,6 @@ import com.google.gson.JsonParser;
 
 import edu.oswego.Runnables.Handler;
 import edu.oswego.Runnables.ValidationRunnable;
-import edu.oswego.database.Database;
 import edu.oswego.mail.Mailer;
 import edu.oswego.model.UserFavourites;
 import edu.oswego.model.UserFolder;
@@ -78,7 +79,9 @@ public class Websocket {
 		} else if (messageType.equals("logout")) {
 			logout(session,email);
 		} else {
-			invalidMessageType(session);
+			sendUpdateStatusMessage(session,"invalid messagetype\n" + "please send one of these options:\n"
+					+ "login, filter, refresh, addfavorite, callfavorite, removefavorite or logout");
+
 		}
 
 	}
@@ -117,26 +120,22 @@ public class Websocket {
 			storageObject = new StorageObject();
 			mailer = new Mailer(email, pass);
 
-			JsonObject js = new JsonObject();
-			js.addProperty("messagetype", "statusupdate");
-			js.addProperty("message", "establising connection");
-			sendMessageToClient(session, js);
+			sendUpdateStatusMessage(session,"establising connection");
 
 			boolean connectedToDatabase = mailer.isConnected();
 			if (!connectedToDatabase) {
-				js = new JsonObject();
-				js.addProperty("messagetype", "statusupdate");
-				js.addProperty("message", "invalid credentials");
-				sendMessageToClient(session, js);
+				sendUpdateStatusMessage(session,"invalid credentials");
 				return;
 			}
 
-			database = new Database(email, mailer);
-			//TODO test database connection
-			js = new JsonObject();
-			js.addProperty("messagetype", "statusupdate");
-			js.addProperty("message", "established connection");
-			sendMessageToClient(session, js);
+			try{
+				database = new Database(email, mailer,0);
+			} catch (SQLException e) {
+				e.printStackTrace();
+				sendUpdateStatusMessage(session,"failed to connect to db:\n "+e.getMessage());
+				return;
+			}
+			sendUpdateStatusMessage(session,"established connection");
 
 			storageObject.setDatabase(database);
 			storageObject.setMailer(mailer);
@@ -144,17 +143,28 @@ public class Websocket {
 		} else {
 			mailer = storageObject.getMailer();
 			database = storageObject.getDatabase();
-			JsonObject js = new JsonObject();
-			js.addProperty("messagetype", "statusupdate");
-			js.addProperty("message", "established connection");
-			sendMessageToClient(session, js);
+			sendUpdateStatusMessage(session,"established connection");
 		}
 
 		JsonObject js = new JsonObject();
 		if (database.hasEmails()) {
+			List<UserFolder> folders;
+			List<UserFavourites> favourites;
+
+			try {
+				folders = database.importFolders(0);
+				favourites = database.getUserFavourites(0);
+			} catch (SQLException e) {
+				e.printStackTrace();
+				sendUpdateStatusMessage(session,"sqlException:\n "+e.getMessage());
+				return;
+			} catch (MessagingException e) {
+				e.printStackTrace();
+				sendUpdateStatusMessage(session,"MessagingException:\n "+e.getMessage());
+				return;
+			}
+
 			js.addProperty("messagetype", "logininfo");
-			List<UserFolder> folders = database.importFolders();
-			List<UserFavourites> favourites = database.getUserFavourites();
 			JsonArray ja1 = new JsonArray();
 			JsonArray ja2 = new JsonArray();
 			for (int i = 0; i < folders.size(); i++) {
@@ -168,16 +178,10 @@ public class Websocket {
 			if (storageObject.getValidationRunnable() == null || !storageObject.getValidationThread().isAlive()) {
 				refresh(storageObject,email,mailer,database,true,session);
 			} else {
-				js = new JsonObject();
-				js.addProperty("messagetype", "statusupdate");
-				js.addProperty("message", "Validating Database already in progress");
-				sendMessageToClient(session, js);
+				sendUpdateStatusMessage(session,"Validating Database already in progress");
 			}
-			sendMessageToClient(session, js);
 		} else {
-			js.addProperty("messagetype", "statusupdate");
-			js.addProperty("message", "nothing found in database, preforming fresh import");
-			sendMessageToClient(session, js);
+			sendUpdateStatusMessage(session,"nothing found in database, preforming fresh import");
 			refresh(storageObject,email,mailer,database,false,session);
 		}
 
@@ -303,19 +307,6 @@ public class Websocket {
 		}
 	}
 
-
-	/**
-	 * This sends gui a message stating that the messagetype that was received is not a valid type
-	 * @param session
-	 */
-	private void invalidMessageType(Session session){
-		JsonObject js = new JsonObject();
-		js.addProperty("messagetype", "statusupdate");
-		js.addProperty("message", "invalid messagetype\n" + "please send one of these options:\n"
-				+ "login, filter, refresh, addfavorite, callfavorite, removefavorite or logout");
-		sendMessageToClient(session, js);
-	}
-
 	/*
 	below are support methods
 	 */
@@ -348,6 +339,13 @@ public class Websocket {
 		}catch(IllegalArgumentException iae){
 			return null;
 		}
+	}
+
+	private void sendUpdateStatusMessage(Session session,String message){
+		JsonObject js = new JsonObject();
+		js.addProperty("messagetype","statusupdate");
+		js.addProperty("message",message);
+		sendMessageToClient(session,js);
 	}
 
 	/**

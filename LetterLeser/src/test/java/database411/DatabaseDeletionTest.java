@@ -5,16 +5,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.List;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import edu.oswego.database.Database;
 import edu.oswego.database.Settings;
 import edu.oswego.mail.Mailer;
-import edu.oswego.model.UserFavourites;
 import edu.oswego.props.Interval;
 
 public class DatabaseDeletionTest {

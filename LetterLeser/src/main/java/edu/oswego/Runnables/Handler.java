@@ -2,7 +2,6 @@ package edu.oswego.Runnables;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import edu.oswego.database.Database;
 import edu.oswego.model.Email;
 import edu.oswego.model.UserFavourites;
 import org.joda.time.DateTime;

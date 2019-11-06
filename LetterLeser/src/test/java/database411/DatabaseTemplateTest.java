@@ -3,7 +3,6 @@ package database411;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 
-import edu.oswego.database.Database;
 import edu.oswego.database.Settings;
 import edu.oswego.mail.Mailer;
 
