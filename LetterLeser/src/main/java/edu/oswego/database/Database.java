@@ -24,7 +24,6 @@ import edu.oswego.model.EmailAddress;
 import edu.oswego.model.UserFavourites;
 import edu.oswego.model.UserFolder;
 import edu.oswego.props.Interval;
-import edu.oswego.sentiment.AnalyzeThis;
 import edu.oswego.sentiment.SentimentScore;
 
 /**
@@ -36,6 +35,7 @@ import edu.oswego.sentiment.SentimentScore;
 
 public class Database {
 
+	private Connection connection;
 	private EmailAddress user;
 	private Mailer mailer;
 
@@ -128,7 +128,6 @@ public class Database {
 	 * @return JavaMail Connection object
 	 */
 	public Connection getConnection() {
-		Connection connection = null;
 		try {
 			Class.forName("com.mysql.cj.jdbc.Driver");
 			if (connection == null || connection.isClosed()) {
@@ -146,6 +145,7 @@ public class Database {
 			DebugLogger.logEvent(Database.class.getName(), Level.WARNING, e.getMessage());
 			e.printStackTrace();
 		}
+		
 		return connection;
 	}
 
