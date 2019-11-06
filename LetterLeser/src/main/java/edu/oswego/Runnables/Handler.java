@@ -2,16 +2,16 @@ package edu.oswego.Runnables;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+
 import edu.oswego.database.Database;
 import edu.oswego.model.Email;
 import edu.oswego.model.UserFavourites;
+
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 
 import javax.websocket.Session;
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -117,7 +117,7 @@ public class Handler implements Runnable {
 		t5.start();
 		Thread t6 = new Thread(tbrc);
 		t6.start();
-		JsonObject js = new JsonObject();
+		JsonObject js;
 		try {
 			int sentiment = (int) ssc.get(20, TimeUnit.SECONDS);
 			JsonArray domain = (JsonArray) dc.get(20, TimeUnit.SECONDS);
@@ -140,35 +140,24 @@ public class Handler implements Runnable {
 
 		} catch (InterruptedException e) {
 			e.printStackTrace();
+			sendErrorMessage(session,"request ended Callable interrupted\n"+e.getMessage());
+			return;
 		} catch (ExecutionException e) {
 			e.printStackTrace();
+			sendErrorMessage(session,"request ended executionException:\n"+e.getMessage());
+			return;
 		} catch (TimeoutException e) {
-			StringWriter sw = new StringWriter();
-			PrintWriter pw = new PrintWriter(sw);
-			e.printStackTrace(pw);
-			js = new JsonObject();
-			js.addProperty("messagetype","statusupdate");
-			js.addProperty("message","request ended\n" +
+			sendErrorMessage(session,"request ended\n" +
 					"TimeoutException Occurred\n" +
-					"StackTrace:\n" +
-					sw.toString());
+					e.getMessage());
+			return;
 		}catch(Exception e){
-			StringWriter sw = new StringWriter();
-			PrintWriter pw = new PrintWriter(sw);
-			e.printStackTrace(pw);
-			js = new JsonObject();
-			js.addProperty("messagetype","statusupdate");
-			js.addProperty("message","request ended\n" +
-					"unknown exception Occurred\n" +
-					"StackTrace:\n" +
-					sw.toString());
+			sendErrorMessage(session,"request ended\n" +
+					"unknown exception Occurred\n"  +
+					e.getMessage());
+			return;
 		}
-
-		try {
-			session.getBasicRemote().sendText(js.toString());
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+		sendMessageToClient(session,js);
 
 	}
 

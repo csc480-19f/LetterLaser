@@ -2,9 +2,11 @@ package edu.oswego.websocket;
 
 import java.io.IOException;
 import java.sql.SQLException;
+import javax.mail.MessagingException;
+
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
-import javax.mail.MessagingException;
+
 import javax.websocket.OnClose;
 import javax.websocket.OnError;
 import javax.websocket.OnMessage;
