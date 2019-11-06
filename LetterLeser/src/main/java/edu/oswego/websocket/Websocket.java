@@ -125,7 +125,7 @@ public class Websocket {
 
 			boolean connectedToDatabase = mailer.isConnected();
 			if (!connectedToDatabase) {
-				sendUpdateStatusMessage(session,"invalid credentials");
+				sendUpdateStatusMessage(session,"failed to connect to email");
 				return;
 			}
 
@@ -284,8 +284,9 @@ public class Websocket {
 
 		boolean attachment = filter.get("attachment").getAsBoolean();
 		boolean seen = filter.get("seen").getAsBoolean();
+		boolean added;
 		try {
-			database.insertUserFavourites(favoriteName, startDate.toDate(), endDate.toDate(), Interval.parse(interval),
+			added = database.insertUserFavourites(favoriteName, startDate.toDate(), endDate.toDate(), Interval.parse(interval),
 					attachment, seen, foldername);
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -296,10 +297,12 @@ public class Websocket {
 			sendErrorMessage(session,"ClassNotFoundException: \n"+e.getMessage());
 			return;
 		}
-		JsonObject js = new JsonObject();
-		js.addProperty("messagetype", "statusupdate");
-		js.addProperty("message", "Favorite has been added");
-		sendMessageToClient(session, js);
+
+		if(added){
+			sendUpdateStatusMessage(session,"Favorite has been added");
+		}else{
+			sendUpdateStatusMessage(session, "No FolderName");
+		}
 
 		List<UserFavourites> favourites ;
 		try {
@@ -318,7 +321,8 @@ public class Websocket {
 		for (int i = 0; i < favourites.size(); i++) {
 			ja.add(favourites.get(i).getName());
 		}
-		js = new JsonObject();
+
+		JsonObject js = new JsonObject();
 		js.addProperty("messagetype", "favoritename");
 		js.add("favoritename", ja);
 		sendMessageToClient(session, js);
@@ -336,15 +340,14 @@ public class Websocket {
 		} catch (SQLException e) {
 			e.printStackTrace();
 			sendErrorMessage(session,"ClassNotFoundException: \n"+e.getMessage());
+			return;
 		} catch (ClassNotFoundException e) {
 			e.printStackTrace();
 			sendErrorMessage(session,"ClassNotFoundException: \n"+e.getMessage());
+			return;
 		}
 
-		JsonObject js = new JsonObject();
-		js.addProperty("messagetype", "statusupdate");
-		js.addProperty("message", "Favorite has been removed");
-		sendMessageToClient(session, js);
+		sendUpdateStatusMessage(session,"Favorite has been removed");
 
 		List<UserFavourites> favourites;
 		try {
@@ -359,11 +362,12 @@ public class Websocket {
 			return;
 		}
 
+
 		JsonArray ja = new JsonArray();
 		for (int i = 0; i < favourites.size(); i++) {
 			ja.add(favourites.get(i).getName());
 		}
-		js = new JsonObject();
+		JsonObject js = new JsonObject();
 		js.addProperty("messagetype", "favoritename");
 		js.add("favoritename", ja);
 		sendMessageToClient(session, js);

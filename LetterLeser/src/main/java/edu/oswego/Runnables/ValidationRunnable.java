@@ -38,15 +38,15 @@ public class ValidationRunnable implements Runnable {
 				database.pull();
 			} catch (SQLException e) {
 				e.printStackTrace();
-				sendUpdateStatusMessage(session,"sqlException:\n"+e.getMessage());
+				sendErrorMessage(session,"sqlException:\n"+e.getMessage());
 				return;
 			} catch (MessagingException e) {
 				e.printStackTrace();
-				sendUpdateStatusMessage(session,"MessageingException:\n"+e.getMessage());
+				sendErrorMessage(session,"MessageingException:\n"+e.getMessage());
 				return;
 			} catch (ClassNotFoundException e) {
 				e.printStackTrace();
-				sendUpdateStatusMessage(session,"ClassNotFoundException:\n"+e.getMessage());
+				sendErrorMessage(session,"ClassNotFoundException:\n"+e.getMessage());
 				return;
 			}
 
@@ -65,15 +65,15 @@ public class ValidationRunnable implements Runnable {
 				favourites = database.getUserFavourites();
 			} catch (SQLException e) {
 				e.printStackTrace();
-				sendUpdateStatusMessage(session,"sqlException:\n"+e.getMessage());
+				sendErrorMessage(session,"sqlException:\n"+e.getMessage());
 				return;
 			} catch (MessagingException e) {
 				e.printStackTrace();
-				sendUpdateStatusMessage(session,"MessageingException:\n"+e.getMessage());
+				sendErrorMessage(session,"MessageingException:\n"+e.getMessage());
 				return;
 			} catch (ClassNotFoundException e) {
 				e.printStackTrace();
-				sendUpdateStatusMessage(session,"ClassNotFoundException:\n"+e.getMessage());
+				sendErrorMessage(session,"ClassNotFoundException:\n"+e.getMessage());
 				return;
 			}
 
@@ -96,6 +96,13 @@ public class ValidationRunnable implements Runnable {
 
 
 
+	}
+
+	private void sendErrorMessage(Session session,String errorMessage){
+		JsonObject js = new JsonObject();
+		js.addProperty("messagetype","error");
+		js.addProperty("message",errorMessage);
+		sendMessageToClient(session,js);
 	}
 
 	private void sendUpdateStatusMessage(Session session,String message){

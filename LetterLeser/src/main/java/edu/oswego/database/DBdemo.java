@@ -5,6 +5,8 @@ import javax.mail.MessagingException;
 
 import edu.oswego.mail.Mailer;
 
+import java.sql.SQLException;
+
 /**
  * Test class demonstrating some database functionality.
  * 
@@ -17,13 +19,13 @@ public class DBdemo {
 	public static void main(String[] args) {
 		long ct = System.currentTimeMillis();
 		Settings.loadCredentials();
+		try {
+			Mailer mailer = new Mailer(edu.oswego.mail.Settings.EMAIL_ADDRESS, edu.oswego.mail.Settings.EMAIL_PWD);
+			Database db = new Database(edu.oswego.mail.Settings.EMAIL_ADDRESS, mailer);
 
-		Mailer mailer = new Mailer(edu.oswego.mail.Settings.EMAIL_ADDRESS, edu.oswego.mail.Settings.EMAIL_PWD);
-		Database db = new Database(edu.oswego.mail.Settings.EMAIL_ADDRESS, mailer);
-		
-		System.out.println(db.getValidatedEmails());
+			System.out.println(db.getValidatedEmails());
 //		 db.truncateTables();
-		db.pull();
+			db.pull();
 
 //		try {
 //			Date utilDate = (Date) new SimpleDateFormat("yyyy-MM-dd").parse("2014-01-28");
@@ -36,7 +38,7 @@ public class DBdemo {
 //			e.printStackTrace();
 //		}
 
-		db.showTables();
+			db.showTables();
 //
 //		String startDate = Time.parseDateTime(Time.getDate("2010-03-12"));
 //		String endDate = Time.parseDateTime(Time.getDate("2014-03-12"));
@@ -44,16 +46,24 @@ public class DBdemo {
 //
 //		System.out.println(emailList);
 
-		double time = (double) ((System.currentTimeMillis() - ct) * .001);
-		System.out.println("Total runtime: " + time + " seconds\n");
-		
+			double time = (double) ((System.currentTimeMillis() - ct) * .001);
+			System.out.println("Total runtime: " + time + " seconds\n");
+
+		} catch (MessagingException e) {
+			e.printStackTrace();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		}
 //		db.truncateTables();
 	}
 
 	public static boolean needsUpdate(Database db, Mailer mailer) {
-		int validatedEmails = db.getValidatedEmails();
-		Folder validationFolder = mailer.getFolder("CSC480_19f");
+
 		try {
+			int validatedEmails = db.getValidatedEmails();
+			Folder validationFolder = mailer.getFolder("CSC480_19f");
 			int newEmails = validationFolder.getMessageCount();
 			if (newEmails != validatedEmails) {
 				System.out.println("The database emails and user's emails do not match.");
@@ -61,6 +71,10 @@ public class DBdemo {
 				return true;
 			}
 		} catch (MessagingException e) {
+			e.printStackTrace();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} catch (ClassNotFoundException e) {
 			e.printStackTrace();
 		}
 
