@@ -42,14 +42,21 @@ public class Database {
 	// TODO getEmailById for JUnit testing
 	// THIS ID IS EMAIL ID NOT USER
 	public Email getEmailById(int id) {
+		ResultSet rs = null;
 		try {
-			ResultSet rs = getConnection().prepareStatement("SELECT * FROM email WHERE id = " + id + ";").executeQuery();
+			rs = getConnection().prepareStatement("SELECT * FROM email WHERE id = " + id + ";").executeQuery();
 			while (rs.next()) {
 				return new Email(rs.getInt(1), rs.getDate(2), rs.getString(3), rs.getDouble(4), rs.getBoolean(5),
 						rs.getString(6), rs.getBoolean(7));
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
+		} finally {
+			try {
+				rs.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
 		}
 		
 		return null;
@@ -57,14 +64,21 @@ public class Database {
 	
 	
 	public List<Email> getUserEmails() {
+		ResultSet rs = null;
 		List<Email> emailList = new ArrayList<>();
 		try {
-			ResultSet rs = getConnection().prepareStatement("SELECT * FROM user_email WHERE user_id = " + user.getId() + ";").executeQuery();
+			rs = getConnection().prepareStatement("SELECT * FROM user_email WHERE user_id = " + user.getId() + ";").executeQuery();
 			while (rs.next()) {
 				emailList.add(getEmailById(rs.getInt(3)));
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
+		} finally {
+			try {
+				rs.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
 		}
 		
 		return emailList;
@@ -76,16 +90,18 @@ public class Database {
 	 * @deprecated
 	 */
 	public void showTables() {
+		ResultSet queryTbl = null;
+		ResultSet queryAttr = null;
 		try {
 			// show all tables
-			ResultSet queryTbl = getConnection().prepareStatement("show tables").executeQuery();
+			queryTbl = getConnection().prepareStatement("show tables").executeQuery();
 
 			while (queryTbl.next()) {
 				String tbl = queryTbl.getString(1);
 				System.out.println("[FOLDER] Table: " + tbl + "\n-------------------");
 
 				// show all attributes from the tables
-				ResultSet queryAttr = getConnection().prepareStatement("select * from " + tbl).executeQuery();
+				queryAttr = getConnection().prepareStatement("select * from " + tbl).executeQuery();
 				while (queryAttr.next()) {
 					ResultSetMetaData md = queryAttr.getMetaData();
 					for (int i = 1; i < md.getColumnCount() + 1; i++)
@@ -94,10 +110,16 @@ public class Database {
 					System.out.println();
 				}
 				System.out.println();
-				queryAttr.close();
 			}
 		} catch (SQLException e) {
 			DebugLogger.logEvent(Database.class.getName(), Level.WARNING, e.getMessage());
+		} finally {
+			try {
+				queryTbl.close();
+				queryAttr.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
 		}
 	}
 
@@ -187,7 +209,7 @@ public class Database {
 
 				} catch (MessagingException e) {
 					DebugLogger.logEvent(Database.class.getName(), Level.WARNING, e.getMessage());
-				}
+				} 
 			}
 			// break;
 			// strange ghost email added at the end....?
@@ -257,8 +279,9 @@ public class Database {
 
 		selectionStatement += ";";
 
+		ResultSet rs = null;
 		try {
-			ResultSet rs = getConnection().prepareStatement(selectionStatement, Statement.RETURN_GENERATED_KEYS)
+			rs = getConnection().prepareStatement(selectionStatement, Statement.RETURN_GENERATED_KEYS)
 					.executeQuery();
 
 			while (rs.next()) {
@@ -270,6 +293,12 @@ public class Database {
 			}
 		} catch (SQLException e) {
 			DebugLogger.logEvent(Database.class.getName(), Level.WARNING, e.getMessage());
+		} finally {
+			try {
+				rs.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
 		}
 
 		DebugLogger.logEvent(Database.class.getName(), Level.INFO,
@@ -284,22 +313,32 @@ public class Database {
 	 * @return database id of user. -1 if id there is no insertion.
 	 */
 	private int insertUser(String emailAddress) {
+		
+		ResultSet rs = null;
+		PreparedStatement ps = null;
 		try {
-			PreparedStatement ps = getConnection().prepareStatement(
+			ps = getConnection().prepareStatement(
 					"INSERT INTO user (email_address) VALUE ('" + emailAddress + "')", Statement.RETURN_GENERATED_KEYS);
 			if (ps.executeUpdate() == 0)
 				DebugLogger.logEvent(Database.class.getName(), Level.INFO, "Could not insert a user, no rows affected");
 
-			ResultSet generatedKeys = ps.getGeneratedKeys();
+			rs = ps.getGeneratedKeys();
 
-			if (generatedKeys.next()) {
+			if (rs.next()) {
 				DebugLogger.logEvent(Database.class.getName(), Level.INFO,
-						"New user created " + generatedKeys.getInt(1) + " <" + emailAddress + ">");
-				return generatedKeys.getInt(1);
+						"New user created " + rs.getInt(1) + " <" + emailAddress + ">");
+				return rs.getInt(1);
 			}
 
 		} catch (SQLException e) {
 			DebugLogger.logEvent(Database.class.getName(), Level.WARNING, e.getMessage());
+		} finally {
+			try {
+				rs.close();
+				ps.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
 		}
 		return -1;
 	}
@@ -309,17 +348,23 @@ public class Database {
 	 *
 	 */
 	public EmailAddress getUser(String emailAddress) {
+		ResultSet rs = null;
 		try {
-			ResultSet rs = getConnection()
+			rs = getConnection()
 					.prepareStatement("SELECT * FROM user WHERE email_address = '" + emailAddress + "';",
 							Statement.RETURN_GENERATED_KEYS)
 					.executeQuery();
 			while (rs.next())
 				return new EmailAddress(rs.getInt(1), rs.getString(2));
 
-			rs.close();
 		} catch (SQLException e) {
 			DebugLogger.logEvent(Database.class.getName(), Level.WARNING, e.getMessage());
+		} finally {
+			try {
+				rs.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
 		}
 
 		return new EmailAddress(insertUser(emailAddress), emailAddress);
@@ -342,13 +387,20 @@ public class Database {
 	 * @return database id number of the folder
 	 */
 	public int getFolderId(String folderName) {
+		ResultSet rs = null;
 		try {
-			ResultSet generatedKeys = getConnection()
+			rs = getConnection()
 					.prepareStatement("SELECT id FROM folder WHERE fold_name = '" + folderName + "';").executeQuery();
-			if (generatedKeys.next())
-				return generatedKeys.getInt(1);
+			if (rs.next())
+				return rs.getInt(1);
 		} catch (SQLException e) {
 			DebugLogger.logEvent(Database.class.getName(), Level.WARNING, e.getMessage());
+		} finally {
+			try {
+				rs.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
 		}
 
 		return -1;
@@ -361,14 +413,21 @@ public class Database {
 	 * @return UserFolder object
 	 */
 	public UserFolder getFolderById(int id) {
+		ResultSet rs = null;
 		try {
-			ResultSet generatedKeys = getConnection().prepareStatement("SELECT * FROM folder WHERE id = " + id + ";")
+			rs = getConnection().prepareStatement("SELECT * FROM folder WHERE id = " + id + ";")
 					.executeQuery();
-			if (generatedKeys.next())
-				return new UserFolder(generatedKeys.getInt(1), mailer.getFolder(generatedKeys.getString(2)));
+			if (rs.next())
+				return new UserFolder(rs.getInt(1), mailer.getFolder(rs.getString(2)));
 
 		} catch (SQLException e) {
 			DebugLogger.logEvent(Database.class.getName(), Level.WARNING, e.getMessage());
+		} finally {
+			try {
+				rs.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
 		}
 
 		return null;
@@ -381,13 +440,15 @@ public class Database {
 	 * @return UserFavourites object
 	 */
 	public UserFavourites getUserFavourite(String favName) {
+		ResultSet rs = null;
+		ResultSet rs2 = null;
 		try {
-			ResultSet rs = getConnection().prepareStatement("SELECT * FROM user_favourites WHERE user_id = '"
+			rs = getConnection().prepareStatement("SELECT * FROM user_favourites WHERE user_id = '"
 					+ user.getId() + "' AND fav_name = '" + favName + "';", Statement.RETURN_GENERATED_KEYS)
 					.executeQuery();
 
 			while (rs.next()) {
-				ResultSet rs2 = getConnection()
+				rs2 = getConnection()
 						.prepareStatement("SELECT * FROM filter_settings WHERE id = '" + rs.getInt(1) + "';",
 								Statement.RETURN_GENERATED_KEYS)
 						.executeQuery();
@@ -398,12 +459,16 @@ public class Database {
 							Interval.parse(rs2.getString(4)), rs2.getBoolean(5), rs2.getBoolean(6),
 							getFolderById(rs2.getInt(7)));
 				}
-
-				rs2.close();
 			}
-			rs.close();
 		} catch (SQLException e) {
 			DebugLogger.logEvent(Database.class.getName(), Level.WARNING, e.getMessage());
+		} finally {
+			try {
+				rs.close();
+				rs2.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
 		}
 
 		return null;
@@ -416,15 +481,17 @@ public class Database {
 	 * @return List of UserFavourites
 	 */
 	public List<UserFavourites> getUserFavourites() {
+		ResultSet rs = null;
+		ResultSet rs2 = null;
 		List<UserFavourites> ufList = new ArrayList<>();
 		try {
-			ResultSet rs = getConnection()
+			rs = getConnection()
 					.prepareStatement("SELECT * FROM user_favourites WHERE user_id = '" + user.getId() + "';",
 							Statement.RETURN_GENERATED_KEYS)
 					.executeQuery();
 
 			while (rs.next()) {
-				ResultSet rs2 = getConnection()
+				rs2 = getConnection()
 						.prepareStatement("SELECT * FROM filter_settings WHERE id = '" + rs.getInt(1) + "';",
 								Statement.RETURN_GENERATED_KEYS)
 						.executeQuery();
@@ -432,12 +499,16 @@ public class Database {
 					ufList.add(new UserFavourites(rs.getInt(1), rs.getString(2), rs2.getDate(2), rs2.getDate(3),
 							Interval.parse(rs2.getString(4)), rs2.getBoolean(5), rs2.getBoolean(6),
 							getFolderById(rs2.getInt(7))));
-
-				rs2.close();
 			}
-			rs.close();
 		} catch (SQLException e) {
 			DebugLogger.logEvent(Database.class.getName(), Level.WARNING, e.getMessage());
+		} finally {
+			try {
+				rs.close();
+				rs2.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
 		}
 
 		DebugLogger.logEvent(Database.class.getName(), Level.INFO,
@@ -488,8 +559,11 @@ public class Database {
 	 */
 	private int insertFilter(java.util.Date startDate, java.util.Date endDate, String intervalRange,
 			boolean hasAttachment, boolean isSeen, int folderId) {
+		
+		ResultSet rs = null;
+		PreparedStatement ps = null;
 		try {
-			PreparedStatement ps = getConnection().prepareStatement(
+			ps = getConnection().prepareStatement(
 					"INSERT INTO filter_settings (start_date, end_date, interval_range, has_attachment, is_seen, folder_id) VALUE (?, ?, ?, ?, ?, ?);",
 					Statement.RETURN_GENERATED_KEYS);
 
@@ -504,13 +578,20 @@ public class Database {
 				DebugLogger.logEvent(Database.class.getName(), Level.WARNING,
 						"Could not insert filter. No rows affected");
 
-			ResultSet generatedKeys = ps.getGeneratedKeys();
+			rs = ps.getGeneratedKeys();
 
-			if (generatedKeys.next())
-				return generatedKeys.getInt(1);
+			if (rs.next())
+				return rs.getInt(1);
 
 		} catch (SQLException e) {
 			DebugLogger.logEvent(Database.class.getName(), Level.WARNING, e.getMessage());
+		} finally {
+			try {
+				rs.close();
+				ps.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
 		}
 		return -1;
 	}
@@ -535,8 +616,9 @@ public class Database {
 	 * @return boolean value whether the folder exists or not
 	 */
 	private boolean folderExists(String folderName, List<UserFolder> folderList) {
+		ResultSet rs = null;
 		try {
-			ResultSet rs = getConnection()
+			rs = getConnection()
 					.prepareStatement("SELECT * FROM folder WHERE fold_name = '" + folderName + "'").executeQuery();
 			while (rs.next()) {
 				folderList.add(new UserFolder(rs.getInt(1), mailer.getFolder(rs.getString(2))));
@@ -544,6 +626,12 @@ public class Database {
 			}
 		} catch (SQLException e) {
 			DebugLogger.logEvent(Database.class.getName(), Level.WARNING, e.getMessage());
+		} finally {
+			try {
+				rs.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
 		}
 		return false;
 	}
@@ -555,6 +643,8 @@ public class Database {
 	 * @see UserFolder
 	 */
 	public List<UserFolder> importFolders() {
+		ResultSet rs = null;
+		PreparedStatement ps = null;
 		List<UserFolder> folderList = new ArrayList<>();
 		try {
 			Folder[] folders = mailer.getStorage().getDefaultFolder().list("*");
@@ -562,16 +652,16 @@ public class Database {
 				if (!folderExists(f.getFullName(), folderList) && !f.getFullName().equals("[Gmail]")
 						&& !f.getFullName().equals("CSC480_19F") && !f.getFullName().equals("[Gmail]/All Mail")) {
 
-					PreparedStatement ps = getConnection().prepareStatement(
+					ps = getConnection().prepareStatement(
 							"INSERT INTO folder (fold_name) VALUE ('" + f.getFullName() + "')",
 							Statement.RETURN_GENERATED_KEYS);
 					if (ps.executeUpdate() == 0)
 						DebugLogger.logEvent(Database.class.getName(), Level.WARNING,
 								"Could not insert into folder, no rows affected");
 
-					ResultSet generatedKeys = ps.getGeneratedKeys();
-					if (generatedKeys.next()) {
-						folderList.add(new UserFolder(generatedKeys.getInt(1), f));
+					rs = ps.getGeneratedKeys();
+					if (rs.next()) {
+						folderList.add(new UserFolder(rs.getInt(1), f));
 						System.out.println("ADDED FOLDER:\t" + f.getFullName());
 					}
 				}
@@ -579,7 +669,15 @@ public class Database {
 
 		} catch (SQLException | MessagingException e) {
 			e.printStackTrace();
+		} finally {
+			try {
+				rs.close();
+				ps.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
 		}
+		
 		return folderList;
 	}
 
@@ -590,14 +688,16 @@ public class Database {
 	 * @return database id of the email record
 	 */
 	private int getEmailId(Message m) {
+		ResultSet rs = null;
+		PreparedStatement ps = null;
 		try {
-			PreparedStatement ps = getConnection()
+			ps = getConnection()
 					.prepareStatement("SELECT * FROM email WHERE date_received = ? AND subject = ? AND size = ?");
 			ps.setObject(1, m.getReceivedDate());
 			ps.setString(2, m.getSubject());
 			ps.setInt(3, m.getSize());
 
-			ResultSet rs = ps.executeQuery();
+			rs = ps.executeQuery();
 			while (rs.next())
 				return rs.getInt(1);
 
@@ -605,6 +705,13 @@ public class Database {
 			e.printStackTrace();
 		} catch (MessagingException e) {
 			e.printStackTrace();
+		} finally {
+			try {
+				rs.close();
+				ps.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
 		}
 		return -1;
 	}
@@ -624,7 +731,8 @@ public class Database {
 		if (emailId != -1)
 			return emailId;
 
-		PreparedStatement ps;
+		PreparedStatement ps = null;
+		ResultSet rs = null;
 		try {
 			ps = getConnection().prepareStatement(
 					"INSERT INTO email (date_received, subject, size, seen, has_attachment, file_name, folder_id) VALUE (?, ?, ?, ?, ?, ?, ?);",
@@ -656,9 +764,9 @@ public class Database {
 				DebugLogger.logEvent(Database.class.getName(), Level.WARNING,
 						"Could not insert into email, no rows affected");
 
-			ResultSet generatedKeys = ps.getGeneratedKeys();
-			if (generatedKeys.next()) {
-				emailId = generatedKeys.getInt(1);
+			rs = ps.getGeneratedKeys();
+			if (rs.next()) {
+				emailId = rs.getInt(1);
 				emailIdList.add(emailId);
 			}
 
@@ -666,6 +774,13 @@ public class Database {
 			DebugLogger.logEvent(Database.class.getName(), Level.WARNING, e.getMessage());
 		} catch (MessagingException e) {
 			DebugLogger.logEvent(Database.class.getName(), Level.WARNING, e.getMessage());
+		} finally {
+			try {
+				rs.close();
+				ps.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
 		}
 
 		return emailId;
@@ -679,8 +794,9 @@ public class Database {
 	 */
 	private boolean emailAddressExists(String emailAddress) {
 		int size = -1;
+		ResultSet rs = null;
 		try {
-			ResultSet rs = getConnection()
+			rs = getConnection()
 					.prepareStatement("SELECT count(*) FROM email_addr WHERE email_address = '" + emailAddress + "'")
 					.executeQuery();
 			while (rs.next()) {
@@ -688,7 +804,14 @@ public class Database {
 			}
 		} catch (SQLException e) {
 			DebugLogger.logEvent(Database.class.getName(), Level.WARNING, e.getMessage());
+		} finally {
+			try {
+				rs.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
 		}
+		
 		return size >= 1;
 	}
 
@@ -718,12 +841,16 @@ public class Database {
 	 */
 	private List<EmailAddress> insertEmailAddress(Address[] addresses) {
 		List<EmailAddress> emailAddrList = new ArrayList<>();
+		
+		ResultSet rs = null;
+		ResultSet generatedKeys = null;
+		PreparedStatement ps = null;
 
 		for (Address a : addresses) {
 			String address = parseAddress(a);
 			try {
 				if (!emailAddressExists(address)) {
-					PreparedStatement ps = getConnection().prepareStatement(
+					ps = getConnection().prepareStatement(
 							"INSERT INTO email_addr (email_address) VALUE ('" + address + "');",
 							Statement.RETURN_GENERATED_KEYS);
 
@@ -731,21 +858,28 @@ public class Database {
 						DebugLogger.logEvent(Database.class.getName(), Level.WARNING,
 								"Could not insert an email address");
 
-					ResultSet generatedKeys = ps.getGeneratedKeys();
+					generatedKeys = ps.getGeneratedKeys();
 					if (generatedKeys.next())
 						emailAddrList.add(new EmailAddress(generatedKeys.getInt(1), address));
 
 				} else {
-					ResultSet rs = getConnection()
+					rs = getConnection()
 							.prepareStatement("SELECT * FROM email_addr WHERE email_address = '" + address + "';")
 							.executeQuery();
 					while (rs.next())
 						emailAddrList.add(new EmailAddress(rs.getInt(1), rs.getString(2)));
 
-					rs.close();
 				}
 			} catch (SQLException e) {
 				DebugLogger.logEvent(Database.class.getName(), Level.WARNING, e.getMessage());
+			} finally {
+				try {
+					rs.close();
+					ps.close();
+					generatedKeys.close();
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
 			}
 		}
 
@@ -760,9 +894,9 @@ public class Database {
 	 */
 	private List<EmailAddress> getReceivedEmail(int emailId) {
 		List<EmailAddress> addressIdList = new ArrayList<>();
-
+		ResultSet rs = null;
 		try {
-			ResultSet rs = getConnection().prepareStatement(
+			rs = getConnection().prepareStatement(
 					"SELECT email_addr_id, email_address FROM received_email JOIN email_addr ON email_addr.id = received_email.email_addr_id"
 							+ " WHERE received_email.email_id = " + emailId + ";")
 					.executeQuery();
@@ -770,6 +904,12 @@ public class Database {
 				addressIdList.add(new EmailAddress(rs.getInt(1), rs.getString(2)));
 		} catch (SQLException e) {
 			DebugLogger.logEvent(Database.class.getName(), Level.WARNING, e.getMessage());
+		} finally {
+			try {
+				rs.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
 		}
 
 		return addressIdList;
@@ -783,13 +923,20 @@ public class Database {
 	 * @return boolean if receieved email exists
 	 */
 	private boolean receivedEmailExists(int emailId, int emailAddrId) {
+		ResultSet rs = null;
 		try {
-			ResultSet rs = getConnection().prepareStatement("SELECT * FROM received_email WHERE email_id = " + emailId
+			rs = getConnection().prepareStatement("SELECT * FROM received_email WHERE email_id = " + emailId
 					+ " AND email_addr_id = " + emailAddrId + ";").executeQuery();
 			while (rs.next())
 				return true;
 		} catch (SQLException e) {
 			DebugLogger.logEvent(Database.class.getName(), Level.WARNING, e.getMessage());
+		} finally {
+			try {
+				rs.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
 		}
 
 		return false;
@@ -816,15 +963,23 @@ public class Database {
 	 * @see #insertUserEmail
 	 */
 	private boolean userEmailExists(EmailAddress addr, int emailId) {
+		ResultSet rs = null;
 		try {
-			ResultSet rs = getConnection().prepareStatement(
+			rs = getConnection().prepareStatement(
 					"SELECT * FROM user_email WHERE user_id = " + addr.getId() + " AND email_id = " + emailId + ";")
 					.executeQuery();
 			while (rs.next())
 				return true;
 		} catch (SQLException e) {
 			DebugLogger.logEvent(Database.class.getName(), Level.WARNING, e.getMessage());
+		} finally {
+			try {
+				rs.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
 		}
+		
 		return false;
 	}
 
@@ -846,19 +1001,25 @@ public class Database {
 	 * @return number of emails
 	 */
 	public int getEmailCountByFolder(String folderName) {
+		ResultSet rs = null;
 		int size = 0;
 		try {
-			ResultSet queryTbl = getConnection().prepareStatement("SELECT * FROM user "
+			rs = getConnection().prepareStatement("SELECT * FROM user "
 					+ "JOIN user_email ON user.id = user_email.user_id "
 					+ "JOIN email ON email.id = user_email.email_id " + "JOIN folder ON folder.id = email.folder_id "
 					+ "WHERE folder.fold_name != '" + folderName + "';").executeQuery();
 
-			while (queryTbl.next())
+			while (rs.next())
 				size++;
 
-			queryTbl.close();
 		} catch (SQLException e) {
 			DebugLogger.logEvent(Database.class.getName(), Level.WARNING, e.getMessage());
+		} finally {
+			try {
+				rs.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
 		}
 
 		return size;
@@ -883,17 +1044,25 @@ public class Database {
 	 * @see #setValidatedEmailCount
 	 */
 	public int getValidatedEmails() {
+		ResultSet rs = null;
 		int validatedEmails = 0;
 		try {
-			ResultSet queryTbl = getConnection()
+			rs = getConnection()
 					.prepareStatement("SELECT * FROM user WHERE user.email_address = '" + user.getEmailAddress() + "'")
 					.executeQuery();
-			while (queryTbl.next())
-				validatedEmails = queryTbl.getInt(3);
+			while (rs.next())
+				validatedEmails = rs.getInt(3);
 
 		} catch (SQLException e) {
 			DebugLogger.logEvent(Database.class.getName(), Level.WARNING, e.getMessage());
+		} finally {
+			try {
+				rs.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
 		}
+		
 		return validatedEmails;
 	}
 
@@ -903,12 +1072,19 @@ public class Database {
 	 * @param statement
 	 */
 	public void query(String statement) {
+		PreparedStatement ps = null;
 		try {
-			PreparedStatement ps = getConnection().prepareStatement(statement);
+			ps = getConnection().prepareStatement(statement);
 			ps.execute();
 			DebugLogger.logEvent(Database.class.getName(), Level.INFO, "Query made for statement: " + statement);
 		} catch (SQLException e) {
 			e.printStackTrace();
+		} finally {
+			try {
+				ps.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
 		}
 	}
 
@@ -953,25 +1129,33 @@ public class Database {
 	 * @return if user has emails
 	 */
 	public boolean hasEmails() {
+		ResultSet rs = null;
 		try {
-			ResultSet queryTbl = getConnection()
+			rs = getConnection()
 					.prepareStatement("SELECT * from user " + "JOIN user_email ON user_email.user_id = user.id "
 							+ "JOIN email ON email.id = user_email.email_id WHERE email_address = '"
 							+ user.getEmailAddress() + "';")
 					.executeQuery();
 			int size = 0;
 
-			while (queryTbl.next()) {
+			while (rs.next()) {
 				size++;
 				if (size > 0)
 					return true;
 			}
 
-			queryTbl.close();
+			rs.close();
 
 		} catch (SQLException e) {
 			DebugLogger.logEvent(Database.class.getName(), Level.WARNING, e.getMessage());
+		} finally {
+			try {
+				rs.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
 		}
+		
 		return false;
 	}
 
@@ -1002,8 +1186,9 @@ public class Database {
 	 * @return database id of sentiment score record
 	 */
 	private int insertSentimentScore(SentimentScore score) {
+		PreparedStatement ps = null;
 		try {
-			PreparedStatement ps = getConnection()
+			ps = getConnection()
 					.prepareStatement("INSERT INTO sentiment_score (positive, negative, neutral, compound) VALUE ("
 							+ score.getPositive() + ", " + score.getNegative() + ", " + score.getNeutral() + ", "
 							+ score.getCompound() + ");", Statement.RETURN_GENERATED_KEYS);
@@ -1015,6 +1200,12 @@ public class Database {
 			ps.close();
 		} catch (SQLException e) {
 			DebugLogger.logEvent(Database.class.getName(), Level.WARNING, e.getMessage());
+		} finally {
+			try {
+				ps.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
 		}
 		return -1;
 	}
@@ -1026,13 +1217,20 @@ public class Database {
 	 * @param sentimentScoreId
 	 */
 	private void insertSentimentScoreIntoEmail(int emailId, int sentimentScoreId) {
+		PreparedStatement ps = null;
 		try {
-			PreparedStatement ps = getConnection().prepareStatement(
+			ps = getConnection().prepareStatement(
 					"UPDATE email SET sentiment_score_id = " + sentimentScoreId + " WHERE id = " + emailId + ";");
 			ps.execute();
 			ps.close();
 		} catch (SQLException e) {
 			DebugLogger.logEvent(Database.class.getName(), Level.WARNING, e.getMessage());
+		} finally {
+			try {
+				ps.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
 		}
 	}
 

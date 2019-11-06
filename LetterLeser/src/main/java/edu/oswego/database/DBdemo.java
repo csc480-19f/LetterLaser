@@ -47,7 +47,7 @@ public class DBdemo {
 		double time = (double) ((System.currentTimeMillis() - ct) * .001);
 		System.out.println("Total runtime: " + time + " seconds\n");
 		
-//		db.truncateTables();
+		db.truncateTables();
 	}
 
 	public static boolean needsUpdate(Database db, Mailer mailer) {
