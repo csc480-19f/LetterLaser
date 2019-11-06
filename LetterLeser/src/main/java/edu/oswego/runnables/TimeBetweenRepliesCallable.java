@@ -1,4 +1,4 @@
-package edu.oswego.runnables;
+package edu.oswego.Runnables;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -61,7 +61,7 @@ public class TimeBetweenRepliesCallable implements Callable {
 			}
 			//Or is it's new
 			else{
-				subjects.put(subj, new ArrayList<>());
+				subjects.put(subj, new ArrayList<Email>());
 				subjects.get(subj).add(e);
 				keys.add(subj);
 			}
