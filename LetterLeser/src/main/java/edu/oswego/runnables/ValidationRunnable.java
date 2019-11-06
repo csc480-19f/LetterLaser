@@ -1,4 +1,4 @@
-package edu.oswego.Runnables;
+package edu.oswego.runnables;
 
 import javax.mail.MessagingException;
 import javax.websocket.Session;

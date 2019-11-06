@@ -1,4 +1,4 @@
-package edu.oswego.Runnables;
+package edu.oswego.runnables;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
