@@ -19,7 +19,7 @@ import java.sql.SQLException;
  * @author nguyen
  * @deprecated
  */
-class GetFolderById {
+class GetFolderByIdTest {
 
 	private Database db;
 	private Mailer mailer;
