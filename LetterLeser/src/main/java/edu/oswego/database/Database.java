@@ -36,9 +36,9 @@ import edu.oswego.sentiment.SentimentScore;
 
 public class Database {
     //these do get assigned, ignore the gray
-	private Connection regular;
-	private Connection handler;
-	private Connection validation;
+	private Connection regular=null;
+	private Connection handler=null;
+	private Connection validation=null;
 	private EmailAddress user;
 	private Mailer mailer;
 
