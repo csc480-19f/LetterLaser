@@ -31,6 +31,7 @@ public class Handler implements Runnable {
 		this.database = database;
 		this.jsonObject = jsonObject;
 		this.email = email;
+		this.userFavourites=null;
 	}
 
 	public Handler(Session session, Database database, String email, UserFavourites userFavourites) {
@@ -38,6 +39,7 @@ public class Handler implements Runnable {
 		this.database = database;
 		this.userFavourites = userFavourites;
 		this.email = email;
+		this.jsonObject=null;
 	}
 
 	@Override
@@ -51,7 +53,7 @@ public class Handler implements Runnable {
 				String interval = jsonObject.get("interval").getAsString();
 				boolean attachment = jsonObject.get("attachment").getAsBoolean();
 				boolean seen = jsonObject.get("seen").getAsBoolean();
-				DateTime startDate = new DateTime(DateTimeFormat.forPattern("MM/dd/yyyy HH:mm").parseMillis(sd));
+				DateTime startDate = new DateTime(DateTimeFormat.forPattern("yyyy/MM/dd HH:mm:ss").parseMillis(sd));
 				DateTime endDate = getEndDate(startDate, interval);
 				List<Email> emails = database.getEmailByFilter(attachment, startDate.toDate().toString(),
 						endDate.toDate().toString(), seen, folderName);

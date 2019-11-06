@@ -415,7 +415,7 @@ public class Websocket {
 	 */
 	private DateTime getStartDate(String sd){
 		try {
-			return new DateTime(DateTimeFormat.forPattern("MM/dd/yyyy HH:mm").parseMillis(sd));
+			return new DateTime(DateTimeFormat.forPattern("yyyy/MM/dd HH:mm:ss").parseMillis(sd));
 		}catch(IllegalArgumentException iae){
 			return null;
 		}
