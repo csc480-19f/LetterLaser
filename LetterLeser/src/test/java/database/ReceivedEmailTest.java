@@ -11,7 +11,6 @@ import edu.oswego.mail.Mailer;
  * USE THIS AS A TEMPLATE
  * 
  * @author nguyen
- * @deprecated
  */
 class ReceivedEmailTest {
 

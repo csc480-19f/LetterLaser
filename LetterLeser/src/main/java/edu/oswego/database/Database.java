@@ -146,15 +146,15 @@ public class Database {
 	 * @return JavaMail Connection object
 	 */
 	public Connection getConnection() throws ClassNotFoundException, SQLException {
-		Connection connection;
-		String threadName = Thread.currentThread().getName();
-		if (threadName.equals("regular")) {
-			connection = regular;
-		} else if (threadName.equals("handler")) {
-			connection = handler;
-		} else {
-			connection = validation;
-		}
+		Connection connection = null;
+//		String threadName = Thread.currentThread().getName();
+//		if (threadName.equals("regular")) {
+//			connection = regular;
+//		} else if (threadName.equals("handler")) {
+//			connection = handler;
+//		} else {
+//			connection = validation;
+//		}
 		Class.forName("com.mysql.cj.jdbc.Driver");
 		if (connection == null || connection.isClosed()) {
 			connection = DriverManager.getConnection("jdbc:mysql://" + Settings.DATABASE_HOST + ":"
@@ -323,7 +323,7 @@ public class Database {
 
 		} finally {
 			rs.close();
-			ps.close();
+//			ps.close();
 		}
 		return -1;
 	}
@@ -1018,8 +1018,6 @@ public class Database {
 					return true;
 			}
 
-			rs.close();
-
 		} finally {
 			rs.close();
 		}
@@ -1065,7 +1063,6 @@ public class Database {
 				if (rs.next())
 					return rs.getInt(1);
 			}
-			ps.close();
 		} finally {
 			ps.close();
 		}
@@ -1085,7 +1082,6 @@ public class Database {
 			ps = getConnection().prepareStatement(
 					"UPDATE email SET sentiment_score_id = " + sentimentScoreId + " WHERE id = " + emailId + ";");
 			ps.execute();
-			ps.close();
 		} finally {
 			ps.close();
 		}
