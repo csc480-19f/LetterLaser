@@ -39,11 +39,20 @@ import edu.oswego.sentiment.SentimentScore;
 
 public class Database {
 
-	private Connection connection;
+	private Connection regular, handler, validation;
 	private EmailAddress user;
 	private Mailer mailer;
 	
 	public void closeConnection() {
+		Connection connection = null;
+		String thread = Thread.currentThread().getName();
+		if (thread.equals("regular"))
+			connection = regular;
+		else if (thread.equals("handler"))
+			connection = handler;
+		else if (thread.equals("validation"))
+			connection = validation;
+		
 		DbUtils.closeQuietly(connection);
 	}
 
@@ -177,6 +186,14 @@ public class Database {
 	 * @return JavaMail Connection object
 	 */
 	public Connection getConnection() {
+		Connection connection = null;
+		String thread = Thread.currentThread().getName();
+		if (thread.equals("regular"))
+			connection = regular;
+		else if (thread.equals("handler"))
+			connection = handler;
+		else if (thread.equals("validation"))
+			connection = validation;
 		try {
 			Class.forName("com.mysql.cj.jdbc.Driver");
 			if (connection == null || connection.isClosed()) {
@@ -505,7 +522,7 @@ public class Database {
 		} finally {
 //			DbUtils.closeQuietly(rs);
 //			DbUtils.closeQuietly(rs2);
-			DbUtils.closeQuietly(connection);
+//			DbUtils.closeQuietly(connection);
 		}
 
 		DebugLogger.logEvent(Database.class.getName(), Level.INFO,
