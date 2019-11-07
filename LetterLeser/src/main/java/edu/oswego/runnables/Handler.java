@@ -58,17 +58,12 @@ public class Handler implements Runnable {
 				List<Email> emails = database.getEmailByFilter(attachment, startDate.toDate().toString(),
 						endDate.toDate().toString(), seen, folderName);
 				performCalculations(emails);
-			}catch(IllegalArgumentException | SQLException | ClassNotFoundException e){
+			}catch(IllegalArgumentException e){
 				sendErrorMessage(session,"error:\n" + e.getMessage());
 			}
 		} else if (userFavourites != null) {
 			List<Email> emails = null;
-			try {
-				emails = database.getEmailByFilter(userFavourites.isHasAttachment(),userFavourites.getStartDate().toString(),userFavourites.getEndDate().toString(),userFavourites.isSeen(),userFavourites.getFolder().getFolder().getFullName());
-			} catch (SQLException | ClassNotFoundException e) {
-				e.printStackTrace();
-				sendErrorMessage(session,"error:\n" + e.getMessage());
-			}
+			emails = database.getEmailByFilter(userFavourites.isHasAttachment(),userFavourites.getStartDate().toString(),userFavourites.getEndDate().toString(),userFavourites.isSeen(),userFavourites.getFolder().getFolder().getFullName());
 			performCalculations(emails);
 		} else {
 			System.out.println("no userfav or json so no calc can be preformed");

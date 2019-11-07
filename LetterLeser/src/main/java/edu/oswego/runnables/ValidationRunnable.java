@@ -34,21 +34,7 @@ public class ValidationRunnable implements Runnable {
 		if (validateOrPull) {
 			sendUpdateStatusMessage(session,"validating emails");
 
-			try {
-				database.pull();
-			} catch (SQLException e) {
-				e.printStackTrace();
-				sendErrorMessage(session,"sqlException:\n"+e.getMessage());
-				return;
-			} catch (MessagingException e) {
-				e.printStackTrace();
-				sendErrorMessage(session,"MessageingException:\n"+e.getMessage());
-				return;
-			} catch (ClassNotFoundException e) {
-				e.printStackTrace();
-				sendErrorMessage(session,"ClassNotFoundException:\n"+e.getMessage());
-				return;
-			}
+			database.pull();
 
 			sendUpdateStatusMessage(session,"finished validating");
 
@@ -60,22 +46,8 @@ public class ValidationRunnable implements Runnable {
 
 			List<UserFolder> folders;
 			List<UserFavourites> favourites;
-			try {
-				folders = database.pull();
-				favourites = database.getUserFavourites();
-			} catch (SQLException e) {
-				e.printStackTrace();
-				sendErrorMessage(session,"sqlException:\n"+e.getMessage());
-				return;
-			} catch (MessagingException e) {
-				e.printStackTrace();
-				sendErrorMessage(session,"MessageingException:\n"+e.getMessage());
-				return;
-			} catch (ClassNotFoundException e) {
-				e.printStackTrace();
-				sendErrorMessage(session,"ClassNotFoundException:\n"+e.getMessage());
-				return;
-			}
+			folders = database.pull();
+			favourites = database.getUserFavourites();
 
 
 			JsonArray ja = new JsonArray();
