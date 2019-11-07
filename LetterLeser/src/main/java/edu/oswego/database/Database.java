@@ -39,7 +39,7 @@ import edu.oswego.sentiment.SentimentScore;
 
 public class Database {
 
-	private Connection regular, handler, validation;
+	private Connection connection, regular, handler, validation;
 	private EmailAddress user;
 	private Mailer mailer;
 	
@@ -56,23 +56,45 @@ public class Database {
 		DbUtils.closeQuietly(connection);
 	}
 
-	public EmailAddress getRecipient() {
-//		ResultSet rs = null;
-//		try {
-//			rs = getConnection().prepareStatement("SELECT * FROM email_addr WHERE id = " + id + ";").executeQuery();
-//			while (rs.next())
-//				return new EmailAddress(rs.getInt(1), rs.getDate(2), rs.getString(3), rs.getDouble(4), rs.getBoolean(5), rs.getString(6), rs.getBoolean(7));
-//		} catch (SQLException e) {
-//			e.printStackTrace();
-//		} finally {
-////			DbUtils.closeQuietly(rs);
-////			DbUtils.closeQuietly(connection);
-//		}
-		return null;
+	// for an email
+	public List<EmailAddress> getRecipient(int emailId) {
+		List<EmailAddress> eaList = new ArrayList<>();
+		
+		ResultSet rs = null;
+		try {
+			rs = getConnection().prepareStatement("SELECT * FROM received_email WHERE email_id = " + emailId + ";").executeQuery();
+			while (rs.next())
+				eaList.add(new EmailAddress(rs.getInt(1), rs.getString(2)));
+			
+			DbUtils.closeQuietly(rs);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+//			DbUtils.closeQuietly(rs);
+//			DbUtils.closeQuietly(connection);
+		}
+		return eaList;
 	}
 
 	public List<EmailAddress> getAllRecipients() {
-		return null;
+		List<EmailAddress> eaList = new ArrayList<>();
+		ResultSet rs = null;
+		try {
+			rs = getConnection().prepareStatement("SELECT email_addr.id, email_addr.email_address FROM received_email "
+					+ "JOIN user_email ON received_email.email_id = user_email.email_id "
+					+ "JOIN email_addr ON email_addr.id = received_email.email_addr_id "
+					+ "WHERE user_email.user_id = " + user.getId() + ";").executeQuery();
+			while (rs.next())
+				eaList.add(new EmailAddress(rs.getInt(1), rs.getString(2)));
+			DbUtils.closeQuietly(rs);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+//			DbUtils.closeQuietly(rs);
+//			DbUtils.closeQuietly(connection);
+		}
+		
+		return eaList;
 	}
 
 	/**
@@ -89,6 +111,7 @@ public class Database {
 			rs = getConnection().prepareStatement("SELECT * FROM email WHERE id = " + id + ";").executeQuery();
 			while (rs.next())
 				return new Email(rs.getInt(1), rs.getDate(2), rs.getString(3), rs.getDouble(4), rs.getBoolean(5), rs.getString(6), rs.getBoolean(7));
+			DbUtils.closeQuietly(rs);
 		} catch (SQLException e) {
 			e.printStackTrace();
 		} finally {
@@ -113,6 +136,7 @@ public class Database {
 			rs = getConnection().prepareStatement("SELECT * FROM user_email WHERE user_id = " + user.getId() + ";").executeQuery();
 			while (rs.next())
 				emailList.add(getEmailById(rs.getInt(3)));
+			DbUtils.closeQuietly(rs);
 		} catch (SQLException e) {
 			e.printStackTrace();
 		} finally {
@@ -1054,6 +1078,7 @@ public class Database {
 			ps = getConnection().prepareStatement(statement);
 			ps.execute();
 			DebugLogger.logEvent(Database.class.getName(), Level.INFO, "Query made for statement: " + statement);
+			DbUtils.closeQuietly(ps);
 		} catch (SQLException e) {
 			e.printStackTrace();
 		} finally {
