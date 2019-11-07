@@ -33,6 +33,7 @@ public class FolderTest {
 	@AfterEach
 	void tearDown() throws Exception {
 		db.truncateTables();
+		db.closeConnection();
 	}
 	
 	@Test

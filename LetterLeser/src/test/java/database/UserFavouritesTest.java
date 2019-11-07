@@ -35,6 +35,7 @@ class UserFavouritesTest {
 	@AfterEach
 	void tearDown() {
 		db.truncateTables();
+		db.closeConnection();
 	}
 
 	@Test

@@ -29,6 +29,7 @@ class ReceivedEmailTest {
 	@AfterEach
 	void tearDown() throws Exception {
 		db.truncateTables();
+		db.closeConnection();
 	}
 	
 	@Test

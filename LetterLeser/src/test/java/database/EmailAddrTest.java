@@ -27,6 +27,7 @@ class EmailAddrTest {
 	@AfterEach
 	void tearDown() throws Exception {
 		db.truncateTables();
+		db.closeConnection();
 	}
 
 }
