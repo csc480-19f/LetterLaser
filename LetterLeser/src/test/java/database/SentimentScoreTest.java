@@ -26,6 +26,7 @@ class SentimentScoreTest {
 	@AfterEach
 	void tearDown() throws Exception {
 		db.truncateTables();
+		db.closeConnection();
 	}
 
 }

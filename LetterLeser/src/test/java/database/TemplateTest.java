@@ -27,6 +27,7 @@ class TemplateTest {
 	@AfterEach
 	void tearDown() throws Exception {
 		db.truncateTables();
+		db.closeConnection();
 	}
 
 }
