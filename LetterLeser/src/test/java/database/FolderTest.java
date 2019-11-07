@@ -36,7 +36,7 @@ public class FolderTest {
 	}
 	
 	@Test
-	void testInsertFolder() throws ClassNotFoundException, SQLException {
+	void testInsertFolder()  {
 		db.query("INSERT INTO folder (fold_name) VALUE ('Bald Rat');");
 		int id = db.getFolderId("Bald Rat");
 		UserFolder folder = db.getFolderById(id);
@@ -45,17 +45,17 @@ public class FolderTest {
 	}
 	
 	@Test
-	void testInsertFolderFail() throws ClassNotFoundException, SQLException {
+	void testInsertFolderFail() {
 		db.query("INSERT INTO folder (fold_name) VALUE (153);");
-		int id = db.getFolderId("Bald Rat");
+		int id = db.getFolderId("Priyanka");
 		UserFolder folder = db.getFolderById(id);
 
 		assertEquals(folder == null, true);
 	}
 	
 	@Test
-	void testGetFolder() throws ClassNotFoundException, SQLException {
-		String folderName = "Kirstan is Evil";
+	void testGetFolder() {
+		String folderName = "Kierstan is Evil";
 		db.query("INSERT INTO folder (fold_name) VALUE ('" + folderName + "');");
 		int id = db.getFolderId(folderName);
 		UserFolder folder = db.getFolderById(id);
@@ -64,10 +64,10 @@ public class FolderTest {
 	}
 	
 	@Test
-	void testGetFolderFail() throws ClassNotFoundException, SQLException {
-		String folderName = "Kirstan is Evil";
+	void testGetFolderFail() {
+		String folderName = "Kierstan is Evil";
 		db.query("INSERT INTO folder (fold_name) VALUE ('" + folderName + "');");
-		int id = db.getFolderId("Kirstan hates tanks");
+		int id = db.getFolderId("Kierstan hates tank tops");
 		UserFolder folder = db.getFolderById(id);
 		
 		assertEquals(folder == null, true);

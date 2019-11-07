@@ -44,6 +44,17 @@ public class Database {
 	private Mailer mailer;
 
 	public EmailAddress getRecipient() {
+//		ResultSet rs = null;
+//		try {
+//			rs = getConnection().prepareStatement("SELECT * FROM email_addr WHERE id = " + id + ";").executeQuery();
+//			while (rs.next())
+//				return new EmailAddress(rs.getInt(1), rs.getDate(2), rs.getString(3), rs.getDouble(4), rs.getBoolean(5), rs.getString(6), rs.getBoolean(7));
+//		} catch (SQLException e) {
+//			e.printStackTrace();
+//		} finally {
+////			DbUtils.closeQuietly(rs);
+////			DbUtils.closeQuietly(connection);
+//		}
 		return null;
 	}
 
