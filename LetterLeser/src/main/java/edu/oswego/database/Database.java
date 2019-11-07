@@ -42,6 +42,10 @@ public class Database {
 	private Connection connection;
 	private EmailAddress user;
 	private Mailer mailer;
+	
+	public void closeConnection() {
+		DbUtils.closeQuietly(connection);
+	}
 
 	public EmailAddress getRecipient() {
 //		ResultSet rs = null;
