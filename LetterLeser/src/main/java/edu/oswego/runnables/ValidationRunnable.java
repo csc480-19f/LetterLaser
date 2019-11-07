@@ -10,8 +10,7 @@ import edu.oswego.database.Database;
 import edu.oswego.mail.Mailer;
 import edu.oswego.model.UserFavourites;
 import edu.oswego.model.UserFolder;
-
-import java.io.IOException;
+import edu.oswego.websocket.Messenger;
 import java.util.List;
 
 public class ValidationRunnable implements Runnable {
@@ -20,6 +19,7 @@ public class ValidationRunnable implements Runnable {
 	private Database database;
 	private boolean validateOrPull;
 	private Session session;
+	private Messenger messenger = new Messenger();
 
 	public ValidationRunnable(Mailer mailer, Database database, boolean validateOrPull, Session session) {
 		this.mailer = mailer;
@@ -31,21 +31,21 @@ public class ValidationRunnable implements Runnable {
 	public void run() {
 		Thread.currentThread().setName("validation");
 		if (validateOrPull) {
-			sendUpdateStatusMessage(session,"validating emails");
+			messenger.sendUpdateStatusMessage(session,"validating emails");
 
 			try {
 				database.pull();
 				database.closeConnection();
 			}catch(Throwable t){
-				sendErrorMessage(session,"error in db: "+t.getMessage());
+				messenger.sendErrorMessage(session,"error in db: "+t.getMessage());
 				return;
 			}
-			sendUpdateStatusMessage(session,"finished validating");
+			messenger.sendUpdateStatusMessage(session,"finished validating");
 
 
 
 		} else {
-			sendUpdateStatusMessage(session,"Pulling folders and emails");
+			messenger.sendUpdateStatusMessage(session,"Pulling folders and emails");
 
 
 			List<UserFolder> folders;
@@ -56,7 +56,7 @@ public class ValidationRunnable implements Runnable {
 				favourites = database.getUserFavourites();
 				database.closeConnection();
 			}catch(Throwable t){
-				sendErrorMessage(session,"error in db: "+t.getMessage());
+				messenger.sendErrorMessage(session,"error in db: "+t.getMessage());
 				return;
 			}
 
@@ -72,39 +72,12 @@ public class ValidationRunnable implements Runnable {
 			js.addProperty("messagetype", "foldername");
 			js.add("foldername", ja);
 			js.add("favoritename", ja1);
-			sendMessageToClient(session,js);
+			messenger.sendMessageToClient(session,js);
 		}
 
 
 
 
-	}
-
-	private void sendErrorMessage(Session session,String errorMessage){
-		JsonObject js = new JsonObject();
-		js.addProperty("messagetype","error");
-		js.addProperty("message",errorMessage);
-		sendMessageToClient(session,js);
-	}
-
-	private void sendUpdateStatusMessage(Session session,String message){
-		JsonObject js = new JsonObject();
-		js.addProperty("messagetype","statusupdate");
-		js.addProperty("message",message);
-		sendMessageToClient(session,js);
-	}
-
-	/**
-	 * Method to send message over to gui
-	 * @param session
-	 * @param returnMessage
-	 */
-	private void sendMessageToClient(Session session, JsonObject returnMessage) {
-		try {
-			session.getBasicRemote().sendText(returnMessage.toString());
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
 	}
 
 }

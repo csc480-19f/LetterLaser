@@ -1,8 +1,6 @@
 package edu.oswego.websocket;
 
 import java.io.IOException;
-import java.sql.SQLException;
-import javax.mail.MessagingException;
 
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
@@ -36,7 +34,7 @@ import org.joda.time.format.DateTimeFormat;
 public class Websocket {
 	// this is to manage all current/last active threads for each unique sessions
 	private static ConcurrentHashMap<String, StorageObject> sessionMapper = new ConcurrentHashMap<>();
-
+	Messenger messenger = new Messenger();
 	/**
 	 * standard inclusive method that comes with websockets
 	 * @param session
@@ -83,7 +81,7 @@ public class Websocket {
 		} else if (messageType.equals("logout")) {
 			logout(session,email);
 		} else {
-			sendUpdateStatusMessage(session,"invalid messagetype\n" + "please send one of these options:\n"
+			messenger.sendUpdateStatusMessage(session,"invalid messagetype\n" + "please send one of these options:\n"
 					+ "login, filter, refresh, addfavorite, callfavorite, removefavorite or logout");
 
 		}
@@ -107,6 +105,7 @@ public class Websocket {
 	@OnError
 	public void onError(Throwable t, Session session) {
 		 System.out.println("onError::");
+		 //t.printStackTrace();
 	}
 
 	/*
@@ -124,11 +123,11 @@ public class Websocket {
 			storageObject = new StorageObject();
 			mailer = new Mailer(email, pass);
 
-			sendUpdateStatusMessage(session,"establising connection");
+			messenger.sendUpdateStatusMessage(session,"establising connection");
 
 			boolean connectedToDatabase = mailer.isConnected();
 			if (!connectedToDatabase) {
-				sendUpdateStatusMessage(session,"failed to connect to email");
+				messenger.sendUpdateStatusMessage(session,"failed to connect to email");
 				return;
 			}
 
@@ -136,10 +135,10 @@ public class Websocket {
 				database = new Database(email, mailer);
 				database.closeConnection();
 			}catch(Throwable t){
-				sendErrorMessage(session,"error in db: "+t.getMessage());
+				messenger.sendErrorMessage(session,"error in db: "+t.getMessage());
 				return;
 			}
-			sendUpdateStatusMessage(session,"established connection");
+			messenger.sendUpdateStatusMessage(session,"established connection");
 
 			storageObject.setDatabase(database);
 			storageObject.setMailer(mailer);
@@ -147,7 +146,7 @@ public class Websocket {
 		} else {
 			mailer = storageObject.getMailer();
 			database = storageObject.getDatabase();
-			sendUpdateStatusMessage(session,"established connection");
+			messenger.sendUpdateStatusMessage(session,"established connection");
 		}
 
 
@@ -165,7 +164,7 @@ public class Websocket {
 				favourites = database.getUserFavourites();
 				database.closeConnection();
 			}catch(Throwable t){
-				sendErrorMessage(session,"error in db: "+t.getMessage());
+				messenger.sendErrorMessage(session,"error in db: "+t.getMessage());
 				return;
 			}
 			refresh(storageObject,email,mailer,database,true,session);
@@ -181,9 +180,9 @@ public class Websocket {
 			}
 			js.add("foldername", ja1);
 			js.add("favoritename", ja2);
-			sendMessageToClient(session,js);
+			messenger.sendMessageToClient(session,js);
 		} else {
-			sendUpdateStatusMessage(session,"nothing found in database, preforming fresh import");
+			messenger.sendUpdateStatusMessage(session,"nothing found in database, preforming fresh import");
 			refresh(storageObject,email,mailer,database,false,session);
 		}
 
@@ -219,7 +218,7 @@ public class Websocket {
 			JsonObject js = new JsonObject();
 			js.addProperty("messagetype","statusupdate");
 			js.addProperty("message","validation already occuring");
-			sendMessageToClient(session,js);
+			messenger.sendMessageToClient(session,js);
 		}
 		ValidationRunnable vr = new ValidationRunnable(mailer,database,validateOrPull,session);
 		Thread thread = new Thread(vr);
@@ -248,7 +247,7 @@ public class Websocket {
 			JsonObject js = new JsonObject();
 			js.addProperty("messagetype","statusupdate");
 			js.addProperty("message","invalid dateTime");
-			sendMessageToClient(session, js);
+			messenger.sendMessageToClient(session, js);
 			return;
 		}
 
@@ -260,13 +259,13 @@ public class Websocket {
 					attachment, seen, foldername);
 			database.closeConnection();
 		}catch(Throwable t){
-			sendErrorMessage(session,"error in db: "+t.getMessage());
+			messenger.sendErrorMessage(session,"error in db: "+t.getMessage());
 			return;
 		}
 		if(added){
-			sendUpdateStatusMessage(session,"Favorite has been added");
+			messenger.sendUpdateStatusMessage(session,"Favorite has been added");
 		}else{
-			sendUpdateStatusMessage(session, "No FolderName");
+			messenger.sendUpdateStatusMessage(session, "No FolderName");
 		}
 
 		List<UserFavourites> favourites;
@@ -274,7 +273,7 @@ public class Websocket {
 			favourites = database.getUserFavourites();
 			database.closeConnection();
 		}catch(Throwable t){
-			sendErrorMessage(session,"error in db: "+t.getMessage());
+			messenger.sendErrorMessage(session,"error in db: "+t.getMessage());
 			return;
 		}
 
@@ -286,7 +285,7 @@ public class Websocket {
 		JsonObject js = new JsonObject();
 		js.addProperty("messagetype", "favoritename");
 		js.add("favoritename", ja);
-		sendMessageToClient(session, js);
+		messenger.sendMessageToClient(session, js);
 	}
 
 	/**
@@ -301,10 +300,10 @@ public class Websocket {
 			database.removeUserFavourite(favoriteName);
 			database.closeConnection();
 		}catch(Throwable t){
-			sendErrorMessage(session,"error in db: "+t.getMessage());
+			messenger.sendErrorMessage(session,"error in db: "+t.getMessage());
 			return;
 		}
-		sendUpdateStatusMessage(session,"Favorite has been removed");
+		messenger.sendUpdateStatusMessage(session,"Favorite has been removed");
 
 		List<UserFavourites> favourites;
 		favourites = database.getUserFavourites();
@@ -317,7 +316,7 @@ public class Websocket {
 		JsonObject js = new JsonObject();
 		js.addProperty("messagetype", "favoritename");
 		js.add("favoritename", ja);
-		sendMessageToClient(session, js);
+		messenger.sendMessageToClient(session, js);
 	}
 
 	/**
@@ -368,31 +367,6 @@ public class Websocket {
 		}
 	}
 
-	private void sendUpdateStatusMessage(Session session,String message){
-		JsonObject js = new JsonObject();
-		js.addProperty("messagetype","statusupdate");
-		js.addProperty("message",message);
-		sendMessageToClient(session,js);
-	}
 
-	private void sendErrorMessage(Session session,String errorMessage){
-		JsonObject js = new JsonObject();
-		js.addProperty("messagetype","error");
-		js.addProperty("message",errorMessage);
-		sendMessageToClient(session,js);
-	}
-
-	/**
-	 * Method to send message over to gui
-	 * @param session
-	 * @param returnMessage
-	 */
-	private void sendMessageToClient(Session session, JsonObject returnMessage) {
-		try {
-			session.getBasicRemote().sendText(returnMessage.toString());
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
 
 }

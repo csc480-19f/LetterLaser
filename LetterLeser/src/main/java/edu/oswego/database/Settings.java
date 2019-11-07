@@ -16,11 +16,11 @@ import edu.oswego.debug.DebugLogger;
 
 public class Settings {
 
-	public static String DATABASE_SCHEMA = "csc480_19f";
-	public static String DATABASE_USERNAME = "csc480";
-	public static String DATABASE_PASSWORD = "csc480";
-	public static String DATABASE_HOST = "pi.cs.oswego.edu";
-	public static String DATABASE_PORT = "3306";
+	public static String DATABASE_SCHEMA = "";
+	public static String DATABASE_USERNAME = "";
+	public static String DATABASE_PASSWORD = "";
+	public static String DATABASE_HOST = "";
+	public static String DATABASE_PORT = "";
 
 	public static final String[] DATABASE_TABLES = new String[] { "email", "email_addr", "filter_settings", "folder",
 			"received_email", "user", "user_email", "user_favourites", "sentiment_score" };
