@@ -68,8 +68,8 @@ public class Database {
 		} catch (SQLException e) {
 			e.printStackTrace();
 		} finally {
-			DbUtils.closeQuietly(rs);
-			DbUtils.closeQuietly(connection);
+//			DbUtils.closeQuietly(rs);
+//			DbUtils.closeQuietly(connection);
 		}
 		return null;
 	}
@@ -92,8 +92,8 @@ public class Database {
 		} catch (SQLException e) {
 			e.printStackTrace();
 		} finally {
-			DbUtils.closeQuietly(rs);
-			DbUtils.closeQuietly(connection);
+//			DbUtils.closeQuietly(rs);
+//			DbUtils.closeQuietly(connection);
 		}
 		return emailList;
 	}
@@ -129,9 +129,9 @@ public class Database {
 		} catch (SQLException e) {
 			DebugLogger.logEvent(Database.class.getName(), Level.WARNING, e.getMessage());
 		} finally {
-			DbUtils.closeQuietly(queryTbl);
-			DbUtils.closeQuietly(queryAttr);
-			DbUtils.closeQuietly(connection);
+//			DbUtils.closeQuietly(queryTbl);
+//			DbUtils.closeQuietly(queryAttr);
+//			DbUtils.closeQuietly(connection);
 		}
 	}
 
@@ -304,8 +304,8 @@ public class Database {
 		} catch (SQLException e) {
 			DebugLogger.logEvent(Database.class.getName(), Level.WARNING, e.getMessage());
 		} finally {
-			DbUtils.closeQuietly(rs);
-			DbUtils.closeQuietly(connection);
+//			DbUtils.closeQuietly(rs);
+//			DbUtils.closeQuietly(connection);
 		}
 
 		DebugLogger.logEvent(Database.class.getName(), Level.INFO, "Query submitted for " + user.getId() + " <" + user.getEmailAddress() + ">");
@@ -337,9 +337,9 @@ public class Database {
 		} catch (SQLException e) {
 			DebugLogger.logEvent(Database.class.getName(), Level.WARNING, e.getMessage());
 		} finally {
-			DbUtils.closeQuietly(rs);
-			DbUtils.closeQuietly(ps);
-			DbUtils.closeQuietly(connection);
+//			DbUtils.closeQuietly(rs);
+//			DbUtils.closeQuietly(ps);
+//			DbUtils.closeQuietly(connection);
 		}
 		return -1;
 	}
@@ -360,8 +360,8 @@ public class Database {
 		} catch (SQLException e) {
 			DebugLogger.logEvent(Database.class.getName(), Level.WARNING, e.getMessage());
 		} finally {
-			DbUtils.closeQuietly(rs);
-			DbUtils.closeQuietly(connection);
+//			DbUtils.closeQuietly(rs);
+//			DbUtils.closeQuietly(connection);
 		}
 
 		return new EmailAddress(insertUser(emailAddress), emailAddress);
@@ -392,8 +392,8 @@ public class Database {
 		} catch (SQLException e) {
 			DebugLogger.logEvent(Database.class.getName(), Level.WARNING, e.getMessage());
 		} finally {
-			DbUtils.closeQuietly(rs);
-			DbUtils.closeQuietly(connection);
+//			DbUtils.closeQuietly(rs);
+//			DbUtils.closeQuietly(connection);
 		}
 
 		return -1;
@@ -414,8 +414,8 @@ public class Database {
 		} catch (SQLException e) {
 			DebugLogger.logEvent(Database.class.getName(), Level.WARNING, e.getMessage());
 		} finally {
-			DbUtils.closeQuietly(rs);
-			DbUtils.closeQuietly(connection);
+//			DbUtils.closeQuietly(rs);
+//			DbUtils.closeQuietly(connection);
 		}
 
 		return null;
@@ -451,9 +451,9 @@ public class Database {
 		} catch (SQLException e) {
 			DebugLogger.logEvent(Database.class.getName(), Level.WARNING, e.getMessage());
 		} finally {
-			DbUtils.closeQuietly(rs);
-			DbUtils.closeQuietly(rs2);
-			DbUtils.closeQuietly(connection);
+//			DbUtils.closeQuietly(rs);
+//			DbUtils.closeQuietly(rs2);
+//			DbUtils.closeQuietly(connection);
 		}
 
 		return null;
@@ -488,8 +488,8 @@ public class Database {
 		} catch (SQLException e) {
 			DebugLogger.logEvent(Database.class.getName(), Level.WARNING, e.getMessage());
 		} finally {
-			DbUtils.closeQuietly(rs);
-			DbUtils.closeQuietly(rs2);
+//			DbUtils.closeQuietly(rs);
+//			DbUtils.closeQuietly(rs2);
 			DbUtils.closeQuietly(connection);
 		}
 
@@ -567,9 +567,9 @@ public class Database {
 		} catch (SQLException e) {
 			DebugLogger.logEvent(Database.class.getName(), Level.WARNING, e.getMessage());
 		} finally {
-			DbUtils.closeQuietly(rs);
-			DbUtils.closeQuietly(ps);
-			DbUtils.closeQuietly(connection);
+//			DbUtils.closeQuietly(rs);
+//			DbUtils.closeQuietly(ps);
+//			DbUtils.closeQuietly(connection);
 		}
 		return -1;
 	}
@@ -605,8 +605,8 @@ public class Database {
 		} catch (SQLException e) {
 			DebugLogger.logEvent(Database.class.getName(), Level.WARNING, e.getMessage());
 		} finally {
-			DbUtils.closeQuietly(rs);
-			DbUtils.closeQuietly(connection);
+//			DbUtils.closeQuietly(rs);
+//			DbUtils.closeQuietly(connection);
 		}
 		return false;
 	}
@@ -646,9 +646,9 @@ public class Database {
 		} catch (SQLException | MessagingException e) {
 			e.printStackTrace();
 		} finally {
-			DbUtils.closeQuietly(rs);
-			DbUtils.closeQuietly(ps);
-			DbUtils.closeQuietly(connection);
+//			DbUtils.closeQuietly(rs);
+//			DbUtils.closeQuietly(ps);
+//			DbUtils.closeQuietly(connection);
 		}
 		
 		return folderList;
@@ -679,8 +679,8 @@ public class Database {
 		} catch (MessagingException e) {
 			e.printStackTrace();
 		} finally {
-			DbUtils.closeQuietly(rs);
-			DbUtils.closeQuietly(connection);
+//			DbUtils.closeQuietly(rs);
+//			DbUtils.closeQuietly(connection);
 		}
 		return -1;
 	}
@@ -744,9 +744,9 @@ public class Database {
 		} catch (MessagingException e) {
 			DebugLogger.logEvent(Database.class.getName(), Level.WARNING, e.getMessage());
 		} finally {
-			DbUtils.closeQuietly(rs);
-			DbUtils.closeQuietly(ps);
-			DbUtils.closeQuietly(connection);
+//			DbUtils.closeQuietly(rs);
+//			DbUtils.closeQuietly(ps);
+//			DbUtils.closeQuietly(connection);
 		}
 
 		return emailId;
@@ -772,8 +772,8 @@ public class Database {
 		} catch (SQLException e) {
 			DebugLogger.logEvent(Database.class.getName(), Level.WARNING, e.getMessage());
 		} finally {
-			DbUtils.closeQuietly(rs);
-			DbUtils.closeQuietly(connection);
+//			DbUtils.closeQuietly(rs);
+//			DbUtils.closeQuietly(connection);
 		}
 		return size >= 1;
 	}
@@ -833,9 +833,9 @@ public class Database {
 			} catch (SQLException e) {
 				DebugLogger.logEvent(Database.class.getName(), Level.WARNING, e.getMessage());
 			} finally {
-				DbUtils.closeQuietly(rs);
-				DbUtils.closeQuietly(rs2);
-				DbUtils.closeQuietly(connection);
+//				DbUtils.closeQuietly(rs);
+//				DbUtils.closeQuietly(rs2);
+//				DbUtils.closeQuietly(connection);
 			}
 		}
 
@@ -862,8 +862,8 @@ public class Database {
 		} catch (SQLException e) {
 			DebugLogger.logEvent(Database.class.getName(), Level.WARNING, e.getMessage());
 		} finally {
-			DbUtils.closeQuietly(rs);
-			DbUtils.closeQuietly(connection);
+//			DbUtils.closeQuietly(rs);
+//			DbUtils.closeQuietly(connection);
 		}
 
 		return addressIdList;
@@ -886,8 +886,8 @@ public class Database {
 		} catch (SQLException e) {
 			DebugLogger.logEvent(Database.class.getName(), Level.WARNING, e.getMessage());
 		} finally {
-			DbUtils.closeQuietly(rs);
-			DbUtils.closeQuietly(connection);
+//			DbUtils.closeQuietly(rs);
+//			DbUtils.closeQuietly(connection);
 		}
 
 		return false;
@@ -924,8 +924,8 @@ public class Database {
 		} catch (SQLException e) {
 			DebugLogger.logEvent(Database.class.getName(), Level.WARNING, e.getMessage());
 		} finally {
-			DbUtils.closeQuietly(rs);
-			DbUtils.closeQuietly(connection);
+//			DbUtils.closeQuietly(rs);
+//			DbUtils.closeQuietly(connection);
 		}
 		
 		return false;
@@ -965,8 +965,8 @@ public class Database {
 		} catch (SQLException e) {
 			DebugLogger.logEvent(Database.class.getName(), Level.WARNING, e.getMessage());
 		} finally {
-			DbUtils.closeQuietly(rs);
-			DbUtils.closeQuietly(connection);
+//			DbUtils.closeQuietly(rs);
+//			DbUtils.closeQuietly(connection);
 		}
 
 		return size;
@@ -1004,8 +1004,8 @@ public class Database {
 		} catch (SQLException e) {
 			DebugLogger.logEvent(Database.class.getName(), Level.WARNING, e.getMessage());
 		} finally {
-			DbUtils.closeQuietly(rs);
-			DbUtils.closeQuietly(connection);
+//			DbUtils.closeQuietly(rs);
+//			DbUtils.closeQuietly(connection);
 		}
 		
 		return validatedEmails;
@@ -1025,8 +1025,8 @@ public class Database {
 		} catch (SQLException e) {
 			e.printStackTrace();
 		} finally {
-			DbUtils.closeQuietly(ps);
-			DbUtils.closeQuietly(connection);
+//			DbUtils.closeQuietly(ps);
+//			DbUtils.closeQuietly(connection);
 		}
 	}
 
@@ -1088,8 +1088,8 @@ public class Database {
 		} catch (SQLException e) {
 			DebugLogger.logEvent(Database.class.getName(), Level.WARNING, e.getMessage());
 		} finally {
-			DbUtils.closeQuietly(rs);
-			DbUtils.closeQuietly(connection);
+//			DbUtils.closeQuietly(rs);
+//			DbUtils.closeQuietly(connection);
 		}
 		
 		return false;
@@ -1137,9 +1137,9 @@ public class Database {
 		} catch (SQLException e) {
 			DebugLogger.logEvent(Database.class.getName(), Level.WARNING, e.getMessage());
 		} finally {
-			DbUtils.closeQuietly(ps);
-			DbUtils.closeQuietly(rs);
-			DbUtils.closeQuietly(connection);
+//			DbUtils.closeQuietly(ps);
+//			DbUtils.closeQuietly(rs);
+//			DbUtils.closeQuietly(connection);
 		}
 		return -1;
 	}
@@ -1159,8 +1159,8 @@ public class Database {
 		} catch (SQLException e) {
 			DebugLogger.logEvent(Database.class.getName(), Level.WARNING, e.getMessage());
 		} finally {
-			DbUtils.closeQuietly(ps);
-			DbUtils.closeQuietly(connection);
+//			DbUtils.closeQuietly(ps);
+//			DbUtils.closeQuietly(connection);
 		}
 	}
 

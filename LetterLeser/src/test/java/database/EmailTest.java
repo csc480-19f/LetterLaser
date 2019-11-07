@@ -27,27 +27,26 @@ class EmailTest {
 	private Mailer mailer;
 
 	@BeforeEach
-	void setUp() throws Exception {
-		//Settings.loadCredentials();
-		Thread.currentThread().setName("regular");
-		db = new Database(edu.oswego.mail.Settings.EMAIL_ADDRESS,
-				new Mailer(edu.oswego.mail.Settings.EMAIL_ADDRESS, edu.oswego.mail.Settings.EMAIL_PWD));
+	void setUp() {
+		Settings.loadCredentials();
+//		Thread.currentThread().setName("regular");
+		db = new Database(edu.oswego.mail.Settings.EMAIL_ADDRESS, new Mailer(edu.oswego.mail.Settings.EMAIL_ADDRESS, edu.oswego.mail.Settings.EMAIL_PWD));
 	}
 
 	@AfterEach
-	void tearDown() throws Exception {
+	void tearDown() {
 		db.truncateTables();
 	}
 
 	@Test
-	void testInsertEmail() throws ClassNotFoundException, SQLException {
+	void testInsertEmail() {
 		db.query("INSERT INTO email (date_received) VALUE (CURDATE());");
 		Email e = db.getEmailById(1);
 		assertEquals(e == null, false);
 	}
 	
 	@Test
-	void testGetEmail() throws ClassNotFoundException, SQLException {
+	void testGetEmail() {
 		String date = "2019-10-10";
 		db.query("INSERT INTO email (subject) VALUE ('bewbs');");
 		Email e = db.getEmailById(1);
@@ -55,7 +54,7 @@ class EmailTest {
 	}
 	
 	@Test
-	void testGetAllEmail() throws ClassNotFoundException, SQLException {
+	void testGetAllEmail() {
 		db.query("INSERT INTO email (subject) VALUES "
 				+ "('bewbs2'), "
 				+ "('YAP'), "
@@ -71,20 +70,20 @@ class EmailTest {
 	}
 	
 	@Test
-	void testGetAllEmailNone() throws ClassNotFoundException, SQLException {
+	void testGetAllEmailNone() {
 		List<Email> emailList = db.getUserEmails();
 		assertEquals(emailList.size(), 0);
 	}
 	
 	@Test
-	void testEmailsExist() throws ClassNotFoundException, SQLException {
+	void testEmailsExist() {
 		db.query("INSERT INTO email (subject) VALUES ('bewbs2');");
 		db.query("INSERT INTO user_email (user_id, email_id) VALUES (" + db.getUser().getId() + ", 1)");
 		assertEquals(db.hasEmails(), true);
 	}
 	
 	@Test
-	void testEmailsNotExist() throws ClassNotFoundException, SQLException {
+	void testEmailsNotExist() {
 		assertEquals(db.hasEmails(), false);
 	}
 
