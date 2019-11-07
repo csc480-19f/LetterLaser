@@ -1,6 +1,6 @@
 package edu.oswego.runnables;
 
-import javax.mail.MessagingException;
+
 import javax.websocket.Session;
 
 import com.google.gson.JsonArray;
@@ -12,7 +12,6 @@ import edu.oswego.model.UserFavourites;
 import edu.oswego.model.UserFolder;
 
 import java.io.IOException;
-import java.sql.SQLException;
 import java.util.List;
 
 public class ValidationRunnable implements Runnable {
@@ -34,8 +33,13 @@ public class ValidationRunnable implements Runnable {
 		if (validateOrPull) {
 			sendUpdateStatusMessage(session,"validating emails");
 
-			database.pull();
-
+			try {
+				database.pull();
+				database.closeConnection();
+			}catch(Throwable t){
+				sendErrorMessage(session,"error in db: "+t.getMessage());
+				return;
+			}
 			sendUpdateStatusMessage(session,"finished validating");
 
 
@@ -46,9 +50,15 @@ public class ValidationRunnable implements Runnable {
 
 			List<UserFolder> folders;
 			List<UserFavourites> favourites;
-			folders = database.pull();
-			favourites = database.getUserFavourites();
-
+			try {
+				folders = database.pull();
+				database.closeConnection();
+				favourites = database.getUserFavourites();
+				database.closeConnection();
+			}catch(Throwable t){
+				sendErrorMessage(session,"error in db: "+t.getMessage());
+				return;
+			}
 
 			JsonArray ja = new JsonArray();
 			JsonArray ja1 = new JsonArray();

@@ -132,7 +132,13 @@ public class Websocket {
 				return;
 			}
 
-			database = new Database(email, mailer);
+			try {
+				database = new Database(email, mailer);
+				database.closeConnection();
+			}catch(Throwable t){
+				sendErrorMessage(session,"error in db: "+t.getMessage());
+				return;
+			}
 			sendUpdateStatusMessage(session,"established connection");
 
 			storageObject.setDatabase(database);
@@ -153,9 +159,15 @@ public class Websocket {
 		if (hasEmails) {
 			List<UserFolder> folders;
 			List<UserFavourites> favourites;
-
-			folders = database.importFolders();
-			favourites = database.getUserFavourites();
+			try {
+				folders = database.importFolders();
+				database.closeConnection();
+				favourites = database.getUserFavourites();
+				database.closeConnection();
+			}catch(Throwable t){
+				sendErrorMessage(session,"error in db: "+t.getMessage());
+				return;
+			}
 			refresh(storageObject,email,mailer,database,true,session);
 
 			js.addProperty("messagetype", "logininfo");
@@ -186,7 +198,6 @@ public class Websocket {
 
 	//TODO Still needs testing
 	private void callFavorite(Session session, Database database, String favname, String email){
-
 		UserFavourites userFavourites;
 		userFavourites = database.getUserFavourite(favname);
 		Handler handler = new Handler(session, database, email, userFavourites);
@@ -244,17 +255,28 @@ public class Websocket {
 		boolean attachment = filter.get("attachment").getAsBoolean();
 		boolean seen = filter.get("seen").getAsBoolean();
 		boolean added;
-		added = database.insertUserFavourites(favoriteName, startDate.toDate(), endDate.toDate(), Interval.parse(interval),
-				attachment, seen, foldername);
-
+		try {
+			added = database.insertUserFavourites(favoriteName, startDate.toDate(), endDate.toDate(), Interval.parse(interval),
+					attachment, seen, foldername);
+			database.closeConnection();
+		}catch(Throwable t){
+			sendErrorMessage(session,"error in db: "+t.getMessage());
+			return;
+		}
 		if(added){
 			sendUpdateStatusMessage(session,"Favorite has been added");
 		}else{
 			sendUpdateStatusMessage(session, "No FolderName");
 		}
 
-		List<UserFavourites> favourites ;
-		favourites = database.getUserFavourites();
+		List<UserFavourites> favourites;
+		try {
+			favourites = database.getUserFavourites();
+			database.closeConnection();
+		}catch(Throwable t){
+			sendErrorMessage(session,"error in db: "+t.getMessage());
+			return;
+		}
 
 		JsonArray ja = new JsonArray();
 		for (int i = 0; i < favourites.size(); i++) {
@@ -275,8 +297,13 @@ public class Websocket {
 	 */
 	private void removeFavorite(Session session, Database database, String favoriteName){
 		//dont return from these catches as they need UserFavourites
-		database.removeUserFavourite(favoriteName);
-
+		try {
+			database.removeUserFavourite(favoriteName);
+			database.closeConnection();
+		}catch(Throwable t){
+			sendErrorMessage(session,"error in db: "+t.getMessage());
+			return;
+		}
 		sendUpdateStatusMessage(session,"Favorite has been removed");
 
 		List<UserFavourites> favourites;

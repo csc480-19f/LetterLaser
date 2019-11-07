@@ -505,7 +505,7 @@ public class Database {
 		} finally {
 //			DbUtils.closeQuietly(rs);
 //			DbUtils.closeQuietly(rs2);
-			DbUtils.closeQuietly(connection);
+//			DbUtils.closeQuietly(connection);
 		}
 
 		DebugLogger.logEvent(Database.class.getName(), Level.INFO,

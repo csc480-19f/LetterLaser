@@ -55,15 +55,26 @@ public class Handler implements Runnable {
 				boolean seen = jsonObject.get("seen").getAsBoolean();
 				DateTime startDate = new DateTime(DateTimeFormat.forPattern("yyyy/MM/dd HH:mm:ss").parseMillis(sd));
 				DateTime endDate = getEndDate(startDate, interval);
-				List<Email> emails = database.getEmailByFilter(attachment, startDate.toDate().toString(),
-						endDate.toDate().toString(), seen, folderName);
+				List<Email> emails;
+				try {
+					emails = database.getEmailByFilter(attachment, startDate.toDate().toString(),
+							endDate.toDate().toString(), seen, folderName);
+				}catch(Throwable t){
+					sendErrorMessage(session,"error in db: "+t.getMessage());
+					return;
+				}
 				performCalculations(emails);
 			}catch(IllegalArgumentException e){
 				sendErrorMessage(session,"error:\n" + e.getMessage());
 			}
 		} else if (userFavourites != null) {
 			List<Email> emails = null;
-			emails = database.getEmailByFilter(userFavourites.isHasAttachment(),userFavourites.getStartDate().toString(),userFavourites.getEndDate().toString(),userFavourites.isSeen(),userFavourites.getFolder().getFolder().getFullName());
+			try {
+				emails = database.getEmailByFilter(userFavourites.isHasAttachment(), userFavourites.getStartDate().toString(), userFavourites.getEndDate().toString(), userFavourites.isSeen(), userFavourites.getFolder().getFolder().getFullName());
+			}catch(Throwable t){
+				sendErrorMessage(session,"error in db: "+t.getMessage());
+				return;
+			}
 			performCalculations(emails);
 		} else {
 			System.out.println("no userfav or json so no calc can be preformed");
