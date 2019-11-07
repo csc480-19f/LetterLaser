@@ -7,6 +7,13 @@ import java.io.IOException;
 
 public class Messenger {
 
+    public void sendPublicKey(Session session, String message){
+        JsonObject js = new JsonObject();
+        js.addProperty("messagetype","key");
+        js.addProperty("message",message);
+        sendToClient(session,js);
+    }
+
     public void sendUpdateStatusMessage(Session session, String message){
         JsonObject js = new JsonObject();
         js.addProperty("messagetype","statusupdate");

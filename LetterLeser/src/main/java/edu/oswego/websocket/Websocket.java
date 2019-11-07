@@ -2,9 +2,15 @@ package edu.oswego.websocket;
 
 import java.io.IOException;
 
+import java.io.UnsupportedEncodingException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
 import javax.websocket.OnClose;
 import javax.websocket.OnError;
 import javax.websocket.OnMessage;
@@ -35,6 +41,7 @@ public class Websocket {
 	// this is to manage all current/last active threads for each unique sessions
 	private static ConcurrentHashMap<String, StorageObject> sessionMapper = new ConcurrentHashMap<>();
 	Messenger messenger = new Messenger();
+	JSDecryptor jse = null;
 	/**
 	 * standard inclusive method that comes with websockets
 	 * @param session
@@ -42,6 +49,16 @@ public class Websocket {
 	@OnOpen
 	public void onOpen(Session session) {
 		System.out.println("Session " + session.getId() + " been established");
+		try {
+			jse = new JSDecryptor();
+		} catch (NoSuchAlgorithmException e) {
+			e.printStackTrace();
+		} catch (NoSuchPaddingException e) {
+			e.printStackTrace();
+		} catch (InvalidKeyException e) {
+			e.printStackTrace();
+		}
+		messenger.sendPublicKey(session,jse.getPublic());
 	}
 
 	// This method allows you to message a specific user.
@@ -63,23 +80,44 @@ public class Websocket {
 		}
 
 		String messageType = jsonMessage.get("messagetype").getAsString();
-		String email = jsonMessage.get("email").getAsString();
-		StorageObject storageObject = sessionMapper.get(email);
+		String decryptedEmail = null;
+		try {
+			String encryptedEmail = jsonMessage.get("email").getAsString();
+			decryptedEmail= jse.decrypt(encryptedEmail);
+		} catch (BadPaddingException e) {
+			e.printStackTrace();
+		} catch (UnsupportedEncodingException e) {
+			e.printStackTrace();
+		} catch (IllegalBlockSizeException e) {
+			e.printStackTrace();
+		}
+		StorageObject storageObject = sessionMapper.get(decryptedEmail);
 
 		if (messageType.equals("filter")) {
-			filter(session,storageObject.getDatabase(),email,jsonMessage.get("filter").getAsJsonObject());
+			filter(session,storageObject.getDatabase(),decryptedEmail,jsonMessage.get("filter").getAsJsonObject());
 		} else if (messageType.equals("login")) {
-			login(session,email,jsonMessage.get("pass").getAsString(),storageObject);
+			String encryptedPass = jsonMessage.get("pass").getAsString();
+			String decryptedPass = null;
+			try {
+				decryptedPass = jse.decrypt(encryptedPass);
+			} catch (BadPaddingException e) {
+				e.printStackTrace();
+			} catch (UnsupportedEncodingException e) {
+				e.printStackTrace();
+			} catch (IllegalBlockSizeException e) {
+				e.printStackTrace();
+			}
+			login(session,decryptedEmail,decryptedPass,storageObject);
 		} else if (messageType.equals("refresh")) {
-			refresh(storageObject,email,storageObject.getMailer(),storageObject.getDatabase(),true,session);
+			refresh(storageObject,decryptedEmail,storageObject.getMailer(),storageObject.getDatabase(),true,session);
 		} else if (messageType.equals("addfavorite")) {
 			addFavorite(session,storageObject.getDatabase(),jsonMessage.get("favoritename").getAsString(),jsonMessage.get("filter").getAsJsonObject());
 		} else if (messageType.equals("callfavorite")) {
-			callFavorite(session,storageObject.getDatabase(),jsonMessage.get("favoritename").getAsString(),email);
+			callFavorite(session,storageObject.getDatabase(),jsonMessage.get("favoritename").getAsString(),decryptedEmail);
 		} else if (messageType.equals("removefavorite")) {
 			removeFavorite(session,storageObject.getDatabase(),jsonMessage.get("favoritename").getAsString());
 		} else if (messageType.equals("logout")) {
-			logout(session,email);
+			logout(session,decryptedEmail);
 		} else {
 			messenger.sendUpdateStatusMessage(session,"invalid messagetype\n" + "please send one of these options:\n"
 					+ "login, filter, refresh, addfavorite, callfavorite, removefavorite or logout");
