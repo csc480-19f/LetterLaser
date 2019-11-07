@@ -1,9 +1,11 @@
-package runables;
+package runnables;
 
 import com.google.gson.JsonObject;
-import edu.oswego.Runnables.DomainCallable;
+
 import edu.oswego.model.Email;
 import edu.oswego.model.EmailAddress;
+import edu.oswego.runnables.DomainCallable;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

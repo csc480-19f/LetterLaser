@@ -1,23 +1,20 @@
-package database411;
+package database;
 
 import edu.oswego.database.Database;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 
 import edu.oswego.database.Settings;
 import edu.oswego.mail.Mailer;
 
-import java.sql.SQLException;
-
 /**
- * 29.1
+ * USE THIS AS A TEMPLATE
+ * 
  * @author nguyen
- *
+ * @deprecated
  */
+class TemplateTest {
 
-public class GetEmailIdTest {
-	
 	private Database db;
 	private Mailer mailer;
 
@@ -30,15 +27,6 @@ public class GetEmailIdTest {
 	@AfterEach
 	void tearDown() throws Exception {
 		db.truncateTables();
-	}
-	
-	@Test
-	void getEmailId() throws SQLException, ClassNotFoundException {
-		db.query("INSERT INTO folder ('fold_name') VALUE ('fake folder')");
-		db.query("INSERT INTO email (date_received, subject, size, seen, has_attachment, file_name, folder_id)"
-				+ "VALUE (CURDATE(), 'asd', 1, 1, 1, 'asdasd.txt', 1)");
-		
-		db.getEmailById(1);
 	}
 
 }
