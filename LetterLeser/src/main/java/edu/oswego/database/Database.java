@@ -7,7 +7,6 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -18,7 +17,8 @@ import javax.mail.Folder;
 import javax.mail.Message;
 import javax.mail.MessagingException;
 
-import com.mysql.cj.jdbc.exceptions.SQLError;
+import org.apache.commons.dbutils.DbUtils;
+
 import edu.oswego.debug.DebugLogger;
 import edu.oswego.mail.Mailer;
 import edu.oswego.model.Email;
@@ -32,24 +32,23 @@ import edu.oswego.sentiment.SentimentScore;
  * Database class to get connection, push/pull data, and submit queries.
  * 
  * @author Jimmy
- * @since 10/23/2019
+ * @since 11/06/2019
  */
 
+// TODO redo Javadocs
+
 public class Database {
-	private Connection regular;
-	private Connection handler;
-	private Connection validation;
+
+	private Connection connection;
 	private EmailAddress user;
 	private Mailer mailer;
 
 	public EmailAddress getRecipient() {
 		return null;
-
 	}
 
 	public List<EmailAddress> getAllRecipients() {
 		return null;
-
 	}
 
 	/**
@@ -60,19 +59,17 @@ public class Database {
 	 * @throws SQLException
 	 * @throws ClassNotFoundException
 	 */
-	public Email getEmailById(int id) throws SQLException, ClassNotFoundException {
+	public Email getEmailById(int id) {
 		ResultSet rs = null;
 		try {
 			rs = getConnection().prepareStatement("SELECT * FROM email WHERE id = " + id + ";").executeQuery();
-			while (rs.next()) {
-				return new Email(rs.getInt(1), rs.getDate(2), rs.getString(3), rs.getDouble(4), rs.getBoolean(5),
-						rs.getString(6), rs.getBoolean(7));
-			}
+			while (rs.next())
+				return new Email(rs.getInt(1), rs.getDate(2), rs.getString(3), rs.getDouble(4), rs.getBoolean(5), rs.getString(6), rs.getBoolean(7));
+		} catch (SQLException e) {
+			e.printStackTrace();
 		} finally {
-			if(rs==null){
-				System.out.println();
-			}
-			rs.close();
+			DbUtils.closeQuietly(rs);
+			DbUtils.closeQuietly(connection);
 		}
 		return null;
 	}
@@ -85,17 +82,18 @@ public class Database {
 	 * @throws ClassNotFoundException
 	 * @see #getEmailById(int)
 	 */
-	public List<Email> getUserEmails() throws SQLException, ClassNotFoundException {
+	public List<Email> getUserEmails() {
 		List<Email> emailList = new ArrayList<>();
 		ResultSet rs = null;
 		try {
-			rs = getConnection().prepareStatement("SELECT * FROM user_email WHERE user_id = " + user.getId() + ";")
-					.executeQuery();
-			while (rs.next()) {
+			rs = getConnection().prepareStatement("SELECT * FROM user_email WHERE user_id = " + user.getId() + ";").executeQuery();
+			while (rs.next())
 				emailList.add(getEmailById(rs.getInt(3)));
-			}
+		} catch (SQLException e) {
+			e.printStackTrace();
 		} finally {
-			rs.close();
+			DbUtils.closeQuietly(rs);
+			DbUtils.closeQuietly(connection);
 		}
 		return emailList;
 	}
@@ -105,18 +103,18 @@ public class Database {
 	 * 
 	 * @deprecated
 	 */
-	public void showTables() throws SQLException, ClassNotFoundException {
-		// show all tables
+	public void showTables() {
 		ResultSet queryTbl = null;
 		ResultSet queryAttr = null;
+		
 		try {
+			// show all tables
 			queryTbl = getConnection().prepareStatement("show tables").executeQuery();
 
 			while (queryTbl.next()) {
 				String tbl = queryTbl.getString(1);
 				System.out.println("[FOLDER] Table: " + tbl + "\n-------------------");
 
-				// show all attributes from the tables
 				queryAttr = getConnection().prepareStatement("select * from " + tbl).executeQuery();
 				while (queryAttr.next()) {
 					ResultSetMetaData md = queryAttr.getMetaData();
@@ -126,10 +124,14 @@ public class Database {
 					System.out.println();
 				}
 				System.out.println();
+				queryAttr.close();
 			}
+		} catch (SQLException e) {
+			DebugLogger.logEvent(Database.class.getName(), Level.WARNING, e.getMessage());
 		} finally {
-			queryTbl.close();
-			queryAttr.close();
+			DbUtils.closeQuietly(queryTbl);
+			DbUtils.closeQuietly(queryAttr);
+			DbUtils.closeQuietly(connection);
 		}
 	}
 
@@ -138,7 +140,7 @@ public class Database {
 	 * 
 	 * @param mailer
 	 */
-	public Database(String emailAddress, Mailer mailer) throws SQLException, ClassNotFoundException {
+	public Database(String emailAddress, Mailer mailer) {
 		user = getUser(emailAddress);
 		this.mailer = mailer;
 		DebugLogger.logEvent(Database.class.getName(), Level.INFO,
@@ -150,7 +152,7 @@ public class Database {
 	 * 
 	 * @deprecated
 	 */
-	public Database() throws SQLException, ClassNotFoundException {
+	public Database() {
 		truncateTables();
 	}
 
@@ -159,31 +161,23 @@ public class Database {
 	 * 
 	 * @return JavaMail Connection object
 	 */
-	public Connection getConnection() throws ClassNotFoundException, SQLException {
-		Connection connection = null;
-		String threadName = Thread.currentThread().getName();
-		if (threadName.equals("regular")) {
-			connection = regular;
-		} else if (threadName.equals("handler")) {
-			connection = handler;
-		} else {
-			connection = validation;
-		}
-		Class.forName("com.mysql.cj.jdbc.Driver");
-		if (connection == null || connection.isClosed()) {
-			while(true) {
-				try {
-					connection = DriverManager.getConnection("jdbc:mysql://" + Settings.DATABASE_HOST + ":"
-							+ Settings.DATABASE_PORT + "/" + Settings.DATABASE_SCHEMA
-							+ "?useUnicode=true&characterEncoding=UTF-8&serverTimezone=UTC&user=" + Settings.DATABASE_USERNAME
-							+ "&password=" + Settings.DATABASE_PASSWORD);
-					DebugLogger.logEvent(Database.class.getName(), Level.INFO,
-							"Connection has been established with database.");
-					return connection;
-				} catch (Exception e) {
-					System.out.println(e.getMessage());
-				}
+	public Connection getConnection() {
+		try {
+			Class.forName("com.mysql.cj.jdbc.Driver");
+			if (connection == null || connection.isClosed()) {
+				connection = DriverManager.getConnection("jdbc:mysql://" + Settings.DATABASE_HOST + ":"
+						+ Settings.DATABASE_PORT + "/" + Settings.DATABASE_SCHEMA
+						+ "?useUnicode=true&characterEncoding=UTF-8&serverTimezone=UTC&user="
+						+ Settings.DATABASE_USERNAME + "&password=" + Settings.DATABASE_PASSWORD);
+				DebugLogger.logEvent(Database.class.getName(), Level.INFO,
+						"Connection has been established with database.");
 			}
+		} catch (SQLException e) {
+			DebugLogger.logEvent(Database.class.getName(), Level.WARNING, e.getMessage());
+			e.printStackTrace();
+		} catch (ClassNotFoundException e) {
+			DebugLogger.logEvent(Database.class.getName(), Level.WARNING, e.getMessage());
+			e.printStackTrace();
 		}
 
 		return connection;
@@ -192,7 +186,7 @@ public class Database {
 	/**
 	 * Pulls mailer emails into database
 	 */
-	public List<UserFolder> pull() throws MessagingException, SQLException, ClassNotFoundException {
+	public List<UserFolder> pull() {
 		List<UserFolder> folderList = importFolders();
 
 		if (getValidatedEmails() == mailer.getTotalEmailCount())
@@ -209,7 +203,6 @@ public class Database {
 		for (UserFolder f : folderList) {
 			Message[] msgs = mailer.pullEmails(f.getFolder().getFullName()); // Do not use "[Gmail]/All Mail");
 			for (Message m : msgs) {
-				// TODO find out if this is an acceptable try catch.
 				try {
 					List<EmailAddress> fromList = insertEmailAddress(m.getFrom());// get this list and return for
 																					// user_email table
@@ -271,8 +264,7 @@ public class Database {
 	 * @param folderName
 	 * @return List of Email objects
 	 */
-	public List<Email> getEmailByFilter(boolean hasAttachment, String startDate, String endDate, boolean seen,
-			String folderName) throws SQLException, ClassNotFoundException {
+	public List<Email> getEmailByFilter(boolean hasAttachment, String startDate, String endDate, boolean seen, String folderName) {
 		List<Email> emailList = new ArrayList<>();
 		List<String> filterStatements = new ArrayList<>();
 
@@ -295,7 +287,7 @@ public class Database {
 			if (i < (filterStatements.size() - 1))
 				selectionStatement += " AND ";
 		}
-
+		
 		selectionStatement += ";";
 
 		ResultSet rs = null;
@@ -309,12 +301,14 @@ public class Database {
 						getReceivedEmail(rs.getInt(1)));
 				emailList.add(e);
 			}
+		} catch (SQLException e) {
+			DebugLogger.logEvent(Database.class.getName(), Level.WARNING, e.getMessage());
 		} finally {
-			rs.close();
+			DbUtils.closeQuietly(rs);
+			DbUtils.closeQuietly(connection);
 		}
 
-		DebugLogger.logEvent(Database.class.getName(), Level.INFO,
-				"Query submitted for " + user.getId() + " <" + user.getEmailAddress() + ">");
+		DebugLogger.logEvent(Database.class.getName(), Level.INFO, "Query submitted for " + user.getId() + " <" + user.getEmailAddress() + ">");
 		return emailList;
 	}
 
@@ -324,30 +318,28 @@ public class Database {
 	 * @param emailAddress
 	 * @return database id of user. -1 if id there is no insertion.
 	 */
-	private int insertUser(String emailAddress) throws SQLException, ClassNotFoundException {
-
-		ResultSet rs = null;
+	private int insertUser(String emailAddress) {
 		PreparedStatement ps = null;
+		ResultSet rs = null;
+		
 		try {
-			ps = getConnection().prepareStatement("INSERT INTO user (email_address) VALUE ('" + emailAddress + "')",
-					Statement.RETURN_GENERATED_KEYS);
+			ps = getConnection().prepareStatement("INSERT INTO user (email_address) VALUE ('" + emailAddress + "')", Statement.RETURN_GENERATED_KEYS);
 			if (ps.executeUpdate() == 0)
 				DebugLogger.logEvent(Database.class.getName(), Level.INFO, "Could not insert a user, no rows affected");
 
 			rs = ps.getGeneratedKeys();
 
 			if (rs.next()) {
-				DebugLogger.logEvent(Database.class.getName(), Level.INFO,
-						"New user created " + rs.getInt(1) + " <" + emailAddress + ">");
+				DebugLogger.logEvent(Database.class.getName(), Level.INFO, "New user created " + rs.getInt(1) + " <" + emailAddress + ">");
 				return rs.getInt(1);
 			}
 
+		} catch (SQLException e) {
+			DebugLogger.logEvent(Database.class.getName(), Level.WARNING, e.getMessage());
 		} finally {
-			if(rs==null){
-				System.out.println();
-			}
-			rs.close();
-//			ps.close();
+			DbUtils.closeQuietly(rs);
+			DbUtils.closeQuietly(ps);
+			DbUtils.closeQuietly(connection);
 		}
 		return -1;
 	}
@@ -356,17 +348,20 @@ public class Database {
 	 * fetches a user (email address object) based on a string email search.
 	 *
 	 */
-	public EmailAddress getUser(String emailAddress) throws SQLException, ClassNotFoundException {
+	public EmailAddress getUser(String emailAddress) {
 		ResultSet rs = null;
 		try {
-			rs = getConnection().prepareStatement("SELECT * FROM user WHERE email_address = '" + emailAddress + "';",
-					Statement.RETURN_GENERATED_KEYS).executeQuery();
+			rs = getConnection()
+					.prepareStatement("SELECT * FROM user WHERE email_address = '" + emailAddress + "';",
+							Statement.RETURN_GENERATED_KEYS)
+					.executeQuery();
 			while (rs.next())
 				return new EmailAddress(rs.getInt(1), rs.getString(2));
-
+		} catch (SQLException e) {
+			DebugLogger.logEvent(Database.class.getName(), Level.WARNING, e.getMessage());
 		} finally {
-			if (rs != null)
-				rs.close();
+			DbUtils.closeQuietly(rs);
+			DbUtils.closeQuietly(connection);
 		}
 
 		return new EmailAddress(insertUser(emailAddress), emailAddress);
@@ -388,15 +383,17 @@ public class Database {
 	 * @param folderName
 	 * @return database id number of the folder
 	 */
-	public int getFolderId(String folderName) throws SQLException, ClassNotFoundException {
+	public int getFolderId(String folderName) {
 		ResultSet rs = null;
 		try {
-			rs = getConnection().prepareStatement("SELECT id FROM folder WHERE fold_name = '" + folderName + "';")
-					.executeQuery();
+			rs = getConnection().prepareStatement("SELECT id FROM folder WHERE fold_name = '" + folderName + "';").executeQuery();
 			if (rs.next())
 				return rs.getInt(1);
+		} catch (SQLException e) {
+			DebugLogger.logEvent(Database.class.getName(), Level.WARNING, e.getMessage());
 		} finally {
-			rs.close();
+			DbUtils.closeQuietly(rs);
+			DbUtils.closeQuietly(connection);
 		}
 
 		return -1;
@@ -408,15 +405,17 @@ public class Database {
 	 * @param id
 	 * @return UserFolder object
 	 */
-	public UserFolder getFolderById(int id) throws SQLException, ClassNotFoundException {
+	public UserFolder getFolderById(int id) {
 		ResultSet rs = null;
 		try {
 			rs = getConnection().prepareStatement("SELECT * FROM folder WHERE id = " + id + ";").executeQuery();
 			if (rs.next())
 				return new UserFolder(rs.getInt(1), mailer.getFolder(rs.getString(2)));
-
+		} catch (SQLException e) {
+			DebugLogger.logEvent(Database.class.getName(), Level.WARNING, e.getMessage());
 		} finally {
-			rs.close();
+			DbUtils.closeQuietly(rs);
+			DbUtils.closeQuietly(connection);
 		}
 
 		return null;
@@ -428,12 +427,13 @@ public class Database {
 	 * @param favName
 	 * @return UserFavourites object
 	 */
-	public UserFavourites getUserFavourite(String favName) throws SQLException, ClassNotFoundException {
+	public UserFavourites getUserFavourite(String favName) {
 		ResultSet rs = null;
 		ResultSet rs2 = null;
 		try {
-			rs = getConnection().prepareStatement("SELECT * FROM user_favourites WHERE user_id = '" + user.getId()
-					+ "' AND fav_name = '" + favName + "';", Statement.RETURN_GENERATED_KEYS).executeQuery();
+			rs = getConnection().prepareStatement("SELECT * FROM user_favourites WHERE user_id = '"
+					+ user.getId() + "' AND fav_name = '" + favName + "';", Statement.RETURN_GENERATED_KEYS)
+					.executeQuery();
 
 			while (rs.next()) {
 				rs2 = getConnection()
@@ -448,9 +448,12 @@ public class Database {
 							getFolderById(rs2.getInt(7)));
 				}
 			}
+		} catch (SQLException e) {
+			DebugLogger.logEvent(Database.class.getName(), Level.WARNING, e.getMessage());
 		} finally {
-			rs.close();
-			rs2.close();
+			DbUtils.closeQuietly(rs);
+			DbUtils.closeQuietly(rs2);
+			DbUtils.closeQuietly(connection);
 		}
 
 		return null;
@@ -462,10 +465,10 @@ public class Database {
 	 * @see #getUserFavourite
 	 * @return List of UserFavourites
 	 */
-	public List<UserFavourites> getUserFavourites() throws SQLException, ClassNotFoundException {
+	public List<UserFavourites> getUserFavourites() {
+		List<UserFavourites> ufList = new ArrayList<>();
 		ResultSet rs = null;
 		ResultSet rs2 = null;
-		List<UserFavourites> ufList = new ArrayList<>();
 		try {
 			rs = getConnection()
 					.prepareStatement("SELECT * FROM user_favourites WHERE user_id = '" + user.getId() + "';",
@@ -482,9 +485,12 @@ public class Database {
 							Interval.parse(rs2.getString(4)), rs2.getBoolean(5), rs2.getBoolean(6),
 							getFolderById(rs2.getInt(7))));
 			}
+		} catch (SQLException e) {
+			DebugLogger.logEvent(Database.class.getName(), Level.WARNING, e.getMessage());
 		} finally {
-			rs.close();
-			rs2.close();
+			DbUtils.closeQuietly(rs);
+			DbUtils.closeQuietly(rs2);
+			DbUtils.closeQuietly(connection);
 		}
 
 		DebugLogger.logEvent(Database.class.getName(), Level.INFO,
@@ -506,8 +512,7 @@ public class Database {
 	 * @see #insertFilter
 	 */
 	public boolean insertUserFavourites(String favName, java.util.Date startDate, java.util.Date endDate,
-			Interval intervalRange, boolean hasAttachment, boolean isSeen, String folderName)
-			throws SQLException, ClassNotFoundException {
+			Interval intervalRange, boolean hasAttachment, boolean isSeen, String folderName) {
 		int folderId = getFolderId(folderName);
 		if (folderId == -1)
 			return false;
@@ -535,10 +540,9 @@ public class Database {
 	 * @see #insertUserFavourites
 	 */
 	private int insertFilter(java.util.Date startDate, java.util.Date endDate, String intervalRange,
-			boolean hasAttachment, boolean isSeen, int folderId) throws SQLException, ClassNotFoundException {
-
-		ResultSet rs = null;
+			boolean hasAttachment, boolean isSeen, int folderId) {
 		PreparedStatement ps = null;
+		ResultSet rs = null;
 		try {
 			ps = getConnection().prepareStatement(
 					"INSERT INTO filter_settings (start_date, end_date, interval_range, has_attachment, is_seen, folder_id) VALUE (?, ?, ?, ?, ?, ?);",
@@ -560,9 +564,12 @@ public class Database {
 			if (rs.next())
 				return rs.getInt(1);
 
+		} catch (SQLException e) {
+			DebugLogger.logEvent(Database.class.getName(), Level.WARNING, e.getMessage());
 		} finally {
-			rs.close();
-			ps.close();
+			DbUtils.closeQuietly(rs);
+			DbUtils.closeQuietly(ps);
+			DbUtils.closeQuietly(connection);
 		}
 		return -1;
 	}
@@ -573,7 +580,7 @@ public class Database {
 	 * @param favName
 	 * @see #insertUserFavourites
 	 */
-	public void removeUserFavourite(String favName) throws SQLException, ClassNotFoundException {
+	public void removeUserFavourite(String favName) {
 		query("DELETE FROM user_favourites WHERE fav_name = '" + favName + "' AND user_id = " + user.getId() + ";");
 		DebugLogger.logEvent(Database.class.getName(), Level.INFO,
 				"User favourite removal submitted for " + user.getId() + " <" + user.getEmailAddress() + ">");
@@ -586,18 +593,20 @@ public class Database {
 	 * @param folderList
 	 * @return boolean value whether the folder exists or not
 	 */
-	private boolean folderExists(String folderName, List<UserFolder> folderList)
-			throws SQLException, ClassNotFoundException {
+	private boolean folderExists(String folderName, List<UserFolder> folderList) {
 		ResultSet rs = null;
 		try {
-			rs = getConnection().prepareStatement("SELECT * FROM folder WHERE fold_name = '" + folderName + "'")
-					.executeQuery();
+			rs = getConnection()
+					.prepareStatement("SELECT * FROM folder WHERE fold_name = '" + folderName + "'").executeQuery();
 			while (rs.next()) {
 				folderList.add(new UserFolder(rs.getInt(1), mailer.getFolder(rs.getString(2))));
 				return true;
 			}
+		} catch (SQLException e) {
+			DebugLogger.logEvent(Database.class.getName(), Level.WARNING, e.getMessage());
 		} finally {
-			rs.close();
+			DbUtils.closeQuietly(rs);
+			DbUtils.closeQuietly(connection);
 		}
 		return false;
 	}
@@ -608,10 +617,11 @@ public class Database {
 	 * @return List of UserFolder
 	 * @see UserFolder
 	 */
-	public List<UserFolder> importFolders() throws SQLException, ClassNotFoundException, MessagingException {
-		ResultSet rs = null;
-		PreparedStatement ps = null;
+	public List<UserFolder> importFolders() {
 		List<UserFolder> folderList = new ArrayList<>();
+		
+		PreparedStatement ps = null;
+		ResultSet rs = null;
 		try {
 			Folder[] folders = mailer.getStorage().getDefaultFolder().list("*");
 			for (Folder f : folders) {
@@ -633,11 +643,14 @@ public class Database {
 				}
 			}
 
+		} catch (SQLException | MessagingException e) {
+			e.printStackTrace();
 		} finally {
-			rs.close();
-			ps.close();
+			DbUtils.closeQuietly(rs);
+			DbUtils.closeQuietly(ps);
+			DbUtils.closeQuietly(connection);
 		}
-
+		
 		return folderList;
 	}
 
@@ -647,9 +660,9 @@ public class Database {
 	 * @param m
 	 * @return database id of the email record
 	 */
-	private int getEmailId(Message m) throws SQLException, ClassNotFoundException {
-		ResultSet rs = null;
+	private int getEmailId(Message m) {
 		PreparedStatement ps = null;
+		ResultSet rs = null;
 		try {
 			ps = getConnection()
 					.prepareStatement("SELECT * FROM email WHERE date_received = ? AND subject = ? AND size = ?");
@@ -661,11 +674,13 @@ public class Database {
 			while (rs.next())
 				return rs.getInt(1);
 
+		} catch (SQLException e) {
+			e.printStackTrace();
 		} catch (MessagingException e) {
 			e.printStackTrace();
 		} finally {
-			rs.close();
-			ps.close();
+			DbUtils.closeQuietly(rs);
+			DbUtils.closeQuietly(connection);
 		}
 		return -1;
 	}
@@ -678,8 +693,7 @@ public class Database {
 	 * @param emailIdList
 	 * @return database id of email record
 	 */
-	private int insertEmail(Message m, List<UserFolder> folderList, List<Integer> emailIdList)
-			throws SQLException, ClassNotFoundException, MessagingException {
+	private int insertEmail(Message m, List<UserFolder> folderList, List<Integer> emailIdList) {
 
 		int emailId = -1;
 		emailId = getEmailId(m); // TODO Duplicates?
@@ -725,9 +739,14 @@ public class Database {
 				emailIdList.add(emailId);
 			}
 
+		} catch (SQLException e) {
+			DebugLogger.logEvent(Database.class.getName(), Level.WARNING, e.getMessage());
+		} catch (MessagingException e) {
+			DebugLogger.logEvent(Database.class.getName(), Level.WARNING, e.getMessage());
 		} finally {
-			rs.close();
-			ps.close();
+			DbUtils.closeQuietly(rs);
+			DbUtils.closeQuietly(ps);
+			DbUtils.closeQuietly(connection);
 		}
 
 		return emailId;
@@ -739,8 +758,9 @@ public class Database {
 	 * @param emailAddress
 	 * @return boolean whether email address exists or not
 	 */
-	private boolean emailAddressExists(String emailAddress) throws SQLException, ClassNotFoundException {
+	private boolean emailAddressExists(String emailAddress) {
 		int size = -1;
+		
 		ResultSet rs = null;
 		try {
 			rs = getConnection()
@@ -749,10 +769,12 @@ public class Database {
 			while (rs.next()) {
 				size = rs.getInt(1);
 			}
+		} catch (SQLException e) {
+			DebugLogger.logEvent(Database.class.getName(), Level.WARNING, e.getMessage());
 		} finally {
-			rs.close();
+			DbUtils.closeQuietly(rs);
+			DbUtils.closeQuietly(connection);
 		}
-
 		return size >= 1;
 	}
 
@@ -780,18 +802,16 @@ public class Database {
 	 * @return list of EmailAddress
 	 * @see EmailAddress
 	 */
-	private List<EmailAddress> insertEmailAddress(Address[] addresses) throws SQLException, ClassNotFoundException {
+	private List<EmailAddress> insertEmailAddress(Address[] addresses) {
 		List<EmailAddress> emailAddrList = new ArrayList<>();
-
-		ResultSet rs = null;
-		ResultSet generatedKeys = null;
-		PreparedStatement ps = null;
 
 		for (Address a : addresses) {
 			String address = parseAddress(a);
+			ResultSet rs = null;
+			ResultSet rs2 = null;
 			try {
 				if (!emailAddressExists(address)) {
-					ps = getConnection().prepareStatement(
+					PreparedStatement ps = getConnection().prepareStatement(
 							"INSERT INTO email_addr (email_address) VALUE ('" + address + "');",
 							Statement.RETURN_GENERATED_KEYS);
 
@@ -799,22 +819,23 @@ public class Database {
 						DebugLogger.logEvent(Database.class.getName(), Level.WARNING,
 								"Could not insert an email address");
 
-					generatedKeys = ps.getGeneratedKeys();
-					if (generatedKeys.next())
-						emailAddrList.add(new EmailAddress(generatedKeys.getInt(1), address));
+					rs = ps.getGeneratedKeys();
+					if (rs.next())
+						emailAddrList.add(new EmailAddress(rs.getInt(1), address));
 
 				} else {
-					rs = getConnection()
+					rs2 = getConnection()
 							.prepareStatement("SELECT * FROM email_addr WHERE email_address = '" + address + "';")
 							.executeQuery();
-					while (rs.next())
-						emailAddrList.add(new EmailAddress(rs.getInt(1), rs.getString(2)));
-
+					while (rs2.next())
+						emailAddrList.add(new EmailAddress(rs2.getInt(1), rs2.getString(2)));
 				}
+			} catch (SQLException e) {
+				DebugLogger.logEvent(Database.class.getName(), Level.WARNING, e.getMessage());
 			} finally {
-				rs.close();
-				ps.close();
-				generatedKeys.close();
+				DbUtils.closeQuietly(rs);
+				DbUtils.closeQuietly(rs2);
+				DbUtils.closeQuietly(connection);
 			}
 		}
 
@@ -827,8 +848,9 @@ public class Database {
 	 * @param emailId
 	 * @return list of EmailAddress
 	 */
-	private List<EmailAddress> getReceivedEmail(int emailId) throws SQLException, ClassNotFoundException {
+	private List<EmailAddress> getReceivedEmail(int emailId) {
 		List<EmailAddress> addressIdList = new ArrayList<>();
+
 		ResultSet rs = null;
 		try {
 			rs = getConnection().prepareStatement(
@@ -837,8 +859,11 @@ public class Database {
 					.executeQuery();
 			while (rs.next())
 				addressIdList.add(new EmailAddress(rs.getInt(1), rs.getString(2)));
+		} catch (SQLException e) {
+			DebugLogger.logEvent(Database.class.getName(), Level.WARNING, e.getMessage());
 		} finally {
-			rs.close();
+			DbUtils.closeQuietly(rs);
+			DbUtils.closeQuietly(connection);
 		}
 
 		return addressIdList;
@@ -851,15 +876,18 @@ public class Database {
 	 * @param emailAddrId
 	 * @return boolean if receieved email exists
 	 */
-	private boolean receivedEmailExists(int emailId, int emailAddrId) throws SQLException, ClassNotFoundException {
+	private boolean receivedEmailExists(int emailId, int emailAddrId) {
 		ResultSet rs = null;
 		try {
 			rs = getConnection().prepareStatement("SELECT * FROM received_email WHERE email_id = " + emailId
 					+ " AND email_addr_id = " + emailAddrId + ";").executeQuery();
 			while (rs.next())
 				return true;
+		} catch (SQLException e) {
+			DebugLogger.logEvent(Database.class.getName(), Level.WARNING, e.getMessage());
 		} finally {
-			rs.close();
+			DbUtils.closeQuietly(rs);
+			DbUtils.closeQuietly(connection);
 		}
 
 		return false;
@@ -871,7 +899,7 @@ public class Database {
 	 * @param emailId
 	 * @param emailAddrId
 	 */
-	private void insertReceivedEmails(int emailId, int emailAddrId) throws SQLException, ClassNotFoundException {
+	private void insertReceivedEmails(int emailId, int emailAddrId) {
 		if (!receivedEmailExists(emailId, emailAddrId))
 			query("INSERT INTO received_email (email_id, email_addr_id) VALUE ('" + emailId + "', " + emailAddrId
 					+ ");");
@@ -885,7 +913,7 @@ public class Database {
 	 * @return if email exists for user
 	 * @see #insertUserEmail
 	 */
-	private boolean userEmailExists(EmailAddress addr, int emailId) throws SQLException, ClassNotFoundException {
+	private boolean userEmailExists(EmailAddress addr, int emailId) {
 		ResultSet rs = null;
 		try {
 			rs = getConnection().prepareStatement(
@@ -893,10 +921,13 @@ public class Database {
 					.executeQuery();
 			while (rs.next())
 				return true;
+		} catch (SQLException e) {
+			DebugLogger.logEvent(Database.class.getName(), Level.WARNING, e.getMessage());
 		} finally {
-			rs.close();
+			DbUtils.closeQuietly(rs);
+			DbUtils.closeQuietly(connection);
 		}
-
+		
 		return false;
 	}
 
@@ -906,7 +937,7 @@ public class Database {
 	 * @param addr
 	 * @param emailId
 	 */
-	private void insertUserEmail(EmailAddress addr, int emailId) throws SQLException, ClassNotFoundException {
+	private void insertUserEmail(EmailAddress addr, int emailId) {
 		if (!userEmailExists(addr, emailId))
 			query("INSERT INTO user_email (user_id, email_id) VALUE (" + addr.getId() + ", " + emailId + ");");
 	}
@@ -917,9 +948,10 @@ public class Database {
 	 * @param folderName
 	 * @return number of emails
 	 */
-	public int getEmailCountByFolder(String folderName) throws SQLException, ClassNotFoundException {
-		ResultSet rs = null;
+	public int getEmailCountByFolder(String folderName) {
 		int size = 0;
+		
+		ResultSet rs = null;
 		try {
 			rs = getConnection().prepareStatement("SELECT * FROM user "
 					+ "JOIN user_email ON user.id = user_email.user_id "
@@ -929,8 +961,12 @@ public class Database {
 			while (rs.next())
 				size++;
 
-		} finally {
 			rs.close();
+		} catch (SQLException e) {
+			DebugLogger.logEvent(Database.class.getName(), Level.WARNING, e.getMessage());
+		} finally {
+			DbUtils.closeQuietly(rs);
+			DbUtils.closeQuietly(connection);
 		}
 
 		return size;
@@ -941,7 +977,7 @@ public class Database {
 	 *
 	 * @param count
 	 */
-	public void setValidatedEmailCount(int count) throws SQLException, ClassNotFoundException {
+	public void setValidatedEmailCount(int count) {
 		query("UPDATE user SET validated_emails = " + count + " WHERE email_address = '" + user.getEmailAddress()
 				+ "';");
 		DebugLogger.logEvent(Database.class.getName(), Level.INFO,
@@ -954,20 +990,24 @@ public class Database {
 	 * @return number of validated emails
 	 * @see #setValidatedEmailCount
 	 */
-	public int getValidatedEmails() throws SQLException, ClassNotFoundException {
-		ResultSet rs = null;
+	public int getValidatedEmails() {
 		int validatedEmails = 0;
+		
+		ResultSet rs = null;
 		try {
-			rs = getConnection()
+			 rs = getConnection()
 					.prepareStatement("SELECT * FROM user WHERE user.email_address = '" + user.getEmailAddress() + "'")
 					.executeQuery();
 			while (rs.next())
 				validatedEmails = rs.getInt(3);
 
+		} catch (SQLException e) {
+			DebugLogger.logEvent(Database.class.getName(), Level.WARNING, e.getMessage());
 		} finally {
-			rs.close();
+			DbUtils.closeQuietly(rs);
+			DbUtils.closeQuietly(connection);
 		}
-
+		
 		return validatedEmails;
 	}
 
@@ -976,15 +1016,17 @@ public class Database {
 	 * 
 	 * @param statement
 	 */
-	public void query(String statement) throws SQLException, ClassNotFoundException {
+	public void query(String statement) {
 		PreparedStatement ps = null;
 		try {
 			ps = getConnection().prepareStatement(statement);
 			ps.execute();
 			DebugLogger.logEvent(Database.class.getName(), Level.INFO, "Query made for statement: " + statement);
+		} catch (SQLException e) {
+			e.printStackTrace();
 		} finally {
-			if (ps != null)
-				ps.close();
+			DbUtils.closeQuietly(ps);
+			DbUtils.closeQuietly(connection);
 		}
 	}
 
@@ -995,7 +1037,7 @@ public class Database {
 	 * @deprecated
 	 * @see #query
 	 */
-	public void query(String[] statements) throws SQLException, ClassNotFoundException {
+	public void query(String[] statements) {
 		for (String statement : statements)
 			query(statement);
 	}
@@ -1006,7 +1048,7 @@ public class Database {
 	 * 
 	 * @see #truncateTable
 	 */
-	public void truncateTables() throws SQLException, ClassNotFoundException {
+	public void truncateTables() {
 		for (String tbl : Settings.DATABASE_TABLES)
 			truncateTable(tbl);
 		DebugLogger.logEvent(Database.class.getName(), Level.SEVERE, "Database tables have been truncated completely.");
@@ -1017,7 +1059,7 @@ public class Database {
 	 * 
 	 * @param table
 	 */
-	public void truncateTable(String table) throws SQLException, ClassNotFoundException {
+	public void truncateTable(String table) {
 		query("TRUNCATE TABLE " + table + ";");
 		DebugLogger.logEvent(Database.class.getName(), Level.SEVERE, table + " has been truncated completely");
 	}
@@ -1028,7 +1070,7 @@ public class Database {
 	 *
 	 * @return if user has emails
 	 */
-	public boolean hasEmails() throws SQLException, ClassNotFoundException {
+	public boolean hasEmails() {
 		ResultSet rs = null;
 		try {
 			rs = getConnection()
@@ -1043,11 +1085,13 @@ public class Database {
 				if (size > 0)
 					return true;
 			}
-
+		} catch (SQLException e) {
+			DebugLogger.logEvent(Database.class.getName(), Level.WARNING, e.getMessage());
 		} finally {
-			rs.close();
+			DbUtils.closeQuietly(rs);
+			DbUtils.closeQuietly(connection);
 		}
-
+		
 		return false;
 	}
 
@@ -1060,7 +1104,7 @@ public class Database {
 	 * @see #insertSentimentScore
 	 * @see #insertSentimentScoreIntoEmail
 	 */
-	public void calculateSentimentScore(int emailId, SentimentScore score) throws SQLException, ClassNotFoundException {
+	public void calculateSentimentScore(int emailId, SentimentScore score) {
 		int sentimentId = insertSentimentScore(score);
 
 		if (sentimentId == -1) {
@@ -1077,20 +1121,25 @@ public class Database {
 	 * @param score
 	 * @return database id of sentiment score record
 	 */
-	private int insertSentimentScore(SentimentScore score) throws SQLException, ClassNotFoundException {
+	private int insertSentimentScore(SentimentScore score) {
 		PreparedStatement ps = null;
+		ResultSet rs = null;
 		try {
 			ps = getConnection()
 					.prepareStatement("INSERT INTO sentiment_score (positive, negative, neutral, compound) VALUE ("
 							+ score.getPositive() + ", " + score.getNegative() + ", " + score.getNeutral() + ", "
 							+ score.getCompound() + ");", Statement.RETURN_GENERATED_KEYS);
 			if (ps.executeUpdate() == 1) { // AFFECTED ROW
-				ResultSet rs = ps.getGeneratedKeys();
+				rs = ps.getGeneratedKeys();
 				if (rs.next())
 					return rs.getInt(1);
 			}
+		} catch (SQLException e) {
+			DebugLogger.logEvent(Database.class.getName(), Level.WARNING, e.getMessage());
 		} finally {
-			ps.close();
+			DbUtils.closeQuietly(ps);
+			DbUtils.closeQuietly(rs);
+			DbUtils.closeQuietly(connection);
 		}
 		return -1;
 	}
@@ -1101,15 +1150,17 @@ public class Database {
 	 * @param emailId
 	 * @param sentimentScoreId
 	 */
-	private void insertSentimentScoreIntoEmail(int emailId, int sentimentScoreId)
-			throws SQLException, ClassNotFoundException {
+	private void insertSentimentScoreIntoEmail(int emailId, int sentimentScoreId) {
 		PreparedStatement ps = null;
 		try {
 			ps = getConnection().prepareStatement(
 					"UPDATE email SET sentiment_score_id = " + sentimentScoreId + " WHERE id = " + emailId + ";");
 			ps.execute();
+		} catch (SQLException e) {
+			DebugLogger.logEvent(Database.class.getName(), Level.WARNING, e.getMessage());
 		} finally {
-			ps.close();
+			DbUtils.closeQuietly(ps);
+			DbUtils.closeQuietly(connection);
 		}
 	}
 

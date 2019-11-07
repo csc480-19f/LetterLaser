@@ -20,7 +20,7 @@ public class DBdemo {
 		long ct = System.currentTimeMillis();
 		Settings.loadCredentials();
 		Mailer mailer = new Mailer(edu.oswego.mail.Settings.EMAIL_ADDRESS, edu.oswego.mail.Settings.EMAIL_PWD);
-		OldDatabase db = new OldDatabase(edu.oswego.mail.Settings.EMAIL_ADDRESS, mailer);
+		Database db = new Database(edu.oswego.mail.Settings.EMAIL_ADDRESS, mailer);
 
 		System.out.println(db.getValidatedEmails());
 		// db.truncateTables();
@@ -58,22 +58,20 @@ public class DBdemo {
 	}
 
 	public static boolean needsUpdate(Database db, Mailer mailer) {
-		try {
 			int validatedEmails = db.getValidatedEmails();
 			Folder validationFolder = mailer.getFolder("CSC480_19f");
-			int newEmails = validationFolder.getMessageCount();
-			if (newEmails != validatedEmails) {
-				System.out.println("The database emails and user's emails do not match.");
-				System.out.println(newEmails + "_" + validatedEmails);
-				return true;
+			int newEmails;
+			try {
+				newEmails = validationFolder.getMessageCount();
+				if (newEmails != validatedEmails) {
+					System.out.println("The database emails and user's emails do not match.");
+					System.out.println(newEmails + "_" + validatedEmails);
+					return true;
+				}
+			} catch (MessagingException e) {
+				e.printStackTrace();
 			}
-		} catch (MessagingException e) {
-			e.printStackTrace();
-		} catch (SQLException e) {
-			e.printStackTrace();
-		} catch (ClassNotFoundException e) {
-			e.printStackTrace();
-		}
+
 
 		return false;
 	}
