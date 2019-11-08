@@ -36,7 +36,6 @@ class EmailTest {
 	@AfterEach
 	void tearDown() {
 		db.truncateTables();
-		db.closeConnection();
 	}
 
 	@Test

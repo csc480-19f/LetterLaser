@@ -1,9 +1,9 @@
 package database;
 
-import edu.oswego.database.Database;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 
+import edu.oswego.database.Database;
 import edu.oswego.database.Settings;
 import edu.oswego.mail.Mailer;
 
@@ -27,7 +27,6 @@ class TemplateTest {
 	@AfterEach
 	void tearDown() throws Exception {
 		db.truncateTables();
-		db.closeConnection();
 	}
 
 }
