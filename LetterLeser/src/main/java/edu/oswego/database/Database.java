@@ -576,37 +576,23 @@ public class Database {
 		Connection connection = getConnection();
 		ResultSet rs = null;
 		try {
-			
-			rs = connection.prepareStatement("SELECT user_favourites.id, fav_name, start_date, end_date, interval_range, has_attachment, is_seen, folder_id From user_favourites \n" + 
-					"JOIN filter_settings ON filter_settings.id = user_favourites.filter_settings_id WHERE user_id = " + user.getId() + ";").executeQuery();
-			
+
+			rs = connection.prepareStatement(
+					"SELECT user_favourites.id, fav_name, start_date, end_date, interval_range, has_attachment, is_seen, folder_id From user_favourites \n"
+							+ "JOIN filter_settings ON filter_settings.id = user_favourites.filter_settings_id WHERE user_id = "
+							+ user.getId() + " AND" + "fav_name = '" + favName + "';")
+					.executeQuery();
+
 			while (rs.next()) {
 				uf = new UserFavourites(rs.getInt(1), rs.getString(2), rs.getDate(2), rs.getDate(3),
 						Interval.parse(rs.getString(4)), rs.getBoolean(5), rs.getBoolean(6),
 						getFolderById(rs.getInt(7)));
 				DbUtils.closeQuietly(rs);
 				DbUtils.closeQuietly(connection);
-				//break?
+				// break?
 				return uf;
 			}
-			
-//			rs = connection.prepareStatement("SELECT * FROM user_favourites WHERE user_id = '"
-//					+ user.getId() + "' AND fav_name = '" + favName + "';", Statement.RETURN_GENERATED_KEYS)
-//					.executeQuery();
-//
-//			while (rs.next()) {
-//				rs2 = connection
-//						.prepareStatement("SELECT * FROM filter_settings WHERE id = '" + rs.getInt(1) + "';",
-//								Statement.RETURN_GENERATED_KEYS)
-//						.executeQuery();
-//				while (rs2.next()) {
-//					DebugLogger.logEvent(Database.class.getName(), Level.INFO,
-//							"Favourites fetched for " + user.getId() + " <" + user.getEmailAddress() + ">");
-//					return new UserFavourites(rs.getInt(1), rs.getString(2), rs2.getDate(2), rs2.getDate(3),
-//							Interval.parse(rs2.getString(4)), rs2.getBoolean(5), rs2.getBoolean(6),
-//							getFolderById(rs2.getInt(7)));
-//				}
-//			}
+
 			DbUtils.closeQuietly(rs);
 			DbUtils.closeQuietly(connection);
 		} catch (SQLException e) {
@@ -629,28 +615,27 @@ public class Database {
 		List<UserFavourites> ufList = new ArrayList<>();
 		Connection connection = getConnection();
 		ResultSet rs = null;
-		ResultSet rs2 = null;
+
 		try {
-			rs = connection.prepareStatement("SELECT * FROM user_favourites WHERE user_id = '" + user.getId() + "';",
-					Statement.RETURN_GENERATED_KEYS).executeQuery();
+
+			rs = connection.prepareStatement(
+					"SELECT user_favourites.id, fav_name, start_date, end_date, interval_range, has_attachment, is_seen, folder_id From user_favourites \n"
+							+ "JOIN filter_settings ON filter_settings.id = user_favourites.filter_settings_id WHERE user_id = "
+							+ user.getId()+ ";")
+					.executeQuery();
 
 			while (rs.next()) {
-				rs2 = connection.prepareStatement("SELECT * FROM filter_settings WHERE id = '" + rs.getInt(1) + "';",
-						Statement.RETURN_GENERATED_KEYS).executeQuery();
-				while (rs2.next())
-					ufList.add(new UserFavourites(rs.getInt(1), rs.getString(2), rs2.getDate(2), rs2.getDate(3),
-							Interval.parse(rs2.getString(4)), rs2.getBoolean(5), rs2.getBoolean(6),
-							getFolderById(rs2.getInt(7))));
+				ufList.add(new UserFavourites(rs.getInt(1), rs.getString(2), rs.getDate(2), rs.getDate(3),
+						Interval.parse(rs.getString(4)), rs.getBoolean(5), rs.getBoolean(6),
+						getFolderById(rs.getInt(7))));
 			}
 
 			DbUtils.closeQuietly(rs);
-			DbUtils.closeQuietly(rs2);
 			DbUtils.closeQuietly(connection);
 		} catch (SQLException e) {
 			DebugLogger.logEvent(Database.class.getName(), Level.WARNING, e.getMessage());
 		} finally {
 			DbUtils.closeQuietly(rs);
-			DbUtils.closeQuietly(rs2);
 			DbUtils.closeQuietly(connection);
 		}
 
