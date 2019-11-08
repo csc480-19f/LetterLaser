@@ -32,7 +32,7 @@ import edu.oswego.sentiment.SentimentScore;
  * Database class to get connection, push/pull data, and submit queries.
  * 
  * @author Jimmy
- * @since 11/06/2019
+ * @since 11/08/2019
  */
 
 // TODO redo Javadocs

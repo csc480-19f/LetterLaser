@@ -11,7 +11,7 @@ import edu.oswego.debug.DebugLogger;
  * Simple static class to access credentials from other classes.
  * 
  * @author Jimmy Nguyen
- * @since 10/08/2019
+ * @since 11/08/2019
  */
 
 public class Settings {
