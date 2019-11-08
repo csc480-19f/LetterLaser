@@ -1,6 +1,5 @@
 package edu.oswego.runnables;
 
-
 import javax.websocket.Session;
 
 import com.google.gson.JsonArray;
@@ -27,54 +26,53 @@ public class ValidationRunnable implements Runnable {
 		this.validateOrPull = validateOrPull;
 		this.session = session;
 	}
+
 	@Override
 	public void run() {
 		Thread.currentThread().setName("validation");
 		if (validateOrPull) {
-			messenger.sendUpdateStatusMessage(session,"validating emails");
+			messenger.sendUpdateStatusMessage(session, "validating emails");
 
 			try {
 				database.pull();
-			}catch(Throwable t){
-				messenger.sendErrorMessage(session,"error in db: "+t.getMessage());
+			} catch (Throwable t) {
+				messenger.sendErrorMessage(session, "error in db: " + t.getMessage());
 				return;
 			}
-			messenger.sendUpdateStatusMessage(session,"finished validating");
-
-
+			messenger.sendUpdateStatusMessage(session, "finished validating");
 
 		} else {
-			messenger.sendUpdateStatusMessage(session,"Pulling folders and emails");
-
+			messenger.sendUpdateStatusMessage(session, "Pulling folders and emails");
 
 			List<UserFolder> folders;
 			List<UserFavourites> favourites;
 			try {
 				folders = database.pull();
 				favourites = database.getUserFavourites();
-			}catch(Throwable t){
-				messenger.sendErrorMessage(session,"error in db: "+t.getMessage());
+			} catch (Throwable t) {
+				messenger.sendErrorMessage(session, "error in db: " + t.getMessage());
 				return;
 			}
 
 			JsonArray ja = new JsonArray();
 			JsonArray ja1 = new JsonArray();
 			for (int i = 0; i < folders.size(); i++) {
-					ja.add(folders.get(i).getFolder().getFullName());
+				ja.add(folders.get(i).getFolder().getFullName());
 			}
-			for(int i=0;i<favourites.size();i++){
+			for (int i = 0; i < favourites.size(); i++) {
 				ja.add(favourites.get(i).getName());
 			}
 			JsonObject js = new JsonObject();
 			js.addProperty("messagetype", "foldername");
 			js.add("foldername", ja);
 			js.add("favoritename", ja1);
-			messenger.sendMessageToClient(session,js);
+			messenger.sendMessageToClient(session, js);
 		}
-
-
-
-
+	}
+	
+	// TODO need this implemented
+	private boolean isConnectionOpen() {
+		return database.getConnectionCount() <= edu.oswego.database.Settings.THRESHOLD_CONNECTION;
 	}
 
 }

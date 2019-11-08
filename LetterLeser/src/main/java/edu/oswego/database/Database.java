@@ -259,9 +259,9 @@ public class Database {
 	 * @return JavaMail Connection object
 	 */
 	
-	int i = 0;
+//	int i = 0;
 	public Connection getConnection() {
-		System.out.println(++i);
+//		System.out.println(++i);
 		Connection connection = null;
 		
 		try {
@@ -596,7 +596,6 @@ public class Database {
 	 * @return List of UserFavourites
 	 */
 	public List<UserFavourites> getUserFavourites() {
-		System.out.println("GET");
 		List<UserFavourites> ufList = new ArrayList<>();
 		Connection connection = getConnection();
 		ResultSet rs = null;
@@ -649,7 +648,6 @@ public class Database {
 	 */
 	public boolean insertUserFavourites(String favName, java.util.Date startDate, java.util.Date endDate,
 			Interval intervalRange, boolean hasAttachment, boolean isSeen, String folderName) {
-		System.out.println("MEEE");
 		int folderId = getFolderId(folderName);
 		if (folderId == -1)
 			return false;
@@ -1203,7 +1201,6 @@ public class Database {
 	 * @param statement
 	 */
 	public void query(String statement) {
-		System.out.println(statement);
 		Connection connection = getConnection();
 		PreparedStatement ps = null;
 		try {

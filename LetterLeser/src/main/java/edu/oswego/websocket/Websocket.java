@@ -42,8 +42,10 @@ public class Websocket {
 	private static ConcurrentHashMap<String, StorageObject> sessionMapper = new ConcurrentHashMap<>();
 	Messenger messenger = new Messenger();
 	JSDecryptor jse = null;
+
 	/**
 	 * standard inclusive method that comes with websockets
+	 * 
 	 * @param session
 	 */
 	@OnOpen
@@ -58,7 +60,7 @@ public class Websocket {
 		} catch (InvalidKeyException e) {
 			e.printStackTrace();
 		}
-		messenger.sendPublicKey(session,jse.getPublic());
+		messenger.sendPublicKey(session, jse.getPublic());
 	}
 
 	// This method allows you to message a specific user.
@@ -83,7 +85,7 @@ public class Websocket {
 		String decryptedEmail = null;
 		try {
 			String encryptedEmail = jsonMessage.get("email").getAsString();
-			decryptedEmail= jse.decrypt(encryptedEmail);
+			decryptedEmail = jse.decrypt(encryptedEmail);
 		} catch (BadPaddingException e) {
 			e.printStackTrace();
 		} catch (UnsupportedEncodingException e) {
@@ -94,7 +96,7 @@ public class Websocket {
 		StorageObject storageObject = sessionMapper.get(decryptedEmail);
 
 		if (messageType.equals("filter")) {
-			filter(session,storageObject.getDatabase(),decryptedEmail,jsonMessage.get("filter").getAsJsonObject());
+			filter(session, storageObject.getDatabase(), decryptedEmail, jsonMessage.get("filter").getAsJsonObject());
 		} else if (messageType.equals("login")) {
 			String encryptedPass = jsonMessage.get("pass").getAsString();
 			String decryptedPass = null;
@@ -107,19 +109,22 @@ public class Websocket {
 			} catch (IllegalBlockSizeException e) {
 				e.printStackTrace();
 			}
-			login(session,decryptedEmail,decryptedPass,storageObject);
+			login(session, decryptedEmail, decryptedPass, storageObject);
 		} else if (messageType.equals("refresh")) {
-			refresh(storageObject,decryptedEmail,storageObject.getMailer(),storageObject.getDatabase(),true,session);
+			refresh(storageObject, decryptedEmail, storageObject.getMailer(), storageObject.getDatabase(), true,
+					session);
 		} else if (messageType.equals("addfavorite")) {
-			addFavorite(session,storageObject.getDatabase(),jsonMessage.get("favoritename").getAsString(),jsonMessage.get("filter").getAsJsonObject());
+			addFavorite(session, storageObject.getDatabase(), jsonMessage.get("favoritename").getAsString(),
+					jsonMessage.get("filter").getAsJsonObject());
 		} else if (messageType.equals("callfavorite")) {
-			callFavorite(session,storageObject.getDatabase(),jsonMessage.get("favoritename").getAsString(),decryptedEmail);
+			callFavorite(session, storageObject.getDatabase(), jsonMessage.get("favoritename").getAsString(),
+					decryptedEmail);
 		} else if (messageType.equals("removefavorite")) {
-			removeFavorite(session,storageObject.getDatabase(),jsonMessage.get("favoritename").getAsString());
+			removeFavorite(session, storageObject.getDatabase(), jsonMessage.get("favoritename").getAsString());
 		} else if (messageType.equals("logout")) {
-			logout(session,decryptedEmail);
+			logout(session, decryptedEmail);
 		} else {
-			messenger.sendUpdateStatusMessage(session,"invalid messagetype\n" + "please send one of these options:\n"
+			messenger.sendUpdateStatusMessage(session, "invalid messagetype\n" + "please send one of these options:\n"
 					+ "login, filter, refresh, addfavorite, callfavorite, removefavorite or logout");
 
 		}
@@ -128,6 +133,7 @@ public class Websocket {
 
 	/**
 	 * Standard method that comes with websockets to close a connection
+	 * 
 	 * @param session
 	 */
 	@OnClose
@@ -137,22 +143,23 @@ public class Websocket {
 
 	/**
 	 * standard method that comes with websockets to handle errors
+	 * 
 	 * @param t
 	 * @param session
 	 */
 	@OnError
 	public void onError(Throwable t, Session session) {
-		 System.out.println("onError::");
-		 //t.printStackTrace();
+		System.out.println("onError::");
+		// t.printStackTrace();
 	}
 
 	/*
-	 * all private functional methods are below
-	 * directly below are key methods for message digestion.
+	 * all private functional methods are below directly below are key methods for
+	 * message digestion.
 	 */
 
-	private void login(Session session, String email, String pass,StorageObject storageObject){
-		//String pass = jsonMessage.get("pass").getAsString();
+	private void login(Session session, String email, String pass, StorageObject storageObject) {
+		// String pass = jsonMessage.get("pass").getAsString();
 
 		Mailer mailer;
 		Database database;
@@ -161,21 +168,21 @@ public class Websocket {
 			storageObject = new StorageObject();
 			mailer = new Mailer(email, pass);
 
-			messenger.sendUpdateStatusMessage(session,"establising connection");
+			messenger.sendUpdateStatusMessage(session, "establising connection");
 
 			boolean connectedToDatabase = mailer.isConnected();
 			if (!connectedToDatabase) {
-				messenger.sendUpdateStatusMessage(session,"failed to connect to email");
+				messenger.sendUpdateStatusMessage(session, "failed to connect to email");
 				return;
 			}
 
 			try {
 				database = new Database(email, mailer);
-			}catch(Throwable t){
-				messenger.sendErrorMessage(session,"error in db: "+t.getMessage());
+			} catch (Throwable t) {
+				messenger.sendErrorMessage(session, "error in db: " + t.getMessage());
 				return;
 			}
-			messenger.sendUpdateStatusMessage(session,"established connection");
+			messenger.sendUpdateStatusMessage(session, "established connection");
 
 			storageObject.setDatabase(database);
 			storageObject.setMailer(mailer);
@@ -183,9 +190,8 @@ public class Websocket {
 		} else {
 			mailer = storageObject.getMailer();
 			database = storageObject.getDatabase();
-			messenger.sendUpdateStatusMessage(session,"established connection");
+			messenger.sendUpdateStatusMessage(session, "established connection");
 		}
-
 
 		boolean hasEmails;
 		hasEmails = database.hasEmails();
@@ -198,11 +204,11 @@ public class Websocket {
 			try {
 				folders = database.importFolders();
 				favourites = database.getUserFavourites();
-			}catch(Throwable t){
-				messenger.sendErrorMessage(session,"error in db: "+t.getMessage());
+			} catch (Throwable t) {
+				messenger.sendErrorMessage(session, "error in db: " + t.getMessage());
 				return;
 			}
-			refresh(storageObject,email,mailer,database,true,session);
+			refresh(storageObject, email, mailer, database, true, session);
 
 			js.addProperty("messagetype", "logininfo");
 			JsonArray ja1 = new JsonArray();
@@ -215,23 +221,23 @@ public class Websocket {
 			}
 			js.add("foldername", ja1);
 			js.add("favoritename", ja2);
-			messenger.sendMessageToClient(session,js);
+			messenger.sendMessageToClient(session, js);
 		} else {
-			messenger.sendUpdateStatusMessage(session,"nothing found in database, preforming fresh import");
-			refresh(storageObject,email,mailer,database,false,session);
+			messenger.sendUpdateStatusMessage(session, "nothing found in database, preforming fresh import");
+			refresh(storageObject, email, mailer, database, false, session);
 		}
 
 	}
 
-	//TODO Still needs testing
-	private void filter(Session session, Database database, String email, JsonObject filter){
+	// TODO Still needs testing
+	private void filter(Session session, Database database, String email, JsonObject filter) {
 		Handler handler = new Handler(session, database, email, filter);
 		Thread thread = new Thread(handler);
 		thread.start();
 	}
 
-	//TODO Still needs testing
-	private void callFavorite(Session session, Database database, String favname, String email){
+	// TODO Still needs testing
+	private void callFavorite(Session session, Database database, String favname, String email) {
 		UserFavourites userFavourites;
 		userFavourites = database.getUserFavourite(favname);
 		Handler handler = new Handler(session, database, email, userFavourites);
@@ -241,6 +247,7 @@ public class Websocket {
 
 	/**
 	 * If a validationthread is not happening then refresh is called to make it so.
+	 * 
 	 * @param storageObject
 	 * @param email
 	 * @param mailer
@@ -248,40 +255,43 @@ public class Websocket {
 	 * @param validateOrPull
 	 * @param session
 	 */
-	private void refresh(StorageObject storageObject,String email,Mailer mailer, Database database, boolean validateOrPull, Session session){
-		if(storageObject!=null&&storageObject.getValidationThread()!=null&&storageObject.getValidationThread().isAlive()){
+	private void refresh(StorageObject storageObject, String email, Mailer mailer, Database database,
+			boolean validateOrPull, Session session) {
+		if (storageObject != null && storageObject.getValidationThread() != null
+				&& storageObject.getValidationThread().isAlive()) {
 			JsonObject js = new JsonObject();
-			js.addProperty("messagetype","statusupdate");
-			js.addProperty("message","validation already occuring");
-			messenger.sendMessageToClient(session,js);
+			js.addProperty("messagetype", "statusupdate");
+			js.addProperty("message", "validation already occuring");
+			messenger.sendMessageToClient(session, js);
 		}
-		ValidationRunnable vr = new ValidationRunnable(mailer,database,validateOrPull,session);
+		ValidationRunnable vr = new ValidationRunnable(mailer, database, validateOrPull, session);
 		Thread thread = new Thread(vr);
 		thread.start();
 		storageObject.setValidationRunnable(vr);
 		storageObject.setValidationThread(thread);
-		sessionMapper.put(email,storageObject);
+		sessionMapper.put(email, storageObject);
 	}
 
-
 	/**
-	 * This method is the add a new favorite to database and return gui the new list of favorites
+	 * This method is the add a new favorite to database and return gui the new list
+	 * of favorites
+	 * 
 	 * @param session
 	 * @param database
 	 * @param favoriteName
 	 * @param filter
 	 */
-	private void addFavorite(Session session,Database database,String favoriteName, JsonObject filter){
+	private void addFavorite(Session session, Database database, String favoriteName, JsonObject filter) {
 		String foldername = filter.get("foldername").getAsString();
 		String sd = filter.get("date").getAsString();
 		String interval = filter.get("interval").getAsString();
 
 		DateTime startDate = getStartDate(sd);
 		DateTime endDate = getEndDate(startDate, interval);
-		if(startDate==null||endDate==null){
+		if (startDate == null || endDate == null) {
 			JsonObject js = new JsonObject();
-			js.addProperty("messagetype","statusupdate");
-			js.addProperty("message","invalid dateTime");
+			js.addProperty("messagetype", "statusupdate");
+			js.addProperty("message", "invalid dateTime");
 			messenger.sendMessageToClient(session, js);
 			return;
 		}
@@ -290,23 +300,23 @@ public class Websocket {
 		boolean seen = filter.get("seen").getAsBoolean();
 		boolean added;
 		try {
-			added = database.insertUserFavourites(favoriteName, startDate.toDate(), endDate.toDate(), Interval.parse(interval),
-					attachment, seen, foldername);
-		}catch(Throwable t){
-			messenger.sendErrorMessage(session,"error in db: "+t.getMessage());
+			added = database.insertUserFavourites(favoriteName, startDate.toDate(), endDate.toDate(),
+					Interval.parse(interval), attachment, seen, foldername);
+		} catch (Throwable t) {
+			messenger.sendErrorMessage(session, "error in db: " + t.getMessage());
 			return;
 		}
-		if(added){
-			messenger.sendUpdateStatusMessage(session,"Favorite has been added");
-		}else{
+		if (added) {
+			messenger.sendUpdateStatusMessage(session, "Favorite has been added");
+		} else {
 			messenger.sendUpdateStatusMessage(session, "No FolderName");
 		}
 
 		List<UserFavourites> favourites;
 		try {
 			favourites = database.getUserFavourites();
-		}catch(Throwable t){
-			messenger.sendErrorMessage(session,"error in db: "+t.getMessage());
+		} catch (Throwable t) {
+			messenger.sendErrorMessage(session, "error in db: " + t.getMessage());
 			return;
 		}
 
@@ -323,23 +333,23 @@ public class Websocket {
 
 	/**
 	 * method removes favorite from database and sends gui the new list of favorites
+	 * 
 	 * @param session
 	 * @param database
 	 * @param favoriteName
 	 */
-	private void removeFavorite(Session session, Database database, String favoriteName){
-		//dont return from these catches as they need UserFavourites
+	private void removeFavorite(Session session, Database database, String favoriteName) {
+		// dont return from these catches as they need UserFavourites
 		try {
 			database.removeUserFavourite(favoriteName);
-		}catch(Throwable t){
-			messenger.sendErrorMessage(session,"error in db: "+t.getMessage());
+		} catch (Throwable t) {
+			messenger.sendErrorMessage(session, "error in db: " + t.getMessage());
 			return;
 		}
-		messenger.sendUpdateStatusMessage(session,"Favorite has been removed");
+		messenger.sendUpdateStatusMessage(session, "Favorite has been removed");
 
 		List<UserFavourites> favourites;
 		favourites = database.getUserFavourites();
-
 
 		JsonArray ja = new JsonArray();
 		for (int i = 0; i < favourites.size(); i++) {
@@ -353,10 +363,11 @@ public class Websocket {
 
 	/**
 	 * method to remove user instance from memory
+	 * 
 	 * @param session
 	 * @param email
 	 */
-	private void logout(Session session, String email){
+	private void logout(Session session, String email) {
 		sessionMapper.remove(email);
 		try {
 			session.close();
@@ -366,17 +377,20 @@ public class Websocket {
 	}
 
 	/*
-	below are support methods
+	 * below are support methods
 	 */
 
 	/**
 	 * Method to obtain end date
+	 * 
 	 * @param startDate
 	 * @param interval
 	 * @return DateTime
 	 */
 	private DateTime getEndDate(DateTime startDate, String interval) {
-		if(startDate==null){return null;}
+		if (startDate == null) {
+			return null;
+		}
 		if (interval.equals("year")) {
 			return startDate.plusYears(1);
 		} else if (interval.equals("month")) {
@@ -388,17 +402,16 @@ public class Websocket {
 
 	/**
 	 * takes a string and attempts to convert it to a jodaDateTime
+	 * 
 	 * @param sd
 	 * @return DateTime
 	 */
-	private DateTime getStartDate(String sd){
+	private DateTime getStartDate(String sd) {
 		try {
 			return new DateTime(DateTimeFormat.forPattern("yyyy/MM/dd HH:mm:ss").parseMillis(sd));
-		}catch(IllegalArgumentException iae){
+		} catch (IllegalArgumentException iae) {
 			return null;
 		}
 	}
-
-
 
 }
