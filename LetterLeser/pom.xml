@@ -54,11 +54,13 @@
       <!-- https://mvnrepository.com/artifact/com.google.oauth-client/google-oauth-client -->
       <!-- connecting to a mysql server -->
       <!-- https://mvnrepository.com/artifact/mysql/mysql-connector-java -->
-      <dependency>
-         <groupId>mysql</groupId>
-         <artifactId>mysql-connector-java</artifactId>
-         <version>8.0.17</version>
-      </dependency>
+<!-- https://mvnrepository.com/artifact/mysql/mysql-connector-java -->
+<dependency>
+    <groupId>mysql</groupId>
+    <artifactId>mysql-connector-java</artifactId>
+    <version>6.0.2</version>
+</dependency>
+
       <!-- https://mvnrepository.com/artifact/joda-time/joda-time -->
       <dependency>
          <groupId>joda-time</groupId>

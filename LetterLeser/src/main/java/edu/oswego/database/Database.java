@@ -150,18 +150,19 @@ public class Database {
 	 * @deprecated
 	 */
 	public void showTables() {
+		Connection connection = getConnection();
 		ResultSet queryTbl = null;
 		ResultSet queryAttr = null;
 		
 		try {
 			// show all tables
-			queryTbl = getConnection().prepareStatement("show tables").executeQuery();
+			queryTbl = connection.prepareStatement("show tables").executeQuery();
 
 			while (queryTbl.next()) {
 				String tbl = queryTbl.getString(1);
 				System.out.println("[FOLDER] Table: " + tbl + "\n-------------------");
 
-				queryAttr = getConnection().prepareStatement("select * from " + tbl).executeQuery();
+				queryAttr = connection.prepareStatement("select * from " + tbl).executeQuery();
 				while (queryAttr.next()) {
 					ResultSetMetaData md = queryAttr.getMetaData();
 					for (int i = 1; i < md.getColumnCount() + 1; i++)
@@ -172,14 +173,64 @@ public class Database {
 				System.out.println();
 				queryAttr.close();
 			}
+			DbUtils.closeQuietly(queryTbl);
+			DbUtils.closeQuietly(queryAttr);
+			DbUtils.closeQuietly(connection);
 		} catch (SQLException e) {
 			DebugLogger.logEvent(Database.class.getName(), Level.WARNING, e.getMessage());
 		} finally {
-//			DbUtils.closeQuietly(queryTbl);
-//			DbUtils.closeQuietly(queryAttr);
-//			DbUtils.closeQuietly(connection);
+			DbUtils.closeQuietly(queryTbl);
+			DbUtils.closeQuietly(queryAttr);
+			DbUtils.closeQuietly(connection);
 		}
 	}
+	
+	public void showConnections() {
+		Connection connection = getConnection();
+		ResultSet rs = null;
+		
+		try {
+			// SHOW FULL PROCESSLIST
+			rs = connection.prepareStatement("SHOW FULL PROCESSLIST;").executeQuery();
+
+			while (rs.next()) {
+				System.out.println("DB: " + rs.getString(4) + "_" + rs.getString(5) + " :: " + rs.getString(8) + "\t" + rs.getInt(6));
+			}
+			DbUtils.closeQuietly(rs);
+			DbUtils.closeQuietly(connection);
+		} catch (SQLException e) {
+			DebugLogger.logEvent(Database.class.getName(), Level.WARNING, e.getMessage());
+		} finally {
+			DbUtils.closeQuietly(rs);
+			DbUtils.closeQuietly(connection);
+		}
+	}
+	
+	public int getConnectionCount() {
+		int threads = -1;
+		Connection connection = getConnection();
+		ResultSet rs = null;
+		
+		try {
+			// SHOW FULL PROCESSLIST
+			rs = connection.prepareStatement("USE information_schema; SELECT COUNT(*) FROM PROCESSLIST WHERE db ='csc480_19f';").executeQuery();
+
+			while (rs.next()) {
+				threads = rs.getInt(1);
+			}
+			DbUtils.closeQuietly(rs);
+			DbUtils.closeQuietly(connection);
+		} catch (SQLException e) {
+			DebugLogger.logEvent(Database.class.getName(), Level.WARNING, e.getMessage());
+		} finally {
+			DbUtils.closeQuietly(rs);
+			DbUtils.closeQuietly(connection);
+		}
+		
+		return threads;
+	}
+	
+	
 
 	/**
 	 * @param emailAddress
@@ -212,6 +263,7 @@ public class Database {
 	public Connection getConnection() {
 		System.out.println(++i);
 		Connection connection = null;
+		
 		try {
 			Class.forName("com.mysql.cj.jdbc.Driver");
 			if (connection == null || connection.isClosed()) {
@@ -415,11 +467,12 @@ public class Database {
 					.prepareStatement("SELECT * FROM user WHERE email_address = '" + emailAddress + "';",
 							Statement.RETURN_GENERATED_KEYS)
 					.executeQuery();
-			while (rs.next())
-				return new EmailAddress(rs.getInt(1), rs.getString(2));
-			
-			DbUtils.closeQuietly(rs);
-			DbUtils.closeQuietly(connection);
+			while (rs.next()) {
+				EmailAddress ea = new EmailAddress(rs.getInt(1), rs.getString(2));
+				DbUtils.closeQuietly(rs);
+				DbUtils.closeQuietly(connection);
+				return ea;
+			}
 		} catch (SQLException e) {
 			DebugLogger.logEvent(Database.class.getName(), Level.WARNING, e.getMessage());
 		} finally {
@@ -451,8 +504,12 @@ public class Database {
 		ResultSet rs = null;
 		try {
 			rs = connection.prepareStatement("SELECT id FROM folder WHERE fold_name = '" + folderName + "';").executeQuery();
-			if (rs.next())
-				return rs.getInt(1);
+			if (rs.next()) {
+				int id = rs.getInt(1);
+				DbUtils.closeQuietly(rs);
+				DbUtils.closeQuietly(connection);
+				return id;
+			}
 			
 			DbUtils.closeQuietly(rs);
 			DbUtils.closeQuietly(connection);
@@ -539,6 +596,7 @@ public class Database {
 	 * @return List of UserFavourites
 	 */
 	public List<UserFavourites> getUserFavourites() {
+		System.out.println("GET");
 		List<UserFavourites> ufList = new ArrayList<>();
 		Connection connection = getConnection();
 		ResultSet rs = null;
@@ -591,6 +649,7 @@ public class Database {
 	 */
 	public boolean insertUserFavourites(String favName, java.util.Date startDate, java.util.Date endDate,
 			Interval intervalRange, boolean hasAttachment, boolean isSeen, String folderName) {
+		System.out.println("MEEE");
 		int folderId = getFolderId(folderName);
 		if (folderId == -1)
 			return false;
@@ -640,12 +699,13 @@ public class Database {
 
 			rs = ps.getGeneratedKeys();
 
-			if (rs.next())
-				return rs.getInt(1);
-			
-			DbUtils.closeQuietly(ps);
-			DbUtils.closeQuietly(rs);
-			DbUtils.closeQuietly(connection);
+			if (rs.next()) {
+				int id = rs.getInt(1);
+				DbUtils.closeQuietly(ps);
+				DbUtils.closeQuietly(rs);
+				DbUtils.closeQuietly(connection);
+				return id;
+			}
 
 		} catch (SQLException e) {
 			DebugLogger.logEvent(Database.class.getName(), Level.WARNING, e.getMessage());
@@ -1143,12 +1203,14 @@ public class Database {
 	 * @param statement
 	 */
 	public void query(String statement) {
+		System.out.println(statement);
 		Connection connection = getConnection();
 		PreparedStatement ps = null;
 		try {
 			ps = connection.prepareStatement(statement);
 			ps.execute();
 			DebugLogger.logEvent(Database.class.getName(), Level.INFO, "Query made for statement: " + statement);
+			
 			DbUtils.closeQuietly(ps);
 			DbUtils.closeQuietly(connection);
 		} catch (SQLException e) {

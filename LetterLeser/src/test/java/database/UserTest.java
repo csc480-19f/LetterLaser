@@ -43,13 +43,7 @@ class UserTest {
 		db.query("INSERT INTO user (email_address) VALUE ('second@gmail.com');");
 		int id = -1;
 
-		ResultSet rs = db.getConnection()
-				.prepareStatement("SELECT id FROM user WHERE email_address = 'second@gmail.com';").executeQuery();
-		while (rs.next())
-			id = rs.getInt(1);
-
-		rs.close();
-		assertEquals(id, 2);
+		assertEquals(db.getUser("second@gmail.com").getId(), 2);
 	}
 
 	@Test
@@ -62,7 +56,6 @@ class UserTest {
 	void testUserValidatedEmail() throws ClassNotFoundException, SQLException {
 		int amt = 500;
 		db.setValidatedEmailCount(amt);
-		
 		assertEquals(db.getValidatedEmails(), amt);
 	}
 

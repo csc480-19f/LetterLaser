@@ -23,6 +23,7 @@ public class DBdemo {
 		System.out.println(db.getValidatedEmails());
 		// db.truncateTables();
 		db.pull();
+		db.showConnections();
 
 		// try {
 		// Date utilDate = (Date) new
