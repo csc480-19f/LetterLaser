@@ -69,7 +69,7 @@ public class ValidationRunnable implements Runnable {
 			messenger.sendMessageToClient(session, js);
 		}
 	}
-	
+
 	// TODO need this implemented
 	private boolean isConnectionOpen() {
 		return database.getConnectionCount() <= edu.oswego.database.Settings.THRESHOLD_CONNECTION;
