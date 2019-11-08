@@ -171,7 +171,6 @@ public class Websocket {
 
 			try {
 				database = new Database(email, mailer);
-				database.closeConnection();
 			}catch(Throwable t){
 				messenger.sendErrorMessage(session,"error in db: "+t.getMessage());
 				return;
@@ -198,9 +197,7 @@ public class Websocket {
 			List<UserFavourites> favourites;
 			try {
 				folders = database.importFolders();
-				database.closeConnection();
 				favourites = database.getUserFavourites();
-				database.closeConnection();
 			}catch(Throwable t){
 				messenger.sendErrorMessage(session,"error in db: "+t.getMessage());
 				return;
@@ -295,7 +292,6 @@ public class Websocket {
 		try {
 			added = database.insertUserFavourites(favoriteName, startDate.toDate(), endDate.toDate(), Interval.parse(interval),
 					attachment, seen, foldername);
-			database.closeConnection();
 		}catch(Throwable t){
 			messenger.sendErrorMessage(session,"error in db: "+t.getMessage());
 			return;
@@ -309,7 +305,6 @@ public class Websocket {
 		List<UserFavourites> favourites;
 		try {
 			favourites = database.getUserFavourites();
-			database.closeConnection();
 		}catch(Throwable t){
 			messenger.sendErrorMessage(session,"error in db: "+t.getMessage());
 			return;
@@ -336,7 +331,6 @@ public class Websocket {
 		//dont return from these catches as they need UserFavourites
 		try {
 			database.removeUserFavourite(favoriteName);
-			database.closeConnection();
 		}catch(Throwable t){
 			messenger.sendErrorMessage(session,"error in db: "+t.getMessage());
 			return;

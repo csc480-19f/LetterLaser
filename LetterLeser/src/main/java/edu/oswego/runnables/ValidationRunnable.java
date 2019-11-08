@@ -35,7 +35,6 @@ public class ValidationRunnable implements Runnable {
 
 			try {
 				database.pull();
-				database.closeConnection();
 			}catch(Throwable t){
 				messenger.sendErrorMessage(session,"error in db: "+t.getMessage());
 				return;
@@ -52,9 +51,7 @@ public class ValidationRunnable implements Runnable {
 			List<UserFavourites> favourites;
 			try {
 				folders = database.pull();
-				database.closeConnection();
 				favourites = database.getUserFavourites();
-				database.closeConnection();
 			}catch(Throwable t){
 				messenger.sendErrorMessage(session,"error in db: "+t.getMessage());
 				return;
