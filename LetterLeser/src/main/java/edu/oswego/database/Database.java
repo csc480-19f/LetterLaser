@@ -53,6 +53,9 @@ public class Database {
 			while (rs.next())
 				eaList.add(new EmailAddress(rs.getInt(1), rs.getString(2)));
 			
+			DbUtils.closeQuietly(rs);
+			DbUtils.closeQuietly(connection);
+			
 		} catch (SQLException e) {
 			e.printStackTrace();
 		} finally {
@@ -73,6 +76,9 @@ public class Database {
 					+ "WHERE user_email.user_id = " + user.getId() + ";").executeQuery();
 			while (rs.next())
 				eaList.add(new EmailAddress(rs.getInt(1), rs.getString(2)));
+			
+			DbUtils.closeQuietly(rs);
+			DbUtils.closeQuietly(connection);
 		} catch (SQLException e) {
 			e.printStackTrace();
 		} finally {
@@ -98,6 +104,9 @@ public class Database {
 			rs = connection.prepareStatement("SELECT * FROM email WHERE id = " + id + ";").executeQuery();
 			while (rs.next())
 				return new Email(rs.getInt(1), rs.getDate(2), rs.getString(3), rs.getDouble(4), rs.getBoolean(5), rs.getString(6), rs.getBoolean(7));
+			
+			DbUtils.closeQuietly(rs);
+			DbUtils.closeQuietly(connection);
 		} catch (SQLException e) {
 			e.printStackTrace();
 		} finally {
@@ -123,6 +132,9 @@ public class Database {
 			rs = connection.prepareStatement("SELECT * FROM user_email WHERE user_id = " + user.getId() + ";").executeQuery();
 			while (rs.next())
 				emailList.add(getEmailById(rs.getInt(3)));
+			
+			DbUtils.closeQuietly(rs);
+			DbUtils.closeQuietly(connection);
 		} catch (SQLException e) {
 			e.printStackTrace();
 		} finally {
@@ -340,6 +352,9 @@ public class Database {
 						getReceivedEmail(rs.getInt(1)));
 				emailList.add(e);
 			}
+			
+			DbUtils.closeQuietly(rs);
+			DbUtils.closeQuietly(connection);
 		} catch (SQLException e) {
 			DebugLogger.logEvent(Database.class.getName(), Level.WARNING, e.getMessage());
 		} finally {
@@ -373,6 +388,10 @@ public class Database {
 				DebugLogger.logEvent(Database.class.getName(), Level.INFO, "New user created " + rs.getInt(1) + " <" + emailAddress + ">");
 				return rs.getInt(1);
 			}
+			
+			DbUtils.closeQuietly(ps);
+			DbUtils.closeQuietly(rs);
+			DbUtils.closeQuietly(connection);
 
 		} catch (SQLException e) {
 			DebugLogger.logEvent(Database.class.getName(), Level.WARNING, e.getMessage());
@@ -398,6 +417,9 @@ public class Database {
 					.executeQuery();
 			while (rs.next())
 				return new EmailAddress(rs.getInt(1), rs.getString(2));
+			
+			DbUtils.closeQuietly(rs);
+			DbUtils.closeQuietly(connection);
 		} catch (SQLException e) {
 			DebugLogger.logEvent(Database.class.getName(), Level.WARNING, e.getMessage());
 		} finally {
@@ -431,6 +453,9 @@ public class Database {
 			rs = connection.prepareStatement("SELECT id FROM folder WHERE fold_name = '" + folderName + "';").executeQuery();
 			if (rs.next())
 				return rs.getInt(1);
+			
+			DbUtils.closeQuietly(rs);
+			DbUtils.closeQuietly(connection);
 		} catch (SQLException e) {
 			DebugLogger.logEvent(Database.class.getName(), Level.WARNING, e.getMessage());
 		} finally {
@@ -493,6 +518,9 @@ public class Database {
 							getFolderById(rs2.getInt(7)));
 				}
 			}
+			DbUtils.closeQuietly(rs);
+			DbUtils.closeQuietly(rs2);
+			DbUtils.closeQuietly(connection);
 		} catch (SQLException e) {
 			DebugLogger.logEvent(Database.class.getName(), Level.WARNING, e.getMessage());
 		} finally {
@@ -531,6 +559,10 @@ public class Database {
 							Interval.parse(rs2.getString(4)), rs2.getBoolean(5), rs2.getBoolean(6),
 							getFolderById(rs2.getInt(7))));
 			}
+			
+			DbUtils.closeQuietly(rs);
+			DbUtils.closeQuietly(rs2);
+			DbUtils.closeQuietly(connection);
 		} catch (SQLException e) {
 			DebugLogger.logEvent(Database.class.getName(), Level.WARNING, e.getMessage());
 		} finally {
@@ -610,6 +642,10 @@ public class Database {
 
 			if (rs.next())
 				return rs.getInt(1);
+			
+			DbUtils.closeQuietly(ps);
+			DbUtils.closeQuietly(rs);
+			DbUtils.closeQuietly(connection);
 
 		} catch (SQLException e) {
 			DebugLogger.logEvent(Database.class.getName(), Level.WARNING, e.getMessage());
@@ -650,6 +686,9 @@ public class Database {
 				folderList.add(new UserFolder(rs.getInt(1), mailer.getFolder(rs.getString(2))));
 				return true;
 			}
+			
+			DbUtils.closeQuietly(rs);
+			DbUtils.closeQuietly(connection);
 		} catch (SQLException e) {
 			DebugLogger.logEvent(Database.class.getName(), Level.WARNING, e.getMessage());
 		} finally {
@@ -690,6 +729,10 @@ public class Database {
 					}
 				}
 			}
+			
+			DbUtils.closeQuietly(ps);
+			DbUtils.closeQuietly(rs);
+			DbUtils.closeQuietly(connection);
 
 		} catch (SQLException | MessagingException e) {
 			e.printStackTrace();
@@ -723,6 +766,9 @@ public class Database {
 			while (rs.next())
 				return rs.getInt(1);
 
+			DbUtils.closeQuietly(ps);
+			DbUtils.closeQuietly(rs);
+			DbUtils.closeQuietly(connection);
 		} catch (SQLException e) {
 			e.printStackTrace();
 		} catch (MessagingException e) {
@@ -789,6 +835,10 @@ public class Database {
 				emailId = rs.getInt(1);
 				emailIdList.add(emailId);
 			}
+			
+			DbUtils.closeQuietly(ps);
+			DbUtils.closeQuietly(rs);
+			DbUtils.closeQuietly(connection);
 
 		} catch (SQLException e) {
 			DebugLogger.logEvent(Database.class.getName(), Level.WARNING, e.getMessage());
@@ -821,6 +871,9 @@ public class Database {
 			while (rs.next()) {
 				size = rs.getInt(1);
 			}
+			
+			DbUtils.closeQuietly(rs);
+			DbUtils.closeQuietly(connection);
 		} catch (SQLException e) {
 			DebugLogger.logEvent(Database.class.getName(), Level.WARNING, e.getMessage());
 		} finally {
@@ -883,6 +936,10 @@ public class Database {
 					while (rs2.next())
 						emailAddrList.add(new EmailAddress(rs2.getInt(1), rs2.getString(2)));
 				}
+				
+				DbUtils.closeQuietly(rs);
+				DbUtils.closeQuietly(rs2);
+				DbUtils.closeQuietly(connection);
 			} catch (SQLException e) {
 				DebugLogger.logEvent(Database.class.getName(), Level.WARNING, e.getMessage());
 			} finally {
@@ -913,6 +970,9 @@ public class Database {
 					.executeQuery();
 			while (rs.next())
 				addressIdList.add(new EmailAddress(rs.getInt(1), rs.getString(2)));
+			
+			DbUtils.closeQuietly(rs);
+			DbUtils.closeQuietly(connection);
 		} catch (SQLException e) {
 			DebugLogger.logEvent(Database.class.getName(), Level.WARNING, e.getMessage());
 		} finally {
@@ -931,17 +991,21 @@ public class Database {
 	 * @return boolean if receieved email exists
 	 */
 	private boolean receivedEmailExists(int emailId, int emailAddrId) {
+		Connection connection = getConnection();
 		ResultSet rs = null;
 		try {
-			rs = getConnection().prepareStatement("SELECT * FROM received_email WHERE email_id = " + emailId
+			rs = connection.prepareStatement("SELECT * FROM received_email WHERE email_id = " + emailId
 					+ " AND email_addr_id = " + emailAddrId + ";").executeQuery();
 			while (rs.next())
 				return true;
+			
+			DbUtils.closeQuietly(rs);
+			DbUtils.closeQuietly(connection);
 		} catch (SQLException e) {
 			DebugLogger.logEvent(Database.class.getName(), Level.WARNING, e.getMessage());
 		} finally {
-//			DbUtils.closeQuietly(rs);
-//			DbUtils.closeQuietly(connection);
+			DbUtils.closeQuietly(rs);
+			DbUtils.closeQuietly(connection);
 		}
 
 		return false;
@@ -976,6 +1040,9 @@ public class Database {
 					.executeQuery();
 			while (rs.next())
 				return true;
+			
+			DbUtils.closeQuietly(rs);
+			DbUtils.closeQuietly(connection);
 		} catch (SQLException e) {
 			DebugLogger.logEvent(Database.class.getName(), Level.WARNING, e.getMessage());
 		} finally {
@@ -1015,8 +1082,10 @@ public class Database {
 
 			while (rs.next())
 				size++;
+			
+			DbUtils.closeQuietly(rs);
+			DbUtils.closeQuietly(connection);
 
-			rs.close();
 		} catch (SQLException e) {
 			DebugLogger.logEvent(Database.class.getName(), Level.WARNING, e.getMessage());
 		} finally {
@@ -1056,6 +1125,8 @@ public class Database {
 			while (rs.next())
 				validatedEmails = rs.getInt(3);
 
+			DbUtils.closeQuietly(rs);
+			DbUtils.closeQuietly(connection);
 		} catch (SQLException e) {
 			DebugLogger.logEvent(Database.class.getName(), Level.WARNING, e.getMessage());
 		} finally {
@@ -1078,6 +1149,8 @@ public class Database {
 			ps = connection.prepareStatement(statement);
 			ps.execute();
 			DebugLogger.logEvent(Database.class.getName(), Level.INFO, "Query made for statement: " + statement);
+			DbUtils.closeQuietly(ps);
+			DbUtils.closeQuietly(connection);
 		} catch (SQLException e) {
 			e.printStackTrace();
 		} finally {
@@ -1142,6 +1215,9 @@ public class Database {
 				if (size > 0)
 					return true;
 			}
+			
+			DbUtils.closeQuietly(rs);
+			DbUtils.closeQuietly(connection);
 		} catch (SQLException e) {
 			DebugLogger.logEvent(Database.class.getName(), Level.WARNING, e.getMessage());
 		} finally {

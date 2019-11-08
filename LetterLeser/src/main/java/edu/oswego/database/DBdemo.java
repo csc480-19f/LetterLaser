@@ -1,7 +1,5 @@
 package edu.oswego.database;
 
-import java.sql.SQLException;
-
 import javax.mail.Folder;
 import javax.mail.MessagingException;
 
