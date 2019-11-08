@@ -7,6 +7,7 @@ import edu.oswego.database.Database;
 import edu.oswego.model.Email;
 import edu.oswego.model.UserFavourites;
 
+import edu.oswego.websocket.Messenger;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 
@@ -25,6 +26,7 @@ public class Handler implements Runnable {
 	private UserFavourites userFavourites;
 	private String email;
 	private Session session;
+	private Messenger messenger = new Messenger();
 
 	public Handler(Session session, Database database, String email, JsonObject jsonObject) {
 		this.session = session;
@@ -44,10 +46,10 @@ public class Handler implements Runnable {
 
 	@Override
 	public void run() {
-		Thread.currentThread().setName("hanlder");
+		Thread.currentThread().setName("handler");
 
 		if (jsonObject != null) {
-//			try {
+			try {
 				String folderName = jsonObject.get("foldername").getAsString();
 				String sd = jsonObject.get("date").getAsString();
 				String interval = jsonObject.get("interval").getAsString();
@@ -55,20 +57,26 @@ public class Handler implements Runnable {
 				boolean seen = jsonObject.get("seen").getAsBoolean();
 				DateTime startDate = new DateTime(DateTimeFormat.forPattern("yyyy/MM/dd HH:mm:ss").parseMillis(sd));
 				DateTime endDate = getEndDate(startDate, interval);
-				List<Email> emails = database.getEmailByFilter(attachment, startDate.toDate().toString(),
-						endDate.toDate().toString(), seen, folderName);
+				List<Email> emails;
+				try {
+					emails = database.getEmailByFilter(attachment, startDate.toDate().toString(),
+							endDate.toDate().toString(), seen, folderName);
+				}catch(Throwable t){
+					messenger.sendErrorMessage(session,"error in db: "+t.getMessage());
+					return;
+				}
 				performCalculations(emails);
-//			}catch(IllegalArgumentException | SQLException | ClassNotFoundException e){
-//				sendErrorMessage(session,"error:\n" + e.getMessage());
-//			}
+			}catch(IllegalArgumentException e){
+				messenger.sendErrorMessage(session,"error:\n" + e.getMessage());
+			}
 		} else if (userFavourites != null) {
 			List<Email> emails = null;
-//			try {
-				emails = database.getEmailByFilter(userFavourites.isHasAttachment(),userFavourites.getStartDate().toString(),userFavourites.getEndDate().toString(),userFavourites.isSeen(),userFavourites.getFolder().getFolder().getFullName());
-//			} catch (SQLException | ClassNotFoundException e) {
-//				e.printStackTrace();
-//				sendErrorMessage(session,"error:\n" + e.getMessage());
-//			}
+			try {
+				emails = database.getEmailByFilter(userFavourites.isHasAttachment(), userFavourites.getStartDate().toString(), userFavourites.getEndDate().toString(), userFavourites.isSeen(), userFavourites.getFolder().getFolder().getFullName());
+			}catch(Throwable t){
+				messenger.sendErrorMessage(session,"error in db: "+t.getMessage());
+				return;
+			}
 			performCalculations(emails);
 		} else {
 			System.out.println("no userfav or json so no calc can be preformed");
@@ -140,24 +148,24 @@ public class Handler implements Runnable {
 
 		} catch (InterruptedException e) {
 			e.printStackTrace();
-			sendErrorMessage(session,"request ended Callable interrupted\n"+e.getMessage());
+			messenger.sendErrorMessage(session,"request ended Callable interrupted\n"+e.getMessage());
 			return;
 		} catch (ExecutionException e) {
 			e.printStackTrace();
-			sendErrorMessage(session,"request ended executionException:\n"+e.getMessage());
+			messenger.sendErrorMessage(session,"request ended executionException:\n"+e.getMessage());
 			return;
 		} catch (TimeoutException e) {
-			sendErrorMessage(session,"request ended\n" +
+			messenger.sendErrorMessage(session,"request ended\n" +
 					"TimeoutException Occurred\n" +
 					e.getMessage());
 			return;
 		}catch(Exception e){
-			sendErrorMessage(session,"request ended\n" +
+			messenger.sendErrorMessage(session,"request ended\n" +
 					"unknown exception Occurred\n"  +
 					e.getMessage());
 			return;
 		}
-		sendMessageToClient(session,js);
+		messenger.sendMessageToClient(session,js);
 
 	}
 
@@ -171,26 +179,5 @@ public class Handler implements Runnable {
 		}
 	}
 
-	private void sendUpdateStatusMessage(Session session,String message){
-		JsonObject js = new JsonObject();
-		js.addProperty("messagetype","statusupdate");
-		js.addProperty("message",message);
-		sendMessageToClient(session,js);
-	}
-
-	private void sendErrorMessage(Session session,String errorMessage){
-		JsonObject js = new JsonObject();
-		js.addProperty("messagetype","error");
-		js.addProperty("message",errorMessage);
-		sendMessageToClient(session,js);
-	}
-
-	private void sendMessageToClient(Session session, JsonObject returnMessage) {
-		try {
-			session.getBasicRemote().sendText(returnMessage.toString());
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
 
 }

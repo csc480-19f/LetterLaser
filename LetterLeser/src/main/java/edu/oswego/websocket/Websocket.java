@@ -1,12 +1,16 @@
 package edu.oswego.websocket;
 
 import java.io.IOException;
-import java.sql.SQLException;
-import javax.mail.MessagingException;
 
+import java.io.UnsupportedEncodingException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
 import javax.websocket.OnClose;
 import javax.websocket.OnError;
 import javax.websocket.OnMessage;
@@ -36,7 +40,8 @@ import org.joda.time.format.DateTimeFormat;
 public class Websocket {
 	// this is to manage all current/last active threads for each unique sessions
 	private static ConcurrentHashMap<String, StorageObject> sessionMapper = new ConcurrentHashMap<>();
-
+	Messenger messenger = new Messenger();
+	JSDecryptor jse = null;
 	/**
 	 * standard inclusive method that comes with websockets
 	 * @param session
@@ -44,6 +49,16 @@ public class Websocket {
 	@OnOpen
 	public void onOpen(Session session) {
 		System.out.println("Session " + session.getId() + " been established");
+		try {
+			jse = new JSDecryptor();
+		} catch (NoSuchAlgorithmException e) {
+			e.printStackTrace();
+		} catch (NoSuchPaddingException e) {
+			e.printStackTrace();
+		} catch (InvalidKeyException e) {
+			e.printStackTrace();
+		}
+		messenger.sendPublicKey(session,jse.getPublic());
 	}
 
 	// This method allows you to message a specific user.
@@ -65,25 +80,46 @@ public class Websocket {
 		}
 
 		String messageType = jsonMessage.get("messagetype").getAsString();
-		String email = jsonMessage.get("email").getAsString();
-		StorageObject storageObject = sessionMapper.get(email);
+		String decryptedEmail = null;
+		try {
+			String encryptedEmail = jsonMessage.get("email").getAsString();
+			decryptedEmail= jse.decrypt(encryptedEmail);
+		} catch (BadPaddingException e) {
+			e.printStackTrace();
+		} catch (UnsupportedEncodingException e) {
+			e.printStackTrace();
+		} catch (IllegalBlockSizeException e) {
+			e.printStackTrace();
+		}
+		StorageObject storageObject = sessionMapper.get(decryptedEmail);
 
 		if (messageType.equals("filter")) {
-			filter(session,storageObject.getDatabase(),email,jsonMessage.get("filter").getAsJsonObject());
+			filter(session,storageObject.getDatabase(),decryptedEmail,jsonMessage.get("filter").getAsJsonObject());
 		} else if (messageType.equals("login")) {
-			login(session,email,jsonMessage.get("pass").getAsString(),storageObject);
+			String encryptedPass = jsonMessage.get("pass").getAsString();
+			String decryptedPass = null;
+			try {
+				decryptedPass = jse.decrypt(encryptedPass);
+			} catch (BadPaddingException e) {
+				e.printStackTrace();
+			} catch (UnsupportedEncodingException e) {
+				e.printStackTrace();
+			} catch (IllegalBlockSizeException e) {
+				e.printStackTrace();
+			}
+			login(session,decryptedEmail,decryptedPass,storageObject);
 		} else if (messageType.equals("refresh")) {
-			refresh(storageObject,email,storageObject.getMailer(),storageObject.getDatabase(),true,session);
+			refresh(storageObject,decryptedEmail,storageObject.getMailer(),storageObject.getDatabase(),true,session);
 		} else if (messageType.equals("addfavorite")) {
 			addFavorite(session,storageObject.getDatabase(),jsonMessage.get("favoritename").getAsString(),jsonMessage.get("filter").getAsJsonObject());
 		} else if (messageType.equals("callfavorite")) {
-			callFavorite(session,storageObject.getDatabase(),jsonMessage.get("favoritename").getAsString(),email);
+			callFavorite(session,storageObject.getDatabase(),jsonMessage.get("favoritename").getAsString(),decryptedEmail);
 		} else if (messageType.equals("removefavorite")) {
 			removeFavorite(session,storageObject.getDatabase(),jsonMessage.get("favoritename").getAsString());
 		} else if (messageType.equals("logout")) {
-			logout(session,email);
+			logout(session,decryptedEmail);
 		} else {
-			sendUpdateStatusMessage(session,"invalid messagetype\n" + "please send one of these options:\n"
+			messenger.sendUpdateStatusMessage(session,"invalid messagetype\n" + "please send one of these options:\n"
 					+ "login, filter, refresh, addfavorite, callfavorite, removefavorite or logout");
 
 		}
@@ -107,6 +143,7 @@ public class Websocket {
 	@OnError
 	public void onError(Throwable t, Session session) {
 		 System.out.println("onError::");
+		 //t.printStackTrace();
 	}
 
 	/*
@@ -124,26 +161,22 @@ public class Websocket {
 			storageObject = new StorageObject();
 			mailer = new Mailer(email, pass);
 
-			sendUpdateStatusMessage(session,"establising connection");
+			messenger.sendUpdateStatusMessage(session,"establising connection");
 
 			boolean connectedToDatabase = mailer.isConnected();
 			if (!connectedToDatabase) {
-				sendUpdateStatusMessage(session,"failed to connect to email");
+				messenger.sendUpdateStatusMessage(session,"failed to connect to email");
 				return;
 			}
 
-//			try{
+			try {
 				database = new Database(email, mailer);
-//			} catch (SQLException e) {
-//				e.printStackTrace();
-//				sendErrorMessage(session,"failed to connect to db:\n "+e.getMessage());
-//				return;
-//			} catch (ClassNotFoundException e) {
-//				e.printStackTrace();
-//				sendErrorMessage(session,"failed to connect to db:\n "+e.getMessage());
-//				return;
-//			}
-			sendUpdateStatusMessage(session,"established connection");
+				database.closeConnection();
+			}catch(Throwable t){
+				messenger.sendErrorMessage(session,"error in db: "+t.getMessage());
+				return;
+			}
+			messenger.sendUpdateStatusMessage(session,"established connection");
 
 			storageObject.setDatabase(database);
 			storageObject.setMailer(mailer);
@@ -151,45 +184,27 @@ public class Websocket {
 		} else {
 			mailer = storageObject.getMailer();
 			database = storageObject.getDatabase();
-			sendUpdateStatusMessage(session,"established connection");
+			messenger.sendUpdateStatusMessage(session,"established connection");
 		}
 
 
 		boolean hasEmails;
-//		try {
-			hasEmails = database.hasEmails();
-//		} catch (SQLException e) {
-//			sendErrorMessage(session,"sqlException: \n"+e.getMessage());
-//			e.printStackTrace();
-//			return;
-//		} catch (ClassNotFoundException e) {
-//			sendErrorMessage(session,"ClassNotFoundException: \n"+e.getMessage());
-//			e.printStackTrace();
-//			return;
-//		}
+		hasEmails = database.hasEmails();
 
 		JsonObject js = new JsonObject();
 
 		if (hasEmails) {
 			List<UserFolder> folders;
 			List<UserFavourites> favourites;
-
-//			try {
+			try {
 				folders = database.importFolders();
+				database.closeConnection();
 				favourites = database.getUserFavourites();
-//			} catch (SQLException e) {
-//				e.printStackTrace();
-//				sendErrorMessage(session,"sqlException:\n "+e.getMessage());
-//				return;
-//			} catch (MessagingException e) {
-//				e.printStackTrace();
-//				sendErrorMessage(session,"MessagingException:\n "+e.getMessage());
-//				return;
-//			} catch (ClassNotFoundException e) {
-//				e.printStackTrace();
-//				sendErrorMessage(session,"ClassNotFoundException:\n "+e.getMessage());
-//				return;
-//			}
+				database.closeConnection();
+			}catch(Throwable t){
+				messenger.sendErrorMessage(session,"error in db: "+t.getMessage());
+				return;
+			}
 			refresh(storageObject,email,mailer,database,true,session);
 
 			js.addProperty("messagetype", "logininfo");
@@ -203,9 +218,9 @@ public class Websocket {
 			}
 			js.add("foldername", ja1);
 			js.add("favoritename", ja2);
-			sendMessageToClient(session,js);
+			messenger.sendMessageToClient(session,js);
 		} else {
-			sendUpdateStatusMessage(session,"nothing found in database, preforming fresh import");
+			messenger.sendUpdateStatusMessage(session,"nothing found in database, preforming fresh import");
 			refresh(storageObject,email,mailer,database,false,session);
 		}
 
@@ -220,19 +235,8 @@ public class Websocket {
 
 	//TODO Still needs testing
 	private void callFavorite(Session session, Database database, String favname, String email){
-
 		UserFavourites userFavourites;
-//		try {
-			userFavourites = database.getUserFavourite(favname);
-//		} catch (SQLException e) {
-//			e.printStackTrace();
-//			sendErrorMessage(session,"sqlException: \n"+e.getMessage());
-//			return;
-//		} catch (ClassNotFoundException e) {
-//			e.printStackTrace();
-//			sendErrorMessage(session,"ClassNotFoundException: \n"+e.getMessage());
-//			return;
-//		}
+		userFavourites = database.getUserFavourite(favname);
 		Handler handler = new Handler(session, database, email, userFavourites);
 		Thread thread = new Thread(handler);
 		thread.start();
@@ -252,7 +256,7 @@ public class Websocket {
 			JsonObject js = new JsonObject();
 			js.addProperty("messagetype","statusupdate");
 			js.addProperty("message","validation already occuring");
-			sendMessageToClient(session,js);
+			messenger.sendMessageToClient(session,js);
 		}
 		ValidationRunnable vr = new ValidationRunnable(mailer,database,validateOrPull,session);
 		Thread thread = new Thread(vr);
@@ -281,44 +285,35 @@ public class Websocket {
 			JsonObject js = new JsonObject();
 			js.addProperty("messagetype","statusupdate");
 			js.addProperty("message","invalid dateTime");
-			sendMessageToClient(session, js);
+			messenger.sendMessageToClient(session, js);
 			return;
 		}
 
 		boolean attachment = filter.get("attachment").getAsBoolean();
 		boolean seen = filter.get("seen").getAsBoolean();
 		boolean added;
-//		try {
+		try {
 			added = database.insertUserFavourites(favoriteName, startDate.toDate(), endDate.toDate(), Interval.parse(interval),
 					attachment, seen, foldername);
-//		} catch (SQLException e) {
-//			e.printStackTrace();
-//			sendErrorMessage(session,"SQLException: \n"+e.getMessage());
-//			return;
-//		} catch (ClassNotFoundException e) {
-//			e.printStackTrace();
-//			sendErrorMessage(session,"ClassNotFoundException: \n"+e.getMessage());
-//			return;
-//		}
-
+			database.closeConnection();
+		}catch(Throwable t){
+			messenger.sendErrorMessage(session,"error in db: "+t.getMessage());
+			return;
+		}
 		if(added){
-			sendUpdateStatusMessage(session,"Favorite has been added");
+			messenger.sendUpdateStatusMessage(session,"Favorite has been added");
 		}else{
-			sendUpdateStatusMessage(session, "No FolderName");
+			messenger.sendUpdateStatusMessage(session, "No FolderName");
 		}
 
-		List<UserFavourites> favourites ;
-//		try {
+		List<UserFavourites> favourites;
+		try {
 			favourites = database.getUserFavourites();
-//		} catch (SQLException e) {
-//			e.printStackTrace();
-//			sendErrorMessage(session,"sqlException: \n"+e.getMessage());
-//			return;
-//		} catch (ClassNotFoundException e) {
-//			e.printStackTrace();
-//			sendErrorMessage(session,"ClassNotFoundException: \n"+e.getMessage());
-//			return;
-//		}
+			database.closeConnection();
+		}catch(Throwable t){
+			messenger.sendErrorMessage(session,"error in db: "+t.getMessage());
+			return;
+		}
 
 		JsonArray ja = new JsonArray();
 		for (int i = 0; i < favourites.size(); i++) {
@@ -328,7 +323,7 @@ public class Websocket {
 		JsonObject js = new JsonObject();
 		js.addProperty("messagetype", "favoritename");
 		js.add("favoritename", ja);
-		sendMessageToClient(session, js);
+		messenger.sendMessageToClient(session, js);
 	}
 
 	/**
@@ -338,32 +333,18 @@ public class Websocket {
 	 * @param favoriteName
 	 */
 	private void removeFavorite(Session session, Database database, String favoriteName){
-//		try {//dont return from these catches as they need UserFavourites
+		//dont return from these catches as they need UserFavourites
+		try {
 			database.removeUserFavourite(favoriteName);
-//		} catch (SQLException e) {
-//			e.printStackTrace();
-//			sendErrorMessage(session,"ClassNotFoundException: \n"+e.getMessage());
-//			return;
-//		} catch (ClassNotFoundException e) {
-//			e.printStackTrace();
-//			sendErrorMessage(session,"ClassNotFoundException: \n"+e.getMessage());
-//			return;
-//		}
-
-		sendUpdateStatusMessage(session,"Favorite has been removed");
+			database.closeConnection();
+		}catch(Throwable t){
+			messenger.sendErrorMessage(session,"error in db: "+t.getMessage());
+			return;
+		}
+		messenger.sendUpdateStatusMessage(session,"Favorite has been removed");
 
 		List<UserFavourites> favourites;
-//		try {
-			favourites = database.getUserFavourites();
-//		} catch (SQLException e) {
-//			e.printStackTrace();
-//			sendErrorMessage(session,"sqlexception: \n"+e.getMessage());
-//			return;
-//		} catch (ClassNotFoundException e) {
-//			e.printStackTrace();
-//			sendErrorMessage(session,"ClassNotFoundException: \n"+e.getMessage());
-//			return;
-//		}
+		favourites = database.getUserFavourites();
 
 
 		JsonArray ja = new JsonArray();
@@ -373,7 +354,7 @@ public class Websocket {
 		JsonObject js = new JsonObject();
 		js.addProperty("messagetype", "favoritename");
 		js.add("favoritename", ja);
-		sendMessageToClient(session, js);
+		messenger.sendMessageToClient(session, js);
 	}
 
 	/**
@@ -424,31 +405,6 @@ public class Websocket {
 		}
 	}
 
-	private void sendUpdateStatusMessage(Session session,String message){
-		JsonObject js = new JsonObject();
-		js.addProperty("messagetype","statusupdate");
-		js.addProperty("message",message);
-		sendMessageToClient(session,js);
-	}
 
-	private void sendErrorMessage(Session session,String errorMessage){
-		JsonObject js = new JsonObject();
-		js.addProperty("messagetype","error");
-		js.addProperty("message",errorMessage);
-		sendMessageToClient(session,js);
-	}
-
-	/**
-	 * Method to send message over to gui
-	 * @param session
-	 * @param returnMessage
-	 */
-	private void sendMessageToClient(Session session, JsonObject returnMessage) {
-		try {
-			session.getBasicRemote().sendText(returnMessage.toString());
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
 
 }

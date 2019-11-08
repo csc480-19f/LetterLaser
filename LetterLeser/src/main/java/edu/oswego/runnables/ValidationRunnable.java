@@ -1,6 +1,6 @@
 package edu.oswego.runnables;
 
-import javax.mail.MessagingException;
+
 import javax.websocket.Session;
 
 import com.google.gson.JsonArray;
@@ -10,9 +10,7 @@ import edu.oswego.database.Database;
 import edu.oswego.mail.Mailer;
 import edu.oswego.model.UserFavourites;
 import edu.oswego.model.UserFolder;
-
-import java.io.IOException;
-import java.sql.SQLException;
+import edu.oswego.websocket.Messenger;
 import java.util.List;
 
 public class ValidationRunnable implements Runnable {
@@ -21,6 +19,7 @@ public class ValidationRunnable implements Runnable {
 	private Database database;
 	private boolean validateOrPull;
 	private Session session;
+	private Messenger messenger = new Messenger();
 
 	public ValidationRunnable(Mailer mailer, Database database, boolean validateOrPull, Session session) {
 		this.mailer = mailer;
@@ -32,51 +31,34 @@ public class ValidationRunnable implements Runnable {
 	public void run() {
 		Thread.currentThread().setName("validation");
 		if (validateOrPull) {
-			sendUpdateStatusMessage(session,"validating emails");
+			messenger.sendUpdateStatusMessage(session,"validating emails");
 
-//			try {
+			try {
 				database.pull();
-//			} catch (SQLException e) {
-//				e.printStackTrace();
-//				sendErrorMessage(session,"sqlException:\n"+e.getMessage());
-//				return;
-//			} catch (MessagingException e) {
-//				e.printStackTrace();
-//				sendErrorMessage(session,"MessageingException:\n"+e.getMessage());
-//				return;
-//			} catch (ClassNotFoundException e) {
-//				e.printStackTrace();
-//				sendErrorMessage(session,"ClassNotFoundException:\n"+e.getMessage());
-//				return;
-//			}
-
-			sendUpdateStatusMessage(session,"finished validating");
+				database.closeConnection();
+			}catch(Throwable t){
+				messenger.sendErrorMessage(session,"error in db: "+t.getMessage());
+				return;
+			}
+			messenger.sendUpdateStatusMessage(session,"finished validating");
 
 
 
 		} else {
-			sendUpdateStatusMessage(session,"Pulling folders and emails");
+			messenger.sendUpdateStatusMessage(session,"Pulling folders and emails");
 
 
 			List<UserFolder> folders;
 			List<UserFavourites> favourites;
-//			try {
+			try {
 				folders = database.pull();
+				database.closeConnection();
 				favourites = database.getUserFavourites();
-//			} catch (SQLException e) {
-//				e.printStackTrace();
-//				sendErrorMessage(session,"sqlException:\n"+e.getMessage());
-//				return;
-//			} catch (MessagingException e) {
-//				e.printStackTrace();
-//				sendErrorMessage(session,"MessageingException:\n"+e.getMessage());
-//				return;
-//			} catch (ClassNotFoundException e) {
-//				e.printStackTrace();
-//				sendErrorMessage(session,"ClassNotFoundException:\n"+e.getMessage());
-//				return;
-//			}
-
+				database.closeConnection();
+			}catch(Throwable t){
+				messenger.sendErrorMessage(session,"error in db: "+t.getMessage());
+				return;
+			}
 
 			JsonArray ja = new JsonArray();
 			JsonArray ja1 = new JsonArray();
@@ -90,39 +72,12 @@ public class ValidationRunnable implements Runnable {
 			js.addProperty("messagetype", "foldername");
 			js.add("foldername", ja);
 			js.add("favoritename", ja1);
-			sendMessageToClient(session,js);
+			messenger.sendMessageToClient(session,js);
 		}
 
 
 
 
-	}
-
-	private void sendErrorMessage(Session session,String errorMessage){
-		JsonObject js = new JsonObject();
-		js.addProperty("messagetype","error");
-		js.addProperty("message",errorMessage);
-		sendMessageToClient(session,js);
-	}
-
-	private void sendUpdateStatusMessage(Session session,String message){
-		JsonObject js = new JsonObject();
-		js.addProperty("messagetype","statusupdate");
-		js.addProperty("message",message);
-		sendMessageToClient(session,js);
-	}
-
-	/**
-	 * Method to send message over to gui
-	 * @param session
-	 * @param returnMessage
-	 */
-	private void sendMessageToClient(Session session, JsonObject returnMessage) {
-		try {
-			session.getBasicRemote().sendText(returnMessage.toString());
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
 	}
 
 }
