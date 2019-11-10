@@ -43,6 +43,8 @@ class UserEmailTest {
 		db.query("INSERT INTO email (seen) VALUE (1)"); 
 		db.query("INSERT INTO user_email (user_id, email_id) VALUE (" + db.getUser().getId() + ", 1)");
 		assertEquals(db.getUserEmails().isEmpty(), false);
+		
 	}
+	
 
 }

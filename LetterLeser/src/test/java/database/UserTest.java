@@ -58,5 +58,12 @@ class UserTest {
 		db.setValidatedEmailCount(amt);
 		assertEquals(db.getValidatedEmails(), amt);
 	}
+	
+	@Test
+	void testEmailExists() {
+		db.query("INSERT INTO email (has_attachment, seen, folder_id) VALUE (1, 1, 1);");
+		db.query("INSERT INTO user_email (user_id, email_id) VALUE (1, 1);");
+		assertEquals(db.userEmailExists(db.getUser(db.getUser().getEmailAddress()), 1), true);
+	}
 
 }

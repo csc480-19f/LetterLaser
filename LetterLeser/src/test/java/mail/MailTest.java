@@ -24,7 +24,7 @@ public class MailTest {
 
 	@AfterEach
 	void tearDown() throws Exception {
-//		mailer.getStorage().close();
+		mailer.getStorage().close();
 	}
 	
 	@Test

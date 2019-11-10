@@ -58,6 +58,7 @@ class UserFavouritesTest {
 		db.insertUserFavourites("Mediocre favs", utilDate, utilDate, Interval.MONTH, false, true, "Misc/UUP/CELT");
 		db.insertUserFavourites("Jimmys favs", utilDate, utilDate, Interval.WEEK, true, false, "[Gmail]/Sent Mail");
 		db.removeUserFavourite("Jimmys favs");
+		
 		assertEquals(db.getUserFavourites().size(), 3);
 	}
 
