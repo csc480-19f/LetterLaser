@@ -23,10 +23,10 @@ import edu.oswego.debug.DebugLogger;
 import edu.oswego.mail.Mailer;
 import edu.oswego.model.Email;
 import edu.oswego.model.EmailAddress;
+import edu.oswego.model.SentimentScore;
 import edu.oswego.model.UserFavourites;
 import edu.oswego.model.UserFolder;
 import edu.oswego.props.Interval;
-import edu.oswego.sentiment.SentimentScore;
 
 /**
  * Database class to get connection, push/pull data, and submit queries.
@@ -104,6 +104,7 @@ public class Database {
 		try {
 			rs = connection.prepareStatement("SELECT * FROM email WHERE id = " + id + ";").executeQuery();
 			while (rs.next()) {
+				// need sentiment score and folder id?
 				Email em = new Email(rs.getInt(1), rs.getDate(2), rs.getString(3), rs.getDouble(4), rs.getBoolean(5),
 						rs.getString(6), rs.getBoolean(7));
 				DbUtils.closeQuietly(rs);

@@ -1,4 +1,4 @@
-package edu.oswego.sentiment;
+package edu.oswego.model;
 
 public class SentimentScore {
 
