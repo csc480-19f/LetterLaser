@@ -1319,8 +1319,9 @@ public class Database {
 	 * 
 	 * @param score
 	 * @return database id of sentiment score record
-	 */
-	private int insertSentimentScore(SentimentScore score) {
+	 **/
+	
+	public int insertSentimentScore(SentimentScore score) {
 		PreparedStatement ps = null;
 		ResultSet rs = null;
 		try {
@@ -1349,7 +1350,7 @@ public class Database {
 	 * @param emailId
 	 * @param sentimentScoreId
 	 */
-	private void insertSentimentScoreIntoEmail(int emailId, int sentimentScoreId) {
+	public void insertSentimentScoreIntoEmail(int emailId, int sentimentScoreId) {
 		PreparedStatement ps = null;
 		try {
 			ps = getConnection().prepareStatement(
