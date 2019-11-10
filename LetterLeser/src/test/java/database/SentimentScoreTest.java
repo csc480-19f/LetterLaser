@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test;
 import edu.oswego.database.Database;
 import edu.oswego.database.Settings;
 import edu.oswego.mail.Mailer;
-import edu.oswego.model.SentimentScore;
+import edu.oswego.sentiment.SentimentScore;
 
 /**
  * USE THIS AS A TEMPLATE
