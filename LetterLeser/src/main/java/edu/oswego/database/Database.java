@@ -957,10 +957,10 @@ public class Database {
 	 * @param address
 	 * @return legal string value of email address
 	 */
-	private String parseAddress(Address address) {
+	public String parseAddress(String address) {
 		String addressParsed = "";
-		if (address.toString().contains("<")) {
-			String addrParser[] = address.toString().replace("'", "`").split("<");
+		if (address.contains("<")) {
+			String addrParser[] = address.replace("'", "`").split("<");
 			addressParsed = addrParser[1].replace(">", "");
 		} else
 			addressParsed = address.toString().replace("'", "`");
@@ -979,7 +979,7 @@ public class Database {
 		List<EmailAddress> emailAddrList = new ArrayList<>();
 
 		for (Address a : addresses) {
-			String address = parseAddress(a);
+			String address = parseAddress(a.toString());
 			Connection connection = getConnection();
 			ResultSet rs = null;
 			PreparedStatement ps = null;
@@ -1026,7 +1026,7 @@ public class Database {
 	 * @param emailId
 	 * @return list of EmailAddress
 	 */
-	private List<EmailAddress> getReceivedEmail(int emailId) {
+	public List<EmailAddress> getReceivedEmail(int emailId) {
 		List<EmailAddress> addressIdList = new ArrayList<>();
 
 		Connection connection = getConnection();
@@ -1058,7 +1058,7 @@ public class Database {
 	 * @param emailAddrId
 	 * @return boolean if receieved email exists
 	 */
-	private boolean receivedEmailExists(int emailId, int emailAddrId) {
+	public boolean receivedEmailExists(int emailId, int emailAddrId) {
 		Connection connection = getConnection();
 		ResultSet rs = null;
 		try {
