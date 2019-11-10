@@ -37,17 +37,15 @@ class ReceivedEmailTest {
 		db.truncateTables();
 	}
 
-	@SuppressWarnings("deprecation")
 	@Test
 	void testReceivedEmailAddress() throws ClassNotFoundException, SQLException {
 		db.query(new String[] {
 		"INSERT INTO email (date_received) VALUE (CURDATE());",
 		"INSERT INTO email_addr (email_address) VALUE ('poopsac@uranus.org')",
 		"INSERT INTO received_email (email_id, email_addr_id) VALUE (1, 2)"});
-		assertEquals(1, 1);
+		assertEquals(db.getRecipient(1).size(), 1);
 	}
 
-	@SuppressWarnings("deprecation")
 	@Test
 	void testReceivedAllEmailAddress() {
 		db.query(new String[] { "INSERT INTO email (date_received) VALUE (CURDATE());",

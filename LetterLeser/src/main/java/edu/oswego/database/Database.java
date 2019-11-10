@@ -379,9 +379,10 @@ public class Database {
 			String folderName) {
 		List<Email> emailList = new ArrayList<>();
 		List<String> filterStatements = new ArrayList<>();
-
-		String selectionStatement = "SELECT * FROM email JOIN user_email on user_email.id = " + user.getId()
-				+ " WHERE ";
+		
+		
+		String selectionStatement = "SELECT * FROM email JOIN user_email ON user_email.email_id = email.id WHERE user_email.user_id = " + user.getId()
+				+ " AND ";
 
 		if (hasAttachment)
 			filterStatements.add("has_attachment = 1");
@@ -401,6 +402,8 @@ public class Database {
 		}
 
 		selectionStatement += ";";
+		
+		System.out.println(selectionStatement);
 
 		Connection connection = getConnection();
 		ResultSet rs = null;
@@ -563,7 +566,7 @@ public class Database {
 
 		return null;
 	}
-
+	
 	// TODO JOIN
 	/**
 	 * Fetches UserFavourites from database by the favourite name
@@ -578,7 +581,7 @@ public class Database {
 		try {
 
 			rs = connection.prepareStatement(
-					"SELECT user_favourites.id, fav_name, start_date, end_date, interval_range, has_attachment, is_seen, folder_id From user_favourites \n"
+					"SELECT user_favourites.id, fav_name, start_date, end_date, interval_range, has_attachment, is_seen, folder_id FROM user_favourites "
 							+ "JOIN filter_settings ON filter_settings.id = user_favourites.filter_settings_id WHERE user_id = "
 							+ user.getId() + " AND" + "fav_name = '" + favName + "';")
 					.executeQuery();
@@ -617,17 +620,14 @@ public class Database {
 		ResultSet rs = null;
 
 		try {
-
-			rs = connection.prepareStatement(
-					"SELECT user_favourites.id, fav_name, start_date, end_date, interval_range, has_attachment, is_seen, folder_id From user_favourites \n"
-							+ "JOIN filter_settings ON filter_settings.id = user_favourites.filter_settings_id WHERE user_id = "
-							+ user.getId()+ ";")
-					.executeQuery();
+			rs = connection.prepareStatement("SELECT user_favourites.id, user_favourites.fav_name, start_date, end_date, interval_range, has_attachment, is_seen, folder_id FROM user_favourites JOIN filter_settings ON filter_settings.id = user_favourites.filter_settings_id WHERE user_favourites.user_id = " + user.getId()+ ";").executeQuery();
 
 			while (rs.next()) {
-				ufList.add(new UserFavourites(rs.getInt(1), rs.getString(2), rs.getDate(2), rs.getDate(3),
-						Interval.parse(rs.getString(4)), rs.getBoolean(5), rs.getBoolean(6),
-						getFolderById(rs.getInt(7))));
+				ufList.add(new UserFavourites(
+						rs.getInt(1), rs.getString(2), rs.getDate(3), rs.getDate(4),
+						Interval.parse(rs.getString(5)), rs.getBoolean(6), rs.getBoolean(7),
+						getFolderById(rs.getInt(8))
+						));
 			}
 
 			DbUtils.closeQuietly(rs);
@@ -685,7 +685,7 @@ public class Database {
 	 * @return database id of filter_settings record
 	 * @see #insertUserFavourites
 	 */
-	private int insertFilter(java.util.Date startDate, java.util.Date endDate, String intervalRange,
+	public int insertFilter(java.util.Date startDate, java.util.Date endDate, String intervalRange,
 			boolean hasAttachment, boolean isSeen, int folderId) {
 		Connection connection = getConnection();
 		PreparedStatement ps = null;
@@ -927,7 +927,7 @@ public class Database {
 	 * @param emailAddress
 	 * @return boolean whether email address exists or not
 	 */
-	private boolean emailAddressExists(String emailAddress) {
+	public boolean emailAddressExists(String emailAddress) {
 		int size = -1;
 
 		Connection connection = getConnection();
@@ -1099,7 +1099,7 @@ public class Database {
 	 * @return if email exists for user
 	 * @see #insertUserEmail
 	 */
-	private boolean userEmailExists(EmailAddress addr, int emailId) {
+	public boolean userEmailExists(EmailAddress addr, int emailId) {
 		Connection connection = getConnection();
 		ResultSet rs = null;
 		try {
