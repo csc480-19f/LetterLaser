@@ -16,10 +16,12 @@ import edu.oswego.mail.Mailer;
 import edu.oswego.props.Interval;
 
 /**
- * USE THIS AS A TEMPLATE
+ * All test for user_favourites
  * 
- * @author nguyen
+ * @author Jimmy Nguyen
+ * @since 11/10/2019
  */
+
 class UserFavouritesTest {
 
 	private Database db;
@@ -38,8 +40,9 @@ class UserFavouritesTest {
 	}
 
 	@Test
-	void testFindUserFavourites() throws ParseException  {
-		db.query("INSERT INTO folder (fold_name) VALUES ('Apple Developer'), ('INBOX'), ('Misc/UUP/CELT'), ('[Gmail]/Sent Mail');");
+	void testFindUserFavourites() throws ParseException {
+		db.query(
+				"INSERT INTO folder (fold_name) VALUES ('Apple Developer'), ('INBOX'), ('Misc/UUP/CELT'), ('[Gmail]/Sent Mail');");
 		Date utilDate = (Date) new SimpleDateFormat("yyyy-MM-dd").parse("2015-03-14");
 		db.insertUserFavourites("Awesome favs", utilDate, utilDate, Interval.WEEK, false, false, "Apple Developer");
 		db.insertUserFavourites("Crappy favs", utilDate, utilDate, Interval.YEAR, true, true, "INBOX");
@@ -48,17 +51,23 @@ class UserFavouritesTest {
 
 		assertEquals(db.getUserFavourites().size(), 4);
 	}
+	
+	@Test
+	void testFindUserFavouritesFail() throws ParseException {
+		assertEquals(db.getUserFavourites().size(), 0);
+	}
 
 	@Test
 	void testUserFavouriteRemoval() throws ParseException {
-		db.query("INSERT INTO folder (fold_name) VALUES ('Apple Developer'), ('INBOX'), ('Misc/UUP/CELT'), ('[Gmail]/Sent Mail');");
+		db.query(
+				"INSERT INTO folder (fold_name) VALUES ('Apple Developer'), ('INBOX'), ('Misc/UUP/CELT'), ('[Gmail]/Sent Mail');");
 		Date utilDate = (Date) new SimpleDateFormat("yyyy-MM-dd").parse("2015-03-14");
 		db.insertUserFavourites("Awesome favs", utilDate, utilDate, Interval.WEEK, false, false, "Apple Developer");
 		db.insertUserFavourites("Crappy favs", utilDate, utilDate, Interval.YEAR, true, true, "INBOX");
 		db.insertUserFavourites("Mediocre favs", utilDate, utilDate, Interval.MONTH, false, true, "Misc/UUP/CELT");
 		db.insertUserFavourites("Jimmys favs", utilDate, utilDate, Interval.WEEK, true, false, "[Gmail]/Sent Mail");
 		db.removeUserFavourite("Jimmys favs");
-		
+
 		assertEquals(db.getUserFavourites().size(), 3);
 	}
 

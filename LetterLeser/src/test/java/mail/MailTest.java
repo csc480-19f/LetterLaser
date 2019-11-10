@@ -12,6 +12,13 @@ import org.junit.jupiter.api.Test;
 import edu.oswego.database.Settings;
 import edu.oswego.mail.Mailer;
 
+/**
+ * All test for mailer methods go here.
+ * 
+ * @author Jimmy Nguyen
+ * @since 11/10/2019
+ */
+
 public class MailTest {
 	
 	private Mailer mailer;

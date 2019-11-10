@@ -18,13 +18,12 @@ import edu.oswego.model.Email;
  * All test for Emails go here.
  * 
  * @author Jimmy Nguyen
- * @since 11/06/2019
+ * @since 11/10/2019
  */
 
 class EmailTest {
 
 	private Database db;
-	private Mailer mailer;
 
 	@BeforeEach
 	void setUp() {

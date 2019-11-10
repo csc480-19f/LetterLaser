@@ -13,17 +13,15 @@ import edu.oswego.database.Settings;
 import edu.oswego.mail.Mailer;
 
 /**
- * USE THIS AS A TEMPLATE
+ * All test for receieved_email method
  * 
- * @author nguyen
+ * @author Jimmy Nguyen
+ * @since 11/10/2019
  */
+
 class ReceivedEmailTest {
 
 	private Database db;
-	
-	// show status where `variable_name` = 'Threads_connected';
-	// show processlist;
-	// show full processlist\G
 
 	@BeforeEach
 	void setUp() throws Exception {
@@ -39,10 +37,9 @@ class ReceivedEmailTest {
 
 	@Test
 	void testReceivedEmailAddress() throws ClassNotFoundException, SQLException {
-		db.query(new String[] {
-		"INSERT INTO email (date_received) VALUE (CURDATE());",
-		"INSERT INTO email_addr (email_address) VALUE ('poopsac@uranus.org')",
-		"INSERT INTO received_email (email_id, email_addr_id) VALUE (1, 2)"});
+		db.query(new String[] { "INSERT INTO email (date_received) VALUE (CURDATE());",
+				"INSERT INTO email_addr (email_address) VALUE ('poopsac@uranus.org')",
+				"INSERT INTO received_email (email_id, email_addr_id) VALUE (1, 2)" });
 		assertEquals(db.getRecipient(1).size(), 1);
 	}
 

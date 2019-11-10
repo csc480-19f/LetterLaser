@@ -11,40 +11,45 @@ import edu.oswego.database.Settings;
 import edu.oswego.mail.Mailer;
 
 /**
- * USE THIS AS A TEMPLATE
+ * All test for user_email methods
  * 
- * @author nguyen
+ * @author Jimmy Nguyen
+ * @since 11/10/2019
  */
+
 class UserEmailTest {
 
 	private Database db;
-	private Mailer mailer;
 
 	@BeforeEach
 	void setUp() throws Exception {
 		Settings.loadCredentials();
-		db = new Database(edu.oswego.mail.Settings.EMAIL_ADDRESS, new Mailer(edu.oswego.mail.Settings.EMAIL_ADDRESS, edu.oswego.mail.Settings.EMAIL_PWD));
+		db = new Database(edu.oswego.mail.Settings.EMAIL_ADDRESS,
+				new Mailer(edu.oswego.mail.Settings.EMAIL_ADDRESS, edu.oswego.mail.Settings.EMAIL_PWD));
 	}
 
 	@AfterEach
 	void tearDown() throws Exception {
 		db.truncateTables();
 	}
-	
+
 	@Test
 	void testInsertUserEmail() {
-		db.query("INSERT INTO email (date_received) VALUE (CURDATE())"); 
+		db.query("INSERT INTO email (date_received) VALUE (CURDATE())");
+		db.query("INSERT INTO user_email (user_id, email_id) VALUE (" + db.getUser().getId() + ", 1)");
+		assertEquals(db.getUserEmails().isEmpty(), false);
+	}
+
+	@Test
+	void testGetUserEmails() {
+		db.query("INSERT INTO email (seen) VALUE (1)");
 		db.query("INSERT INTO user_email (user_id, email_id) VALUE (" + db.getUser().getId() + ", 1)");
 		assertEquals(db.getUserEmails().isEmpty(), false);
 	}
 	
 	@Test
-	void testGetUserEmails() {
-		db.query("INSERT INTO email (seen) VALUE (1)"); 
-		db.query("INSERT INTO user_email (user_id, email_id) VALUE (" + db.getUser().getId() + ", 1)");
-		assertEquals(db.getUserEmails().isEmpty(), false);
-		
+	void testGetUserEmailsFail() {
+		assertEquals(db.getUserEmails().isEmpty(), true);
 	}
-	
 
 }

@@ -16,8 +16,6 @@ import edu.oswego.sentiment.SentimentScore;
 
 public class Email {
 	
-	//TODO: get rid of setters that aren't being used.
-
 	private int id;
 	private Date dateReceived;
 	private String subject;
@@ -41,6 +39,19 @@ public class Email {
 		this.hasAttachment = hasAttachment;
 		this.sentimentScore = null;
 		this.folder = null;
+		this.from = new ArrayList<>();
+	}
+	
+	public Email(int id, Date dateReceived, String subject, double size, boolean isSeen, String fileName,
+			boolean hasAttachment, SentimentScore sentimentScore) {
+		this.id = id;
+		this.dateReceived = dateReceived;
+		this.subject = subject;
+		this.size = size;
+		this.isSeen = isSeen;
+		this.fileName = fileName;
+		this.hasAttachment = hasAttachment;
+		this.sentimentScore = sentimentScore;
 		this.from = new ArrayList<>();
 	}
 	
@@ -110,13 +121,6 @@ public class Email {
 
 	public List<EmailAddress> getFrom() {
 		return from;
-	}
-
-	@Override
-	public String toString() {
-		return "Email [id=" + id + ", dateReceived=" + dateReceived + ", subject=" + subject + ", size=" + size
-				+ ", isSeen=" + isSeen + ", fileName=" + fileName + ", hasAttachment=" + hasAttachment
-				+ ", sentimentScore=" + sentimentScore + ", folder=" + folder + ", from=" + from + "]";
 	}
 
 }

@@ -104,9 +104,15 @@ public class Database {
 		try {
 			rs = connection.prepareStatement("SELECT * FROM email WHERE id = " + id + ";").executeQuery();
 			while (rs.next()) {
-				// need sentiment score and folder id?
-				Email em = new Email(rs.getInt(1), rs.getDate(2), rs.getString(3), rs.getDouble(4), rs.getBoolean(5),
-						rs.getString(6), rs.getBoolean(7));
+				Email em;
+				//// need sentiment score and folder id?
+				if (rs.getObject(8) != null) {
+					em = new Email(rs.getInt(1), rs.getDate(2), rs.getString(3), rs.getDouble(4), rs.getBoolean(5),
+							rs.getString(6), rs.getBoolean(7), getSentimentScoreById(rs.getInt(8)));
+				} else {
+					em = new Email(rs.getInt(1), rs.getDate(2), rs.getString(3), rs.getDouble(4), rs.getBoolean(5),
+							rs.getString(6), rs.getBoolean(7));
+				}
 				DbUtils.closeQuietly(rs);
 				DbUtils.closeQuietly(connection);
 				return em;
@@ -402,8 +408,6 @@ public class Database {
 		}
 
 		selectionStatement += ";";
-
-		System.out.println(selectionStatement);
 
 		Connection connection = getConnection();
 		ResultSet rs = null;
@@ -1209,6 +1213,7 @@ public class Database {
 	 * Creates a database query. This is a dangerous operation if unchecked.
 	 * 
 	 * @param statement
+	 * @deprecated
 	 */
 	public void query(String statement) {
 		Connection connection = getConnection();
@@ -1264,7 +1269,6 @@ public class Database {
 
 	/**
 	 * Checks if a user has emails.
-	 * 
 	 *
 	 * @return if user has emails
 	 */
@@ -1323,36 +1327,35 @@ public class Database {
 	 **/
 	public int insertSentimentScore(SentimentScore score) {
 		Connection connection = getConnection();
-        PreparedStatement ps = null;
-        ResultSet rs = null;
-        try {
-            ps = connection
-                    .prepareStatement("INSERT INTO sentiment_score (positive, negative, neutral, compound) VALUE ("
-                            + score.getPositive() + ", " + score.getNegative() + ", " + score.getNeutral() + ", "
-                            + score.getCompound() + ");", Statement.RETURN_GENERATED_KEYS);
-            if (ps.executeUpdate() == 1) { // AFFECTED ROW
-                rs = ps.getGeneratedKeys();
-                if (rs.next()) {
-                	int id = rs.getInt(1);
-                	DbUtils.closeQuietly(ps);
-                    DbUtils.closeQuietly(rs);
-                    DbUtils.closeQuietly(connection);
-                    return id;
-                }
-            }
-            DbUtils.closeQuietly(ps);
-            DbUtils.closeQuietly(rs);
-            DbUtils.closeQuietly(connection);
-        } catch (SQLException e) {
-            DebugLogger.logEvent(Database.class.getName(), Level.WARNING, e.getMessage());
-        } finally {
-             DbUtils.closeQuietly(ps);
-             DbUtils.closeQuietly(rs);
-             DbUtils.closeQuietly(connection);
-        }
-        return -1;
-    }
-
+		PreparedStatement ps = null;
+		ResultSet rs = null;
+		try {
+			ps = connection
+					.prepareStatement("INSERT INTO sentiment_score (positive, negative, neutral, compound) VALUE ("
+							+ score.getPositive() + ", " + score.getNegative() + ", " + score.getNeutral() + ", "
+							+ score.getCompound() + ");", Statement.RETURN_GENERATED_KEYS);
+			if (ps.executeUpdate() == 1) { // AFFECTED ROW
+				rs = ps.getGeneratedKeys();
+				if (rs.next()) {
+					int id = rs.getInt(1);
+					DbUtils.closeQuietly(ps);
+					DbUtils.closeQuietly(rs);
+					DbUtils.closeQuietly(connection);
+					return id;
+				}
+			}
+			DbUtils.closeQuietly(ps);
+			DbUtils.closeQuietly(rs);
+			DbUtils.closeQuietly(connection);
+		} catch (SQLException e) {
+			DebugLogger.logEvent(Database.class.getName(), Level.WARNING, e.getMessage());
+		} finally {
+			DbUtils.closeQuietly(ps);
+			DbUtils.closeQuietly(rs);
+			DbUtils.closeQuietly(connection);
+		}
+		return -1;
+	}
 
 	/**
 	 * Inserts sentiment score reference into an email record
@@ -1368,13 +1371,46 @@ public class Database {
 					"UPDATE email SET sentiment_score_id = " + sentimentScoreId + " WHERE id = " + emailId + ";");
 			ps.execute();
 			DbUtils.closeQuietly(ps);
-			 DbUtils.closeQuietly(connection);
+			DbUtils.closeQuietly(connection);
 		} catch (SQLException e) {
 			DebugLogger.logEvent(Database.class.getName(), Level.WARNING, e.getMessage());
 		} finally {
-			 DbUtils.closeQuietly(ps);
-			 DbUtils.closeQuietly(connection);
+			DbUtils.closeQuietly(ps);
+			DbUtils.closeQuietly(connection);
 		}
+	}
+
+	public SentimentScore getSentimentScoreById(int id) {
+		SentimentScore ss = null;
+		Connection connection = getConnection();
+		ResultSet rs = null;
+
+		try {
+			rs = connection
+					.prepareStatement(
+							"SELECT positive, negative, neutral, compound FROM sentiment_score WHERE id = " + id + "")
+					.executeQuery();
+			while (rs.next()) {
+				// maybe id?
+				double positive = rs.getDouble(1);
+				double negative = rs.getDouble(2);
+				double neutral = rs.getDouble(3);
+				double compound = rs.getDouble(4);
+				DbUtils.closeQuietly(rs);
+				DbUtils.closeQuietly(connection);
+				return new SentimentScore(positive, negative, neutral, compound);
+
+			}
+			DbUtils.closeQuietly(rs);
+			DbUtils.closeQuietly(connection);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			DbUtils.closeQuietly(rs);
+			DbUtils.closeQuietly(connection);
+		}
+
+		return ss;
 	}
 
 }

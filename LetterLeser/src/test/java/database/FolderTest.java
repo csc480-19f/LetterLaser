@@ -14,7 +14,7 @@ import edu.oswego.model.UserFolder;
 /**
  * All test for folders go here.
  * @author Jimmy Nguyen
- * @since 11/06/2019
+ * @since 11/10/2019
  */
 
 public class FolderTest {

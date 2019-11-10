@@ -16,7 +16,6 @@ import edu.oswego.mail.Mailer;
 class TemplateTest {
 
 	private Database db;
-	private Mailer mailer;
 
 	@BeforeEach
 	void setUp() throws Exception {
