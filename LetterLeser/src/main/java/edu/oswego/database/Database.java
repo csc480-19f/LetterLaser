@@ -23,10 +23,10 @@ import edu.oswego.debug.DebugLogger;
 import edu.oswego.mail.Mailer;
 import edu.oswego.model.Email;
 import edu.oswego.model.EmailAddress;
+import edu.oswego.model.SentimentScore;
 import edu.oswego.model.UserFavourites;
 import edu.oswego.model.UserFolder;
 import edu.oswego.props.Interval;
-import edu.oswego.sentiment.SentimentScore;
 
 /**
  * Database class to get connection, push/pull data, and submit queries.
@@ -104,6 +104,7 @@ public class Database {
 		try {
 			rs = connection.prepareStatement("SELECT * FROM email WHERE id = " + id + ";").executeQuery();
 			while (rs.next()) {
+				// need sentiment score and folder id?
 				Email em = new Email(rs.getInt(1), rs.getDate(2), rs.getString(3), rs.getDouble(4), rs.getBoolean(5),
 						rs.getString(6), rs.getBoolean(7));
 				DbUtils.closeQuietly(rs);
@@ -379,10 +380,9 @@ public class Database {
 			String folderName) {
 		List<Email> emailList = new ArrayList<>();
 		List<String> filterStatements = new ArrayList<>();
-		
-		
-		String selectionStatement = "SELECT * FROM email JOIN user_email ON user_email.email_id = email.id WHERE user_email.user_id = " + user.getId()
-				+ " AND ";
+
+		String selectionStatement = "SELECT * FROM email JOIN user_email ON user_email.email_id = email.id WHERE user_email.user_id = "
+				+ user.getId() + " AND ";
 
 		if (hasAttachment)
 			filterStatements.add("has_attachment = 1");
@@ -402,7 +402,7 @@ public class Database {
 		}
 
 		selectionStatement += ";";
-		
+
 		System.out.println(selectionStatement);
 
 		Connection connection = getConnection();
@@ -566,7 +566,7 @@ public class Database {
 
 		return null;
 	}
-	
+
 	// TODO JOIN
 	/**
 	 * Fetches UserFavourites from database by the favourite name
@@ -620,14 +620,15 @@ public class Database {
 		ResultSet rs = null;
 
 		try {
-			rs = connection.prepareStatement("SELECT user_favourites.id, user_favourites.fav_name, start_date, end_date, interval_range, has_attachment, is_seen, folder_id FROM user_favourites JOIN filter_settings ON filter_settings.id = user_favourites.filter_settings_id WHERE user_favourites.user_id = " + user.getId()+ ";").executeQuery();
+			rs = connection.prepareStatement(
+					"SELECT user_favourites.id, user_favourites.fav_name, start_date, end_date, interval_range, has_attachment, is_seen, folder_id FROM user_favourites JOIN filter_settings ON filter_settings.id = user_favourites.filter_settings_id WHERE user_favourites.user_id = "
+							+ user.getId() + ";")
+					.executeQuery();
 
 			while (rs.next()) {
-				ufList.add(new UserFavourites(
-						rs.getInt(1), rs.getString(2), rs.getDate(3), rs.getDate(4),
+				ufList.add(new UserFavourites(rs.getInt(1), rs.getString(2), rs.getDate(3), rs.getDate(4),
 						Interval.parse(rs.getString(5)), rs.getBoolean(6), rs.getBoolean(7),
-						getFolderById(rs.getInt(8))
-						));
+						getFolderById(rs.getInt(8))));
 			}
 
 			DbUtils.closeQuietly(rs);
@@ -1320,29 +1321,38 @@ public class Database {
 	 * @param score
 	 * @return database id of sentiment score record
 	 **/
-	
 	public int insertSentimentScore(SentimentScore score) {
-		PreparedStatement ps = null;
-		ResultSet rs = null;
-		try {
-			ps = getConnection()
-					.prepareStatement("INSERT INTO sentiment_score (positive, negative, neutral, compound) VALUE ("
-							+ score.getPositive() + ", " + score.getNegative() + ", " + score.getNeutral() + ", "
-							+ score.getCompound() + ");", Statement.RETURN_GENERATED_KEYS);
-			if (ps.executeUpdate() == 1) { // AFFECTED ROW
-				rs = ps.getGeneratedKeys();
-				if (rs.next())
-					return rs.getInt(1);
-			}
-		} catch (SQLException e) {
-			DebugLogger.logEvent(Database.class.getName(), Level.WARNING, e.getMessage());
-		} finally {
-			// DbUtils.closeQuietly(ps);
-			// DbUtils.closeQuietly(rs);
-			// DbUtils.closeQuietly(connection);
-		}
-		return -1;
-	}
+		Connection connection = getConnection();
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        try {
+            ps = connection
+                    .prepareStatement("INSERT INTO sentiment_score (positive, negative, neutral, compound) VALUE ("
+                            + score.getPositive() + ", " + score.getNegative() + ", " + score.getNeutral() + ", "
+                            + score.getCompound() + ");", Statement.RETURN_GENERATED_KEYS);
+            if (ps.executeUpdate() == 1) { // AFFECTED ROW
+                rs = ps.getGeneratedKeys();
+                if (rs.next()) {
+                	int id = rs.getInt(1);
+                	DbUtils.closeQuietly(ps);
+                    DbUtils.closeQuietly(rs);
+                    DbUtils.closeQuietly(connection);
+                    return id;
+                }
+            }
+            DbUtils.closeQuietly(ps);
+            DbUtils.closeQuietly(rs);
+            DbUtils.closeQuietly(connection);
+        } catch (SQLException e) {
+            DebugLogger.logEvent(Database.class.getName(), Level.WARNING, e.getMessage());
+        } finally {
+             DbUtils.closeQuietly(ps);
+             DbUtils.closeQuietly(rs);
+             DbUtils.closeQuietly(connection);
+        }
+        return -1;
+    }
+
 
 	/**
 	 * Inserts sentiment score reference into an email record
@@ -1351,16 +1361,19 @@ public class Database {
 	 * @param sentimentScoreId
 	 */
 	public void insertSentimentScoreIntoEmail(int emailId, int sentimentScoreId) {
+		Connection connection = getConnection();
 		PreparedStatement ps = null;
 		try {
-			ps = getConnection().prepareStatement(
+			ps = connection.prepareStatement(
 					"UPDATE email SET sentiment_score_id = " + sentimentScoreId + " WHERE id = " + emailId + ";");
 			ps.execute();
+			DbUtils.closeQuietly(ps);
+			 DbUtils.closeQuietly(connection);
 		} catch (SQLException e) {
 			DebugLogger.logEvent(Database.class.getName(), Level.WARNING, e.getMessage());
 		} finally {
-			// DbUtils.closeQuietly(ps);
-			// DbUtils.closeQuietly(connection);
+			 DbUtils.closeQuietly(ps);
+			 DbUtils.closeQuietly(connection);
 		}
 	}
 
