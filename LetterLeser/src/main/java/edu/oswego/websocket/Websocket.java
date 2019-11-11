@@ -88,19 +88,19 @@ public class Websocket {
 			decryptedEmail = jse.decrypt(encryptedEmail);
 		} catch (BadPaddingException e) {
 			e.printStackTrace();
-			messenger.sendErrorMessage(session,"failed to decrypt email");
+			messenger.sendErrorMessage(session, "failed to decrypt email");
 			return;
 		} catch (UnsupportedEncodingException e) {
 			e.printStackTrace();
-			messenger.sendErrorMessage(session,"failed to decrypt email");
+			messenger.sendErrorMessage(session, "failed to decrypt email");
 			return;
 		} catch (IllegalBlockSizeException e) {
 			e.printStackTrace();
-			messenger.sendErrorMessage(session,"failed to decrypt email");
+			messenger.sendErrorMessage(session, "failed to decrypt email");
 			return;
 		} catch (Exception e) {
 			e.printStackTrace();
-			messenger.sendErrorMessage(session,"failed to decrypt email");
+			messenger.sendErrorMessage(session, "failed to decrypt email");
 			return;
 		}
 		StorageObject storageObject = sessionMapper.get(decryptedEmail);
@@ -114,19 +114,19 @@ public class Websocket {
 				decryptedPass = jse.decrypt(encryptedPass);
 			} catch (BadPaddingException e) {
 				e.printStackTrace();
-				messenger.sendErrorMessage(session,"failed to decrypt pass");
+				messenger.sendErrorMessage(session, "failed to decrypt pass");
 				return;
 			} catch (UnsupportedEncodingException e) {
 				e.printStackTrace();
-				messenger.sendErrorMessage(session,"failed to decrypt pass");
+				messenger.sendErrorMessage(session, "failed to decrypt pass");
 				return;
 			} catch (IllegalBlockSizeException e) {
 				e.printStackTrace();
-				messenger.sendErrorMessage(session,"failed to decrypt pass");
+				messenger.sendErrorMessage(session, "failed to decrypt pass");
 				return;
-			} catch(Exception e){
+			} catch (Exception e) {
 				e.printStackTrace();
-				messenger.sendErrorMessage(session,"failed to decrypt pass");
+				messenger.sendErrorMessage(session, "failed to decrypt pass");
 				return;
 			}
 			login(session, decryptedEmail, decryptedPass, storageObject);

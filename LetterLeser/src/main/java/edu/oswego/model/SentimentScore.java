@@ -1,5 +1,5 @@
-package edu.oswego.sentiment;
-@SuppressWarnings("ALL")
+package edu.oswego.model;
+
 public class SentimentScore {
 
 	private double positive, negative, neutral, compound;

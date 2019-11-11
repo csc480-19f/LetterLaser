@@ -6,6 +6,8 @@ package edu.oswego.sentiment;
 import java.io.*;
 import java.util.Scanner;
 
+import edu.oswego.model.SentimentScore;
+
 /**
  * This class holds methods that execute python code.
  */

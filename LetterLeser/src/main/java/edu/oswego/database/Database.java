@@ -23,16 +23,16 @@ import edu.oswego.debug.DebugLogger;
 import edu.oswego.mail.Mailer;
 import edu.oswego.model.Email;
 import edu.oswego.model.EmailAddress;
+import edu.oswego.model.SentimentScore;
 import edu.oswego.model.UserFavourites;
 import edu.oswego.model.UserFolder;
 import edu.oswego.props.Interval;
-import edu.oswego.sentiment.SentimentScore;
 
 /**
  * Database class to get connection, push/pull data, and submit queries.
  * 
  * @author Jimmy
- * @since 11/08/2019
+ * @since 11/10/2019
  */
 
 // TODO redo Javadocs
@@ -415,7 +415,6 @@ public class Database {
 			rs = connection.prepareStatement(selectionStatement, Statement.RETURN_GENERATED_KEYS).executeQuery();
 
 			while (rs.next()) {
-				// TODO getSentimentScoreById
 				Email e = new Email(rs.getInt(1), rs.getDate(2), rs.getString(3), rs.getDouble(4), rs.getBoolean(5),
 						rs.getString(6), rs.getBoolean(7), null, getFolderById(rs.getInt(9)),
 						getReceivedEmail(rs.getInt(1)));

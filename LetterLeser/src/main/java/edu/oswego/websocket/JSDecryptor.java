@@ -13,31 +13,34 @@ import java.util.Base64;
 
 public class JSDecryptor {
 
-    private String pubKey;
-    private String privKey;
-    private Cipher decryptor;
-    public JSDecryptor() throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException {
-        KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA");
-        generator.initialize(1024);
-        KeyPair keys = generator.generateKeyPair();
+	private String pubKey;
+	private String privKey;
+	private Cipher decryptor;
 
-        PublicKey pub = keys.getPublic();
-        PrivateKey priv = keys.getPrivate();
+	public JSDecryptor() throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException {
+		KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA");
+		generator.initialize(1024);
+		KeyPair keys = generator.generateKeyPair();
 
-        pubKey = Base64.getEncoder().encodeToString(pub.getEncoded());
-        privKey = Base64.getEncoder().encodeToString(priv.getEncoded());
+		PublicKey pub = keys.getPublic();
+		PrivateKey priv = keys.getPrivate();
 
-        decryptor = Cipher.getInstance("RSA");
-        decryptor.init(Cipher.DECRYPT_MODE, priv);
-    }
+		pubKey = Base64.getEncoder().encodeToString(pub.getEncoded());
+		privKey = Base64.getEncoder().encodeToString(priv.getEncoded());
 
-    public String getPublic(){ return pubKey; }
+		decryptor = Cipher.getInstance("RSA");
+		decryptor.init(Cipher.DECRYPT_MODE, priv);
+	}
 
-    public String decrypt(String m) throws BadPaddingException, IllegalBlockSizeException, UnsupportedEncodingException {
-        byte [] cipherText = decryptor.doFinal(Base64.getDecoder().decode(m));
-        m = new String(cipherText, "UTF-8");
-        return m;
-    }
+	public String getPublic() {
+		return pubKey;
+	}
 
+	public String decrypt(String m)
+			throws BadPaddingException, IllegalBlockSizeException, UnsupportedEncodingException {
+		byte[] cipherText = decryptor.doFinal(Base64.getDecoder().decode(m));
+		m = new String(cipherText, "UTF-8");
+		return m;
+	}
 
 }

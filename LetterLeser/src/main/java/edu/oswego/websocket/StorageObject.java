@@ -6,14 +6,13 @@ import edu.oswego.runnables.Handler;
 import edu.oswego.runnables.ValidationRunnable;
 
 public class StorageObject {
-	
+
 	private Thread handlerThread;
 	private Handler handler;
 	private Thread validationThread;
 	private ValidationRunnable validationRunnable;
 	private Mailer mailer;
 	private Database database;
-
 
 	public Thread getHanderThread() {
 		return handlerThread;
@@ -47,16 +46,20 @@ public class StorageObject {
 		this.validationRunnable = validationRunnable;
 	}
 
-	public void setMailer(Mailer mailer){
-		this.mailer=mailer;
+	public void setMailer(Mailer mailer) {
+		this.mailer = mailer;
 	}
 
-	public Mailer getMailer(){return mailer;}
+	public Mailer getMailer() {
+		return mailer;
+	}
 
-	public void setDatabase(Database database){
+	public void setDatabase(Database database) {
 		this.database = database;
 	}
 
-	public Database getDatabase(){return database;}
+	public Database getDatabase() {
+		return database;
+	}
 
 }

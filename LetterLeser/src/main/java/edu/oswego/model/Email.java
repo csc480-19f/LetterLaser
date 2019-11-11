@@ -4,8 +4,6 @@ import java.sql.Date;
 import java.util.ArrayList;
 import java.util.List;
 
-import edu.oswego.sentiment.SentimentScore;
-
 /**
  * Email object based on SQL table model: email
  * 
