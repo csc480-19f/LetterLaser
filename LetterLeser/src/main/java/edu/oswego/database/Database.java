@@ -221,33 +221,6 @@ public class Database {
 		}
 	}
 
-	public int getConnectionCount() {
-		int threads = -1;
-		Connection connection = getConnection();
-		ResultSet rs = null;
-
-		try {
-			// SHOW FULL PROCESSLIST
-			rs = connection
-					.prepareStatement(
-							"USE information_schema; SELECT COUNT(*) FROM PROCESSLIST WHERE db ='csc480_19f';")
-					.executeQuery();
-
-			while (rs.next()) {
-				threads = rs.getInt(1);
-			}
-			DbUtils.closeQuietly(rs);
-			DbUtils.closeQuietly(connection);
-		} catch (SQLException e) {
-			DebugLogger.logEvent(Database.class.getName(), Level.WARNING, e.getMessage());
-		} finally {
-			DbUtils.closeQuietly(rs);
-			DbUtils.closeQuietly(connection);
-		}
-
-		return threads;
-	}
-
 	/**
 	 * @param emailAddress
 	 * 
@@ -933,7 +906,7 @@ public class Database {
 	 */
 	public boolean emailAddressExists(String emailAddress) {
 		int size = -1;
-
+		
 		Connection connection = getConnection();
 		ResultSet rs = null;
 		try {
