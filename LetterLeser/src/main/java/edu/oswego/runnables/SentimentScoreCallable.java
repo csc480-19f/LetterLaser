@@ -2,6 +2,7 @@ package edu.oswego.runnables;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.google.protobuf.Enum;
 import edu.oswego.model.Email;
 import edu.oswego.sentiment.AnalyzeThis;
 
@@ -29,7 +30,11 @@ public class SentimentScoreCallable implements Callable {
 			}
 		}
 
-		int num = positive / emails.size() * 100;
+		System.out.println("Positive: "+ positive);
+
+		int num = positive*100 / emails.size();
+
+		System.out.println("Num: "+num);
 		return num;
 	}
 }
