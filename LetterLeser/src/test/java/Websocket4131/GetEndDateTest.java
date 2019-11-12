@@ -1,32 +1,61 @@
 package Websocket4131;
 
-import edu.oswego.database.Database;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 
-import edu.oswego.database.Settings;
-import edu.oswego.mail.Mailer;
+import org.junit.Test;
+
+import edu.oswego.websocket.Websocket;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import org.joda.time.DateTime;
+import static org.junit.Assert.assertEquals;
 
 /**
- * USE THIS AS A TEMPLATE
- * EMPTY TEMPLATE
- * @author nguyen
- * @deprecated
+ * @author Emma Brunell
  */
-class GetEmailById{
+public class GetEndDateTest {
+    
+        Websocket websocket = new Websocket();
 
-	private Database db;
-	private Mailer mailer;
 
 	@BeforeEach
 	void setUp() throws Exception {
-		Settings.loadCredentials();
-		db = new Database(edu.oswego.mail.Settings.EMAIL_ADDRESS, new Mailer(edu.oswego.mail.Settings.EMAIL_ADDRESS, edu.oswego.mail.Settings.EMAIL_PWD));
 	}
 
 	@AfterEach
 	void tearDown() throws Exception {
-		db.truncateTables();
 	}
+        
+        @Test
+        public void testGetEndDateYear() throws NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+            Method method = Websocket.class.getDeclaredMethod("getEndDate", DateTime.class, String.class);
+            method.setAccessible(true);
+            DateTime startDate = new DateTime("2019-11-12T15:48:50+00:00");
+            String interval = "year";
+            DateTime result = (DateTime) method.invoke(websocket, startDate, interval);
+            assertEquals(result, new DateTime("2020-11-12T15:48:50+00:00"));
+        }
+        
+        @Test
+        public void testGetEndDateMonth() throws NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+            Method method = Websocket.class.getDeclaredMethod("getEndDate", DateTime.class, String.class);
+            method.setAccessible(true);
+            DateTime startDate = new DateTime("2019-11-12T15:48:50+00:00");
+            String interval = "month";
+            DateTime result = (DateTime) method.invoke(websocket, startDate, interval);
+            assertEquals(result, new DateTime("2019-12-12T15:48:50+00:00"));
+        }
+        
+        @Test
+        public void testGetEndDateWeek() throws NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+            Method method = Websocket.class.getDeclaredMethod("getEndDate", DateTime.class, String.class);
+            method.setAccessible(true);
+            DateTime startDate = new DateTime("2019-11-12T15:48:50+00:00");
+            String interval = "week";
+            DateTime result = (DateTime) method.invoke(websocket, startDate, interval);
+            assertEquals(result, new DateTime("2019-11-19T15:48:50+00:00"));
+        }
 
 }
+
