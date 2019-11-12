@@ -10,6 +10,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import org.joda.time.DateTime;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 /**
  * @author Emma Brunell
@@ -56,6 +57,15 @@ public class GetEndDateTest {
             DateTime result = (DateTime) method.invoke(websocket, startDate, interval);
             assertEquals(result, new DateTime("2019-11-19T15:48:50+00:00"));
         }
+	
+	@Test
+    	public void testNullEndDate() throws NoSuchMethodException, IllegalArgumentException, IllegalAccessException, InvocationTargetException {
+		Method method = Websocket.class.getDeclaredMethod("getEndDate", DateTime.class, String.class);
+		method.setAccessible(true);
+		String interval = "week";
+		DateTime result = (DateTime) method.invoke(websocket, null, interval);
+		assertNull(result);
+    	}
 
 }
 
