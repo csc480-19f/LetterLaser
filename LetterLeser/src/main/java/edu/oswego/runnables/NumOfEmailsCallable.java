@@ -4,6 +4,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import edu.oswego.model.Email;
 
+import java.sql.Date;
 import java.util.List;
 import java.util.concurrent.Callable;
 
@@ -57,14 +58,30 @@ public class NumOfEmailsCallable implements Callable {
 	/**
 	 * This method takes an email object and determines which set of hours the email
 	 * was received in.
-	 * 
+	 *
 	 * @param e
 	 *            The email.
 	 * @return 0 for hours 0-3:59, 1 for hours 4-7:59, ... , 5 for hours 20-23:59
 	 */
 	private int findHour(Email e) {
 		double hoursLong = e.getDateReceived().getTime() % oneDay;
-		return ((int) hoursLong) / (int) fourHours;
+		if(daylightSavings()) hoursLong -= (fourHours / 4);
+		int temp = ((int) hoursLong) / (int) fourHours;
+		return (temp+5) % 6;
+	}
+
+	/**
+	 * Checks for daylight savings time.
+	 * @return True or False depending on if it is, in fact, daylight savings time. Surprised, right?
+	 */
+	private boolean daylightSavings(){
+		long timeNow = System.currentTimeMillis();
+		Date today = new Date(timeNow);
+		int month = Integer.parseInt(today.toString().substring(5,7));
+		int day = Integer.parseInt(today.toString().substring(8));
+		if(month >= 11 && day >= 3) return true;
+		if(month <= 3 && day < 10) return true;
+		return false;
 	}
 
 	/**
