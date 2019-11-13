@@ -1384,5 +1384,27 @@ public class Database {
 
 		return ss;
 	}
+	
+	public static int getActivateConnections() {
+		int threads = -1;
+		Connection connection = null;
+		ResultSet rs = null;
+		
+		try {
+			connection = DriverManager.getConnection("jdbc:mysql://" + Settings.DATABASE_HOST + ":" + Settings.DATABASE_PORT + "/" + "information_schema" + "?useUnicode=true&characterEncoding=UTF-8&serverTimezone=UTC&user=" + Settings.DATABASE_USERNAME + "&password=" + Settings.DATABASE_PASSWORD);
+			rs = connection.prepareStatement("SELECT COUNT(*) FROM PROCESSLIST").executeQuery();
+
+			while (rs.next())
+				threads = rs.getInt(1);
+			
+		} catch (SQLException e1) {
+			e1.printStackTrace();
+		} finally {
+			DbUtils.closeQuietly(rs);
+			DbUtils.closeQuietly(connection);
+		}
+		
+		return threads;
+	}
 
 }
