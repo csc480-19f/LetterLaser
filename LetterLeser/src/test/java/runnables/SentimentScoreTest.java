@@ -1,14 +1,15 @@
 package runnables;
 
-import edu.oswego.model.Email;
-import edu.oswego.runnables.SentimentScoreCallable;
-import edu.oswego.sentiment.AnalyzeThis;
-import edu.oswego.sentiment.SentimentScore;
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.ArrayList;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import org.junit.Test;
+
+import edu.oswego.model.Email;
+import edu.oswego.model.SentimentScore;
+import edu.oswego.runnables.SentimentScoreCallable;
+import edu.oswego.sentiment.AnalyzeThis;
 
 /**
  * This class runs tests for the sentiment callable.
