@@ -7,29 +7,29 @@ import java.io.IOException;
 
 public class Messenger {
 
-	public void sendPublicKey(Session session, String message) {
+	public boolean sendPublicKey(Session session, String message) {
 		JsonObject js = new JsonObject();
 		js.addProperty("messagetype", "key");
 		js.addProperty("message", message);
-		sendToClient(session, js);
+		return sendToClient(session, js);
 	}
 
-	public void sendUpdateStatusMessage(Session session, String message) {
+	public boolean sendUpdateStatusMessage(Session session, String message) {
 		JsonObject js = new JsonObject();
 		js.addProperty("messagetype", "statusupdate");
 		js.addProperty("message", message);
-		sendToClient(session, js);
+		return sendToClient(session, js);
 	}
 
-	public void sendErrorMessage(Session session, String errorMessage) {
+	public boolean sendErrorMessage(Session session, String errorMessage) {
 		JsonObject js = new JsonObject();
 		js.addProperty("messagetype", "error");
 		js.addProperty("message", errorMessage);
-		sendToClient(session, js);
+		return sendToClient(session, js);
 	}
 
-	public void sendMessageToClient(Session session, JsonObject returnMessage) {
-		sendToClient(session, returnMessage);
+	public boolean sendMessageToClient(Session session, JsonObject returnMessage) {
+		return sendToClient(session, returnMessage);
 	}
 
 	/**
@@ -38,13 +38,13 @@ public class Messenger {
 	 * @param session
 	 * @param returnMessage
 	 */
-	private synchronized void sendToClient(Session session, JsonObject returnMessage) {
-		System.out.println("before" + returnMessage.toString());
+	private synchronized boolean sendToClient(Session session, JsonObject returnMessage) {
 		try {
 			session.getBasicRemote().sendText(returnMessage.toString());
-			System.out.println("after" + returnMessage.toString());
+			return true;
 		} catch (IOException e) {
-			// e.printStackTrace();
+			System.out.println("failed to send message, connection probably closed");
+			return false;
 		}
 	}
 }

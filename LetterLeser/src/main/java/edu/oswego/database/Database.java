@@ -1384,11 +1384,15 @@ public class Database {
 
 		return ss;
 	}
-	
-	public static int getActivateConnections() {
+
+	/*public  static boolean isConnectionOpen() {
+		return getActivateConnections() <= edu.oswego.database.Settings.THRESHOLD_CONNECTION;
+	}*/
+	public static boolean isConnection() {
 		int threads = -1;
 		Connection connection = null;
 		ResultSet rs = null;
+		boolean error = false;
 		
 		try {
 			connection = DriverManager.getConnection("jdbc:mysql://" + Settings.DATABASE_HOST + ":" + Settings.DATABASE_PORT + "/" + "information_schema" + "?useUnicode=true&characterEncoding=UTF-8&serverTimezone=UTC&user=" + Settings.DATABASE_USERNAME + "&password=" + Settings.DATABASE_PASSWORD);
@@ -1399,12 +1403,20 @@ public class Database {
 			
 		} catch (SQLException e1) {
 			e1.printStackTrace();
-		} finally {
+			error = true;
+		} catch (Exception e){
+			e.printStackTrace();
+			error = true;
+		}finally {
 			DbUtils.closeQuietly(rs);
 			DbUtils.closeQuietly(connection);
 		}
-		
-		return threads;
+		if(error){
+			return false;
+		}else{
+			return threads <= Settings.THRESHOLD_CONNECTION;
+		}
+
 	}
 
 }

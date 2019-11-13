@@ -59,6 +59,7 @@ public class Handler implements Runnable {
 				DateTime endDate = getEndDate(startDate, interval);
 				List<Email> emails;
 				try {
+					waitForConnection(session);
 					emails = database.getEmailByFilter(attachment, startDate.toDate().toString(),
 							endDate.toDate().toString(), seen, folderName);
 				}catch(Throwable t){
@@ -72,6 +73,7 @@ public class Handler implements Runnable {
 		} else if (userFavourites != null) {
 			List<Email> emails = null;
 			try {
+				waitForConnection(session);
 				emails = database.getEmailByFilter(userFavourites.isHasAttachment(), userFavourites.getStartDate().toString(), userFavourites.getEndDate().toString(), userFavourites.isSeen(), userFavourites.getFolder().getFolder().getFullName());
 			}catch(Throwable t){
 				messenger.sendErrorMessage(session,"error in db: "+t.getMessage());
@@ -86,16 +88,7 @@ public class Handler implements Runnable {
 
 	private void performCalculations(List<Email> emailList) {
 		if(emailList.isEmpty()){
-			JsonObject js = new JsonObject();
-			js.addProperty("messagetype", "statusupdate");
-
-			js.addProperty("message", "no emails obtained with current filter");
-
-			try {
-				session.getBasicRemote().sendText(js.toString());
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
+			messenger.sendUpdateStatusMessage(session,"no emails obtained with current filter");
 			return;
 		}
 
@@ -127,12 +120,12 @@ public class Handler implements Runnable {
 		t6.start();
 		JsonObject js;
 		try {
-			int sentiment = (int) ssc.get(20, TimeUnit.SECONDS);
-			JsonArray domain = (JsonArray) dc.get(20, TimeUnit.SECONDS);
-			JsonArray folder = (JsonArray) fc.get(20, TimeUnit.SECONDS);
-			JsonArray numOfMail = (JsonArray) noec.get(20, TimeUnit.SECONDS);
-			JsonObject sendNRec = (JsonObject) snrc.get(20, TimeUnit.SECONDS);
-			JsonObject timeBetween = (JsonObject) tbrc.get(20, TimeUnit.SECONDS);
+			int sentiment = (int) ssc.get(2, TimeUnit.MINUTES);
+			JsonArray domain = (JsonArray) dc.get(2, TimeUnit.MINUTES);
+			JsonArray folder = (JsonArray) fc.get(2, TimeUnit.MINUTES);
+			JsonArray numOfMail = (JsonArray) noec.get(2, TimeUnit.MINUTES);
+			JsonObject sendNRec = (JsonObject) snrc.get(2, TimeUnit.MINUTES);
+			JsonObject timeBetween = (JsonObject) tbrc.get(2, TimeUnit.MINUTES);
 
 			js = new JsonObject();
 			js.addProperty("messagetype", "graphs");
@@ -158,6 +151,7 @@ public class Handler implements Runnable {
 			messenger.sendErrorMessage(session,"request ended\n" +
 					"TimeoutException Occurred\n" +
 					e.getMessage());
+			messenger.sendUpdateStatusMessage(session,"calculation too longer than 2 minutes, plase ");
 			return;
 		}catch(Exception e){
 			messenger.sendErrorMessage(session,"request ended\n" +
@@ -176,6 +170,22 @@ public class Handler implements Runnable {
 			return startDate.plusMonths(1);
 		} else {// week
 			return startDate.plusWeeks(1);
+		}
+	}
+
+	private void waitForConnection(Session session){
+		while(true){
+			if(Database.isConnection()){
+				break;
+			}
+			else{
+				messenger.sendUpdateStatusMessage(session,"waiting for connection to open");
+				try {
+					Thread.sleep(500);
+				} catch (InterruptedException e) {
+					//e.printStackTrace();
+				}
+			}
 		}
 	}
 
