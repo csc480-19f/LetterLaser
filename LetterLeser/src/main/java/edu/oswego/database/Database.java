@@ -295,7 +295,7 @@ public class Database {
 			Message[] msgs = mailer.pullEmails(f.getFolder().getFullName()); // Do not use "[Gmail]/All Mail");
 			long start = System.nanoTime();
 			int emailCount = 0;
-			System.out.println("emails = "+msgs.length);
+			System.out.println("emails = " + msgs.length);
 			for (Message m : msgs) {
 				try {
 					System.out.println("insertEmailAddress");
@@ -306,8 +306,8 @@ public class Database {
 					long eend = System.nanoTime();
 					emailCount++;
 
-					System.out.println("email inserted: "+emailCount);
-					System.out.println("time to add: "+((eend-estart)*.000000001));
+					System.out.println("email inserted: " + emailCount);
+					System.out.println("time to add: " + ((eend - estart) * .000000001));
 					System.out.println("insertRecievedEmails");
 					for (EmailAddress ea : fromList) {
 						insertReceivedEmails(emailId, ea.getId());
@@ -318,16 +318,16 @@ public class Database {
 
 					messageList.add(mailer.getTextFromMessage(m));
 
-					/*s++;
-					if (s > stopper)
-						break;*/
+					/*
+					 * s++; if (s > stopper) break;
+					 */
 
 				} catch (MessagingException e) {
 					DebugLogger.logEvent(Database.class.getName(), Level.WARNING, e.getMessage());
 				}
 			}
 			long end = System.nanoTime();
-			System.out.println("time all emails in seconds: "+((end-start)*.000000001));
+			System.out.println("time all emails in seconds: " + ((end - start) * .000000001));
 			// break;
 			// strange ghost email added at the end....?
 
@@ -920,7 +920,7 @@ public class Database {
 	 */
 	public boolean emailAddressExists(String emailAddress) {
 		int size = -1;
-		
+
 		Connection connection = getConnection();
 		ResultSet rs = null;
 		try {
@@ -1237,7 +1237,7 @@ public class Database {
 	 * 
 	 * @see #truncateTable
 	 */
-	public void truncateTables() {
+	public static void truncateTables() {
 		for (String tbl : Settings.DATABASE_TABLES)
 			truncateTable(tbl);
 		DebugLogger.logEvent(Database.class.getName(), Level.SEVERE, "Database tables have been truncated completely.");
@@ -1248,8 +1248,27 @@ public class Database {
 	 * 
 	 * @param table
 	 */
-	public void truncateTable(String table) {
-		query("TRUNCATE TABLE " + table + ";");
+	public static void truncateTable(String table) {
+		Connection connection = null;
+		ResultSet rs = null;
+
+		try {
+			Class.forName("com.mysql.cj.jdbc.Driver");
+			connection = DriverManager.getConnection("jdbc:mysql://" + Settings.DATABASE_HOST + ":" + Settings.DATABASE_PORT
+					+ "/" + "information_schema" + "?useUnicode=true&characterEncoding=UTF-8&serverTimezone=UTC&user="
+					+ Settings.DATABASE_USERNAME + "&password=" + Settings.DATABASE_PASSWORD);
+			rs = connection.prepareStatement("TRUNCATE TABLE " + table).executeQuery();
+			DbUtils.closeQuietly(rs);
+			DbUtils.closeQuietly(connection);
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			DbUtils.closeQuietly(rs);
+			DbUtils.closeQuietly(connection);
+		}
+//		query("TRUNCATE TABLE " + table + ";");
 		DebugLogger.logEvent(Database.class.getName(), Level.SEVERE, table + " has been truncated completely");
 	}
 
@@ -1399,36 +1418,40 @@ public class Database {
 		return ss;
 	}
 
-	/*public  static boolean isConnectionOpen() {
-		return getActivateConnections() <= edu.oswego.database.Settings.THRESHOLD_CONNECTION;
-	}*/
+	/*
+	 * public static boolean isConnectionOpen() { return getActivateConnections() <=
+	 * edu.oswego.database.Settings.THRESHOLD_CONNECTION; }
+	 */
 	public static boolean isConnection() {
 		int threads = -1;
 		Connection connection = null;
 		ResultSet rs = null;
 		boolean error = false;
-		
+
 		try {
 			Class.forName("com.mysql.cj.jdbc.Driver");
-			connection = DriverManager.getConnection("jdbc:mysql://" + Settings.DATABASE_HOST + ":" + Settings.DATABASE_PORT + "/" + "information_schema" + "?useUnicode=true&characterEncoding=UTF-8&serverTimezone=UTC&user=" + Settings.DATABASE_USERNAME + "&password=" + Settings.DATABASE_PASSWORD);
+			connection = DriverManager
+					.getConnection("jdbc:mysql://" + Settings.DATABASE_HOST + ":" + Settings.DATABASE_PORT + "/"
+							+ "information_schema" + "?useUnicode=true&characterEncoding=UTF-8&serverTimezone=UTC&user="
+							+ Settings.DATABASE_USERNAME + "&password=" + Settings.DATABASE_PASSWORD);
 			rs = connection.prepareStatement("SELECT COUNT(*) FROM PROCESSLIST").executeQuery();
 
 			while (rs.next())
 				threads = rs.getInt(1);
-			
+
 		} catch (SQLException e1) {
 			e1.printStackTrace();
 			error = true;
-		} catch (Exception e){
+		} catch (Exception e) {
 			e.printStackTrace();
 			error = true;
-		}finally {
+		} finally {
 			DbUtils.closeQuietly(rs);
 			DbUtils.closeQuietly(connection);
 		}
-		if(error){
+		if (error) {
 			return false;
-		}else{
+		} else {
 			return threads <= Settings.THRESHOLD_CONNECTION;
 		}
 
