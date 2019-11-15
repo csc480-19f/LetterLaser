@@ -245,7 +245,7 @@ public class Mailer {
 		try {
 			Multipart multiPart = (Multipart) m.getContent();
 			if(multiPart==null){
-				return "null";
+				return "EER";
 			}
 			for (int i = 0; i < multiPart.getCount(); i++) {
 				MimeBodyPart part = (MimeBodyPart) multiPart.getBodyPart(i);
