@@ -16,11 +16,11 @@ import edu.oswego.debug.DebugLogger;
 
 public class Settings {
 
-	public static String DATABASE_SCHEMA = "sql9311315";
-	public static String DATABASE_USERNAME = "sql9311315";
-	public static String DATABASE_PASSWORD = "fdlIwEmj4T";
-	public static String DATABASE_HOST = "52.5.226.201";
-	public static String DATABASE_PORT = "3306";
+	public static String DATABASE_SCHEMA = "";
+	public static String DATABASE_USERNAME = "";
+	public static String DATABASE_PASSWORD = "";
+	public static String DATABASE_HOST = "";
+	public static String DATABASE_PORT = "";
 	public static int THRESHOLD_CONNECTION = 100;
 
 	public static final String[] DATABASE_TABLES = new String[] { "email", "email_addr", "filter_settings", "folder",
