@@ -244,6 +244,9 @@ public class Mailer {
 	public String getAttachmentName(Message m) {
 		try {
 			Multipart multiPart = (Multipart) m.getContent();
+			if(multiPart==null){
+				return "null";
+			}
 			for (int i = 0; i < multiPart.getCount(); i++) {
 				MimeBodyPart part = (MimeBodyPart) multiPart.getBodyPart(i);
 				if (Part.ATTACHMENT.equalsIgnoreCase(part.getDisposition()))
