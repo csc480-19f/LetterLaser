@@ -293,27 +293,41 @@ public class Database {
 
 		for (UserFolder f : folderList) {
 			Message[] msgs = mailer.pullEmails(f.getFolder().getFullName()); // Do not use "[Gmail]/All Mail");
+			long start = System.nanoTime();
+			int emailCount = 0;
+			System.out.println("emails = "+msgs.length);
 			for (Message m : msgs) {
 				try {
+					System.out.println("insertEmailAddress");
 					List<EmailAddress> fromList = insertEmailAddress(m.getFrom());// get this list and return for
 																					// user_email table
+					long estart = System.nanoTime();
 					int emailId = insertEmail(m, folderList, emailIdList);
+					long eend = System.nanoTime();
+					emailCount++;
+
+					System.out.println("email inserted: "+emailCount);
+					System.out.println("time to add: "+((eend-estart)*.000000001));
+					System.out.println("insertRecievedEmails");
 					for (EmailAddress ea : fromList) {
 						insertReceivedEmails(emailId, ea.getId());
 					}
+					System.out.println("insertUserEmail");
 					insertUserEmail(user, emailId);
 					emailIdList.add(emailId);
 
 					messageList.add(mailer.getTextFromMessage(m));
 
-					s++;
+					/*s++;
 					if (s > stopper)
-						break;
+						break;*/
 
 				} catch (MessagingException e) {
 					DebugLogger.logEvent(Database.class.getName(), Level.WARNING, e.getMessage());
 				}
 			}
+			long end = System.nanoTime();
+			System.out.println("time all emails in seconds: "+((end-start)*.000000001));
 			// break;
 			// strange ghost email added at the end....?
 
@@ -1395,6 +1409,7 @@ public class Database {
 		boolean error = false;
 		
 		try {
+			Class.forName("com.mysql.cj.jdbc.Driver");
 			connection = DriverManager.getConnection("jdbc:mysql://" + Settings.DATABASE_HOST + ":" + Settings.DATABASE_PORT + "/" + "information_schema" + "?useUnicode=true&characterEncoding=UTF-8&serverTimezone=UTC&user=" + Settings.DATABASE_USERNAME + "&password=" + Settings.DATABASE_PASSWORD);
 			rs = connection.prepareStatement("SELECT COUNT(*) FROM PROCESSLIST").executeQuery();
 

@@ -32,13 +32,14 @@ public class ValidationRunnable implements Runnable {
 	@Override
 	public void run() {
 		Thread.currentThread().setName("validation");
+		System.out.println("validation started");
 		if (validateOrPull) {
 			messenger.sendUpdateStatusMessage(session, "validating emails");
 
 			try {
-				waitForConnection(session);
 				database.pull();
 			} catch (Throwable t) {
+				t.printStackTrace();
 				messenger.sendErrorMessage(session, "error in db: " + t.getMessage());
 				return;
 			}
@@ -50,11 +51,10 @@ public class ValidationRunnable implements Runnable {
 			List<UserFolder> folders;
 			List<UserFavourites> favourites;
 			try {
-				waitForConnection(session);
 				folders = database.pull();
-				waitForConnection(session);
 				favourites = database.getUserFavourites();
 			} catch (Throwable t) {
+				t.printStackTrace();
 				messenger.sendErrorMessage(session, "error in db: " + t.getMessage());
 				return;
 			}
@@ -73,22 +73,7 @@ public class ValidationRunnable implements Runnable {
 			js.add("favoritename", ja1);
 			messenger.sendMessageToClient(session, js);
 		}
-	}
-
-	private void waitForConnection(Session session){
-		while(true){
-			if(Database.isConnection()){
-				break;
-			}
-			else{
-				messenger.sendUpdateStatusMessage(session,"waiting for connection to open");
-				try {
-					Thread.sleep(500);
-				} catch (InterruptedException e) {
-					//e.printStackTrace();
-				}
-			}
-		}
+		System.out.println("validationRunnable finished");
 	}
 
 }

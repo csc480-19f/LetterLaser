@@ -82,6 +82,7 @@ public class Websocket {
 		}
 		String messageType = jsonMessage.get("messagetype").getAsString();
 		String decryptedEmail = null;
+
 		try {
 			String encryptedEmail = jsonMessage.get("email").getAsString();
 			decryptedEmail = jse.decrypt(encryptedEmail);
@@ -103,6 +104,10 @@ public class Websocket {
 			return;
 		}
 		StorageObject storageObject = sessionMapper.get(decryptedEmail);
+
+		if(!waitForConnection(session)){
+			return;
+		}
 
 		if (messageType.equals("filter")) {
 			filter(session, storageObject.getDatabase(), decryptedEmail, jsonMessage.get("filter").getAsJsonObject());
@@ -149,6 +154,7 @@ public class Websocket {
 					+ "login, filter, refresh, addfavorite, callfavorite, removefavorite or logout");
 
 		}
+		System.out.println("websocket Thread finished");
 
 	}
 
@@ -171,7 +177,7 @@ public class Websocket {
 	@OnError
 	public void onError(Throwable t, Session session) {
 		System.out.println("onError::");
-		t.printStackTrace();
+		//t.printStackTrace();
 	}
 
 	/*
@@ -189,9 +195,9 @@ public class Websocket {
 			storageObject = new StorageObject();
 			mailer = new Mailer(email, pass);
 
-			messenger.sendUpdateStatusMessage(session, "establising connection");
-
-			waitForConnection(session);
+			if(!messenger.sendUpdateStatusMessage(session, "establising connection")){
+				return;
+			}
 
 
 			boolean connectedToInbox = mailer.isConnected();
@@ -201,13 +207,13 @@ public class Websocket {
 			}
 
 			try {
-				waitForConnection(session);
 				database = new Database(email, mailer);
 			} catch (Throwable t) {
 				messenger.sendErrorMessage(session, "error in db: " + t.getMessage());
 				return;
 			}
-			messenger.sendUpdateStatusMessage(session, "established connection");
+
+			if(!messenger.sendUpdateStatusMessage(session, "established connection")){return;}
 
 			storageObject.setDatabase(database);
 			storageObject.setMailer(mailer);
@@ -215,11 +221,10 @@ public class Websocket {
 		} else {
 			mailer = storageObject.getMailer();
 			database = storageObject.getDatabase();
-			messenger.sendUpdateStatusMessage(session, "established connection");
+			if(!messenger.sendUpdateStatusMessage(session, "established connection")){return;}
 		}
 
 		boolean hasEmails;
-		waitForConnection(session);
 		hasEmails = database.hasEmails();
 
 		JsonObject js = new JsonObject();
@@ -228,9 +233,7 @@ public class Websocket {
 			List<UserFolder> folders;
 			List<UserFavourites> favourites;
 			try {
-				waitForConnection(session);
 				folders = database.importFolders();
-				waitForConnection(session);
 				favourites = database.getUserFavourites();
 			} catch (Throwable t) {
 				messenger.sendErrorMessage(session, "error in db: " + t.getMessage());
@@ -268,7 +271,6 @@ public class Websocket {
 	private void callFavorite(Session session, Database database, String favname, String email) {
 		UserFavourites userFavourites;
 		try {
-			waitForConnection(session);
 			userFavourites = database.getUserFavourite(favname);
 		}catch(Exception e){
 			messenger.sendErrorMessage(session,"couldn't get favourtes");
@@ -293,10 +295,7 @@ public class Websocket {
 			boolean validateOrPull, Session session) {
 		if (storageObject != null && storageObject.getValidationThread() != null
 				&& storageObject.getValidationThread().isAlive()) {
-			JsonObject js = new JsonObject();
-			js.addProperty("messagetype", "statusupdate");
-			js.addProperty("message", "validation already occuring");
-			messenger.sendMessageToClient(session, js);
+			messenger.sendUpdateStatusMessage(session,"validation already occuring");
 		}
 		ValidationRunnable vr = new ValidationRunnable(mailer, database, validateOrPull, session);
 		Thread thread = new Thread(vr);
@@ -331,7 +330,6 @@ public class Websocket {
 		boolean seen = filter.get("seen").getAsBoolean();
 		boolean added;
 		try {
-			waitForConnection(session);
 			added = database.insertUserFavourites(favoriteName, startDate.toDate(), endDate.toDate(),
 					Interval.parse(interval), attachment, seen, foldername);
 		} catch (Throwable t) {
@@ -347,7 +345,6 @@ public class Websocket {
 
 		List<UserFavourites> favourites;
 		try {
-			waitForConnection(session);
 			favourites = database.getUserFavourites();
 		} catch (Throwable t) {
 			messenger.sendErrorMessage(session, "error in db: " + t.getMessage());
@@ -375,7 +372,6 @@ public class Websocket {
 	private void removeFavorite(Session session, Database database, String favoriteName) {
 		// dont return from these catches as they need UserFavourites
 		try {
-			waitForConnection(session);
 			database.removeUserFavourite(favoriteName);
 		} catch (Throwable t) {
 			messenger.sendErrorMessage(session, "error in db: " + t.getMessage());
@@ -385,7 +381,6 @@ public class Websocket {
 
 		List<UserFavourites> favourites;
 		try {
-			waitForConnection(session);
 			favourites = database.getUserFavourites();
 		}catch(Exception e){
 			messenger.sendErrorMessage(session,"error in db: "+ e.getMessage());
@@ -467,20 +462,30 @@ public class Websocket {
 
 	/**
 	 * wait for a connection to open to db
-	 *
+	 * ~5 seconds before a timeout
 	 * @param session
 	 */
-	private void waitForConnection(Session session){
+	private boolean waitForConnection(Session session){
+		int count=0;
 		while(true){
 			if(Database.isConnection()){
-				break;
+				return true;
 			}
 			else{
-				messenger.sendUpdateStatusMessage(session,"waiting for connection to open");
+				count++;
+				if(count>=15){
+					messenger.sendErrorMessage(session,"server busy, try again later");
+					return false;
+				}else {
+					if(!messenger.sendUpdateStatusMessage(session, "waiting for connection to open\nattempt: " + count)){
+						return false;
+					}
+				}
+
 				try {
 					Thread.sleep(333);
 				} catch (InterruptedException e) {
-					//e.printStackTrace();
+
 				}
 			}
 		}

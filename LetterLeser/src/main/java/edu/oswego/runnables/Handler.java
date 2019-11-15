@@ -59,7 +59,6 @@ public class Handler implements Runnable {
 				DateTime endDate = getEndDate(startDate, interval);
 				List<Email> emails;
 				try {
-					waitForConnection(session);
 					emails = database.getEmailByFilter(attachment, startDate.toDate().toString(),
 							endDate.toDate().toString(), seen, folderName);
 				}catch(Throwable t){
@@ -73,7 +72,6 @@ public class Handler implements Runnable {
 		} else if (userFavourites != null) {
 			List<Email> emails = null;
 			try {
-				waitForConnection(session);
 				emails = database.getEmailByFilter(userFavourites.isHasAttachment(), userFavourites.getStartDate().toString(), userFavourites.getEndDate().toString(), userFavourites.isSeen(), userFavourites.getFolder().getFolder().getFullName());
 			}catch(Throwable t){
 				messenger.sendErrorMessage(session,"error in db: "+t.getMessage());
@@ -160,6 +158,7 @@ public class Handler implements Runnable {
 			return;
 		}
 		messenger.sendMessageToClient(session,js);
+		System.out.println("handler thread finished");
 
 	}
 
@@ -173,21 +172,7 @@ public class Handler implements Runnable {
 		}
 	}
 
-	private void waitForConnection(Session session){
-		while(true){
-			if(Database.isConnection()){
-				break;
-			}
-			else{
-				messenger.sendUpdateStatusMessage(session,"waiting for connection to open");
-				try {
-					Thread.sleep(500);
-				} catch (InterruptedException e) {
-					//e.printStackTrace();
-				}
-			}
-		}
-	}
+
 
 
 }
