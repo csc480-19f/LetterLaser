@@ -57,7 +57,15 @@ public class TimeBetweenRepliesCallable implements Callable {
 			}
 			//Or if it exists as a reply
 			else if(subj.length() >= 4 && subj.substring(0,4).equalsIgnoreCase("Re: ")){
-				subjects.get(subj.substring(4)).add(e);
+				ArrayList<Email> list = subjects.get(subj.substring(4));
+				if(list!=null){
+					list.add(e);
+				}else{
+					subj = subj.substring(4);
+					subjects.put(subj, new ArrayList<Email>());
+					subjects.get(subj).add(e);
+					keys.add(subj);
+				}
 			}
 			//Or is it's new
 			else{
