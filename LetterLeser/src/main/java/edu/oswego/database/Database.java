@@ -290,42 +290,42 @@ public class Database {
 		DebugLogger.logEvent(Database.class.getName(), Level.INFO, "Pulling emails from " + user.getEmailAddress());
 		int s = 0;
 		int stopper = 1; // limit our pull for testing
-
+		int i=0;
 		for (UserFolder f : folderList) {
 			Message[] msgs = mailer.pullEmails(f.getFolder().getFullName()); // Do not use "[Gmail]/All Mail");
 			long start = System.nanoTime();
 			int emailCount = 0;
 			System.out.println("emails = " + msgs.length);
-			for (Message m : msgs) {
-				try {
-					System.out.println("insertEmailAddress");
-					List<EmailAddress> fromList = insertEmailAddress(m.getFrom());// get this list and return for
-																					// user_email table
-					long estart = System.nanoTime();
-					int emailId = insertEmail(m, folderList, emailIdList);
-					long eend = System.nanoTime();
-					emailCount++;
+			if(i>1){
+				for (Message m : msgs) {
+					try {
+						List<EmailAddress> fromList = insertEmailAddress(m.getFrom());// get this list and return for
+																						// user_email table
+						long estart = System.nanoTime();
+						int emailId = insertEmail(m, folderList, emailIdList);
+						long eend = System.nanoTime();
+						emailCount++;
 
-					System.out.println("email inserted: " + emailCount);
-					System.out.println("time to add: " + ((eend - estart) * .000000001));
-					System.out.println("insertRecievedEmails");
-					for (EmailAddress ea : fromList) {
-						insertReceivedEmails(emailId, ea.getId());
+						System.out.println("email inserted: " + emailCount);
+						System.out.println("time to add: " + ((eend - estart) * .000000001));
+						for (EmailAddress ea : fromList) {
+							insertReceivedEmails(emailId, ea.getId());
+						}
+						insertUserEmail(user, emailId);
+						emailIdList.add(emailId);
+
+						messageList.add(mailer.getTextFromMessage(m));
+
+						/*
+						 * s++; if (s > stopper) break;
+						 */
+
+					} catch (MessagingException e) {
+						DebugLogger.logEvent(Database.class.getName(), Level.WARNING, e.getMessage());
 					}
-					System.out.println("insertUserEmail");
-					insertUserEmail(user, emailId);
-					emailIdList.add(emailId);
-
-					messageList.add(mailer.getTextFromMessage(m));
-
-					/*
-					 * s++; if (s > stopper) break;
-					 */
-
-				} catch (MessagingException e) {
-					DebugLogger.logEvent(Database.class.getName(), Level.WARNING, e.getMessage());
 				}
 			}
+			i++;
 			long end = System.nanoTime();
 			System.out.println("time all emails in seconds: " + ((end - start) * .000000001));
 			// break;
@@ -385,7 +385,7 @@ public class Database {
 			filterStatements.add("date_received >= '" + startDate + "'");
 		if (endDate != null) // engine will calculate endDate with interval given to them.
 			filterStatements.add("date_received <= '" + endDate + "'");
-		if (seen)
+		if (!folderName.trim().equals(""))
 			filterStatements.add("folder_id = " + getFolderId(folderName));
 
 		for (int i = 0; i < filterStatements.size(); i++) {

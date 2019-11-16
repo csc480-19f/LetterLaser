@@ -239,7 +239,6 @@ public class Websocket {
 				messenger.sendErrorMessage(session, "error in db: " + t.getMessage());
 				return;
 			}
-			refresh(storageObject, email, mailer, database, true, session);
 
 			js.addProperty("messagetype", "logininfo");
 			JsonArray ja1 = new JsonArray();
@@ -253,6 +252,8 @@ public class Websocket {
 			js.add("foldername", ja1);
 			js.add("favoritename", ja2);
 			messenger.sendMessageToClient(session, js);
+
+			refresh(storageObject, email, mailer, database, true, session);
 		} else {
 			messenger.sendUpdateStatusMessage(session, "nothing found in database, preforming fresh import");
 			refresh(storageObject, email, mailer, database, false, session);

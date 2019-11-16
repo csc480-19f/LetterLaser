@@ -4,8 +4,10 @@ import com.google.gson.JsonObject;
 
 import javax.websocket.Session;
 import java.io.IOException;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class Messenger {
+    ReentrantLock lock = new ReentrantLock();
 
 	public boolean sendPublicKey(Session session, String message) {
 		JsonObject js = new JsonObject();
@@ -40,11 +42,14 @@ public class Messenger {
 	 */
 	private synchronized boolean sendToClient(Session session, JsonObject returnMessage) {
 		try {
+		    lock.lock();
 			session.getBasicRemote().sendText(returnMessage.toString());
 			return true;
 		} catch (IOException e) {
 			System.out.println("failed to send message, connection probably closed");
 			return false;
-		}
+		}finally {
+		    lock.unlock();
+        }
 	}
 }

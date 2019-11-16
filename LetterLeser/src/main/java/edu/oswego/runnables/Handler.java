@@ -12,8 +12,7 @@ import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 
 import javax.websocket.Session;
-import java.io.IOException;
-import java.sql.SQLException;
+import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
@@ -58,9 +57,14 @@ public class Handler implements Runnable {
 				DateTime startDate = new DateTime(DateTimeFormat.forPattern("yyyy/MM/dd HH:mm:ss").parseMillis(sd));
 				DateTime endDate = getEndDate(startDate, interval);
 				List<Email> emails;
+
+				SimpleDateFormat formater = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+				String stringStartDate = formater.format(startDate.toDate());
+				String stringEndDate = formater.format(endDate.toDate());
+
 				try {
-					emails = database.getEmailByFilter(attachment, startDate.toDate().toString(),
-							endDate.toDate().toString(), seen, folderName);
+					emails = database.getEmailByFilter(attachment, stringStartDate,
+                            stringEndDate, seen, folderName);
 				}catch(Throwable t){
 					messenger.sendErrorMessage(session,"error in db: "+t.getMessage());
 					return;

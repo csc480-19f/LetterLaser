@@ -244,18 +244,17 @@ public class Mailer {
 	public String getAttachmentName(Message m) {
 		try {
 			Multipart multiPart = (Multipart) m.getContent();
-			if(multiPart==null){
-				return "EER";
-			}
 			for (int i = 0; i < multiPart.getCount(); i++) {
 				MimeBodyPart part = (MimeBodyPart) multiPart.getBodyPart(i);
 				if (Part.ATTACHMENT.equalsIgnoreCase(part.getDisposition()))
-					return part.getFileName().toString();
+					return part.getFileName();
 			}
 		} catch (MessagingException e) {
 			DebugLogger.logEvent(Mailer.class.getName(), Level.WARNING, e.getMessage());
 		} catch (IOException e) {
 			DebugLogger.logEvent(Mailer.class.getName(), Level.WARNING, e.getMessage());
+		} catch(Exception e){
+			return "ERR";
 		}
 
 		return "";
