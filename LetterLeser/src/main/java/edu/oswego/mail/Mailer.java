@@ -215,6 +215,7 @@ public class Mailer {
 	 * 
 	 * @param m
 	 * @return if message has attachment
+	 * @deprecated
 	 */
 	public boolean hasAttachment(Message m) {
 		try {
@@ -240,6 +241,7 @@ public class Mailer {
 	 * 
 	 * @param m
 	 * @return name of attachment
+	 * @deprecated
 	 */
 	public String getAttachmentName(Message m) {
 		try {
