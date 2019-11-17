@@ -289,13 +289,11 @@ public class Database {
 		DebugLogger.logEvent(Database.class.getName(), Level.INFO, "Pulling emails from " + user.getEmailAddress());
 		int s = 0;
 		int stopper = 1; // limit our pull for testing
-		int i=0;
 		for (UserFolder f : folderList) {
 			Message[] msgs = mailer.pullEmails(f.getFolder().getFullName()); // Do not use "[Gmail]/All Mail");
 			long start = System.nanoTime();
 			int emailCount = 0;
 			System.out.println("emails = " + msgs.length);
-			if(i>1){
 				for (Message m : msgs) {
 					try {
 						List<EmailAddress> fromList = insertEmailAddress(m.getFrom());// get this list and return for
@@ -323,8 +321,6 @@ public class Database {
 						DebugLogger.logEvent(Database.class.getName(), Level.WARNING, e.getMessage());
 					}
 				}
-			}
-			i++;
 			long end = System.nanoTime();
 			System.out.println("time all emails in seconds: " + ((end - start) * .000000001));
 			// break;
