@@ -1,6 +1,7 @@
 package edu.oswego.model;
 
 import java.sql.Date;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,7 +16,7 @@ import java.util.List;
 public class Email {
 
 	private int id;
-	private Date dateReceived;
+	private Timestamp dateReceived;
 	private String subject;
 	private double size;
 	private boolean isSeen;
@@ -30,7 +31,8 @@ public class Email {
 	public Email(int id, Date dateReceived, String subject, double size, boolean isSeen, boolean hasAttachment,
 			UserFolder folder) {
 		this.id = id;
-		this.dateReceived = dateReceived;
+		this.dateReceived = new Timestamp(dateReceived.getTime());
+//		this.dateReceived = dateReceived;
 		this.subject = subject;
 		this.size = size;
 		this.isSeen = isSeen;
@@ -43,7 +45,8 @@ public class Email {
 	public Email(int id, Date dateReceived, String subject, double size, boolean isSeen, boolean hasAttachment,
 			SentimentScore sentimentScore) {
 		this.id = id;
-		this.dateReceived = dateReceived;
+		this.dateReceived = new Timestamp(dateReceived.getTime());
+//		this.dateReceived = dateReceived;
 		this.subject = subject;
 		this.size = size;
 		this.isSeen = isSeen;
@@ -55,7 +58,8 @@ public class Email {
 	public Email(int id, Date dateReceived, String subject, double size, boolean isSeen, boolean hasAttachment,
 			SentimentScore sentimentScore, UserFolder folder) {
 		this.id = id;
-		this.dateReceived = dateReceived;
+		this.dateReceived = new Timestamp(dateReceived.getTime());
+//		this.dateReceived = dateReceived;
 		this.subject = subject;
 		this.size = size;
 		this.isSeen = isSeen;
@@ -68,7 +72,8 @@ public class Email {
 	public Email(int id, Date dateReceived, String subject, double size, boolean isSeen, boolean hasAttachment,
 			SentimentScore sentimentScore, UserFolder folder, List<EmailAddress> from) {
 		this.id = id;
-		this.dateReceived = dateReceived;
+		this.dateReceived = new Timestamp(dateReceived.getTime());
+//		this.dateReceived = dateReceived;
 		this.subject = subject;
 		this.size = size;
 		this.isSeen = isSeen;
@@ -82,7 +87,7 @@ public class Email {
 		return id;
 	}
 
-	public Date getDateReceived() {
+	public Timestamp getDateReceived() {
 		return dateReceived;
 	}
 
