@@ -90,7 +90,12 @@ public class TimeBetweenRepliesCallable implements Callable {
                 String ed = next.getDateReceived().toString();
                 DateTime startDate = new DateTime(DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss").parseMillis(sd));
                 DateTime endDate = new DateTime(DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss").parseMillis(ed));
-                int hours = Hours.hoursBetween(startDate,endDate).getHours();
+                int hours;
+                try {
+					hours = Hours.hoursBetween(startDate, endDate).getHours();
+				}catch(Exception e){
+                	continue;
+				}
                 int dayOfWeek = getIndexOfDay(startDate.dayOfWeek().toString());
                 int sentOrRecieved;
                 //if sent else recieved
