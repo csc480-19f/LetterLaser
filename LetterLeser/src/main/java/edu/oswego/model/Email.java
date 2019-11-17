@@ -24,10 +24,11 @@ public class Email {
 	private SentimentScore sentimentScore;
 	private UserFolder folder;
 	private List<EmailAddress> from;
-	
+
 	// TODO ADD USERFOLDER?
 
-	public Email(int id, Date dateReceived, String subject, double size, boolean isSeen, boolean hasAttachment) {
+	public Email(int id, Date dateReceived, String subject, double size, boolean isSeen, boolean hasAttachment,
+			UserFolder folder) {
 		this.id = id;
 		this.dateReceived = dateReceived;
 		this.subject = subject;
@@ -35,7 +36,7 @@ public class Email {
 		this.isSeen = isSeen;
 		this.hasAttachment = hasAttachment;
 		this.sentimentScore = null;
-		this.folder = null;
+		this.folder = folder;
 		this.from = new ArrayList<>();
 	}
 
@@ -64,8 +65,8 @@ public class Email {
 		this.from = new ArrayList<>();
 	}
 
-	public Email(int id, Date dateReceived, String subject, double size, boolean isSeen, String fileName,
-			boolean hasAttachment, SentimentScore sentimentScore, UserFolder folder, List<EmailAddress> from) {
+	public Email(int id, Date dateReceived, String subject, double size, boolean isSeen, boolean hasAttachment,
+			SentimentScore sentimentScore, UserFolder folder, List<EmailAddress> from) {
 		this.id = id;
 		this.dateReceived = dateReceived;
 		this.subject = subject;
