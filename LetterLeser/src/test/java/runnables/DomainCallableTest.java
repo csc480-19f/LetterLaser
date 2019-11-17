@@ -25,25 +25,25 @@ public class DomainCallableTest {
         for(int i = 0; i < 10; i++){
             List<EmailAddress> senders = new ArrayList<>();
             senders.add(new EmailAddress(0, "mdoran@oswego.edu"));
-            Email e = new Email(0, null, "", 0, false, "", false, null, null, senders);
+            Email e = new Email(0, null, "", 0, false, false, null, null, senders);
             emails.add(e);
         }
         for(int i = 0; i < 9; i++){
             List<EmailAddress> senders = new ArrayList<>();
             senders.add(new EmailAddress(0, "mdoran@clarkson.edu"));
-            Email e = new Email(0, null, "", 0, false, "", false, null, null, senders);
+            Email e = new Email(0, null, "", 0, false, false, null, null, senders);
             emails.add(e);
         }
         for(int i = 0; i < 8; i++){
             List<EmailAddress> senders = new ArrayList<>();
             senders.add(new EmailAddress(0, "mdoran@yahoo.com"));
-            Email e = new Email(0, null, "", 0, false, "", false, null, null, senders);
+            Email e = new Email(0, null, "", 0, false, false, null, null, senders);
             emails.add(e);
         }
         for(int i = 0; i < 7; i++){
             List<EmailAddress> senders = new ArrayList<>();
             senders.add(new EmailAddress(0, "mdoran@something.dum"));
-            Email e = new Email(0, null, "", 0, false, "", false, null, null, senders);
+            Email e = new Email(0, null, "", 0, false, false, null, null, senders);
             emails.add(e);
         }
     }
