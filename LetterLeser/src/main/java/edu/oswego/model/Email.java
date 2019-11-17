@@ -28,11 +28,10 @@ public class Email {
 
 	// TODO ADD USERFOLDER?
 
-	public Email(int id, Date dateReceived, String subject, double size, boolean isSeen, boolean hasAttachment,
+	public Email(int id, Timestamp dateReceived, String subject, double size, boolean isSeen, boolean hasAttachment,
 			UserFolder folder) {
 		this.id = id;
-		this.dateReceived = new Timestamp(dateReceived.getTime());
-//		this.dateReceived = dateReceived;
+		this.dateReceived = dateReceived;
 		this.subject = subject;
 		this.size = size;
 		this.isSeen = isSeen;
@@ -42,11 +41,10 @@ public class Email {
 		this.from = new ArrayList<>();
 	}
 
-	public Email(int id, Date dateReceived, String subject, double size, boolean isSeen, boolean hasAttachment,
+	public Email(int id, Timestamp dateReceived, String subject, double size, boolean isSeen, boolean hasAttachment,
 			SentimentScore sentimentScore) {
 		this.id = id;
-		this.dateReceived = new Timestamp(dateReceived.getTime());
-//		this.dateReceived = dateReceived;
+		this.dateReceived = dateReceived;
 		this.subject = subject;
 		this.size = size;
 		this.isSeen = isSeen;
@@ -55,11 +53,10 @@ public class Email {
 		this.from = new ArrayList<>();
 	}
 
-	public Email(int id, Date dateReceived, String subject, double size, boolean isSeen, boolean hasAttachment,
+	public Email(int id, Timestamp dateReceived, String subject, double size, boolean isSeen, boolean hasAttachment,
 			SentimentScore sentimentScore, UserFolder folder) {
 		this.id = id;
-		this.dateReceived = new Timestamp(dateReceived.getTime());
-//		this.dateReceived = dateReceived;
+		this.dateReceived = dateReceived;
 		this.subject = subject;
 		this.size = size;
 		this.isSeen = isSeen;
@@ -69,11 +66,10 @@ public class Email {
 		this.from = new ArrayList<>();
 	}
 
-	public Email(int id, Date dateReceived, String subject, double size, boolean isSeen, boolean hasAttachment,
+	public Email(int id, Timestamp dateReceived, String subject, double size, boolean isSeen, boolean hasAttachment,
 			SentimentScore sentimentScore, UserFolder folder, List<EmailAddress> from) {
 		this.id = id;
-		this.dateReceived = new Timestamp(dateReceived.getTime());
-//		this.dateReceived = dateReceived;
+		this.dateReceived = dateReceived;
 		this.subject = subject;
 		this.size = size;
 		this.isSeen = isSeen;

@@ -7,7 +7,9 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
 
@@ -107,10 +109,10 @@ public class Database {
 				Email em;
 				//// need sentiment score and folder id?
 				if (rs.getObject(8) != null) {
-					em = new Email(rs.getInt(1), rs.getDate(2), rs.getString(3), rs.getDouble(4), rs.getBoolean(5), rs.getBoolean(6), getSentimentScoreById(rs.getInt(7)), getFolderById(rs.getInt(rs.getInt(8))));
+					em = new Email(rs.getInt(1), (java.sql.Timestamp) rs.getObject(2), rs.getString(3), rs.getDouble(4), rs.getBoolean(5), rs.getBoolean(6), getSentimentScoreById(rs.getInt(7)), getFolderById(rs.getInt(rs.getInt(8))));
 					//em = new Email(rs.getInt(1), rs.getDate(2), rs.getString(3), rs.getDouble(4), rs.getBoolean(5), rs.getBoolean(6), rs.getString(6), rs.getBoolean(7), getSentimentScoreById(rs.getInt(7)));
 				} else {
-					em = new Email(rs.getInt(1), rs.getDate(2), rs.getString(3), rs.getDouble(4), rs.getBoolean(5), rs.getBoolean(6), getFolderById(rs.getInt(rs.getInt(8))));//, getFolderById(rs.getInt(8)));
+					em = new Email(rs.getInt(1),(java.sql.Timestamp) rs.getObject(2), rs.getString(3), rs.getDouble(4), rs.getBoolean(5), rs.getBoolean(6), getFolderById(rs.getInt(rs.getInt(8))));//, getFolderById(rs.getInt(8)));
 				}
 				DbUtils.closeQuietly(rs);
 				DbUtils.closeQuietly(connection);
@@ -397,7 +399,7 @@ public class Database {
 			rs = connection.prepareStatement(selectionStatement, Statement.RETURN_GENERATED_KEYS).executeQuery();
 
 			while (rs.next()) {
-				Email e = new Email(rs.getInt(1), rs.getDate(2), rs.getString(3), rs.getDouble(4), rs.getBoolean(5),
+				Email e = new Email(rs.getInt(1), (java.sql.Timestamp) rs.getObject(2), rs.getString(3), rs.getDouble(4), rs.getBoolean(5),
 						rs.getBoolean(6), null, getFolderById(rs.getInt(8)),
 						getReceivedEmail(rs.getInt(1)));
 				emailList.add(e);
