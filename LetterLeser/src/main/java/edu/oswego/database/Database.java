@@ -107,11 +107,10 @@ public class Database {
 				Email em;
 				//// need sentiment score and folder id?
 				if (rs.getObject(8) != null) {
-					em = new Email(rs.getInt(1), rs.getDate(2), rs.getString(3), rs.getDouble(4), rs.getBoolean(5),
-							rs.getString(6), rs.getBoolean(7), getSentimentScoreById(rs.getInt(8)));
+					em = new Email(rs.getInt(1), rs.getDate(2), rs.getString(3), rs.getDouble(4), rs.getBoolean(5), rs.getBoolean(6), getSentimentScoreById(rs.getInt(7)));
+					//em = new Email(rs.getInt(1), rs.getDate(2), rs.getString(3), rs.getDouble(4), rs.getBoolean(5), rs.getBoolean(6), rs.getString(6), rs.getBoolean(7), getSentimentScoreById(rs.getInt(7)));
 				} else {
-					em = new Email(rs.getInt(1), rs.getDate(2), rs.getString(3), rs.getDouble(4), rs.getBoolean(5),
-							rs.getString(6), rs.getBoolean(7));
+					em = new Email(rs.getInt(1), rs.getDate(2), rs.getString(3), rs.getDouble(4), rs.getBoolean(5), rs.getBoolean(6));//, getFolderById(rs.getInt(8)));
 				}
 				DbUtils.closeQuietly(rs);
 				DbUtils.closeQuietly(connection);
@@ -385,7 +384,7 @@ public class Database {
 			filterStatements.add("date_received >= '" + startDate + "'");
 		if (endDate != null) // engine will calculate endDate with interval given to them.
 			filterStatements.add("date_received <= '" + endDate + "'");
-		if (!folderName.trim().equals(""))
+		if (!folderName.trim().equals("") || folderName != null)
 			filterStatements.add("folder_id = " + getFolderId(folderName));
 
 		for (int i = 0; i < filterStatements.size(); i++) {
@@ -860,7 +859,7 @@ public class Database {
 		ResultSet rs = null;
 		try {
 			ps = connection.prepareStatement(
-					"INSERT INTO email (date_received, subject, size, seen, has_attachment, file_name, folder_id) VALUE (?, ?, ?, ?, ?, ?, ?);",
+					"INSERT INTO email (date_received, subject, size, seen, has_attachment, folder_id) VALUE (?, ?, ?, ?, ?, ?);",
 					Statement.RETURN_GENERATED_KEYS);
 			ps.setObject(1, m.getReceivedDate());
 			ps.setString(2, m.getSubject());
@@ -870,11 +869,6 @@ public class Database {
 			boolean hasAttachment = mailer.hasAttachment(m);
 			ps.setBoolean(5, hasAttachment);
 
-			String fileName = null;
-			if (hasAttachment) {
-				fileName = mailer.getAttachmentName(m);
-			}
-			ps.setString(6, fileName);
 
 			int folderId = -1;
 			for (UserFolder f : folderList) {
@@ -883,7 +877,7 @@ public class Database {
 					break;
 				}
 			}
-			ps.setInt(7, folderId);
+			ps.setInt(6, folderId);
 
 			if (ps.executeUpdate() == 0)
 				DebugLogger.logEvent(Database.class.getName(), Level.WARNING,
