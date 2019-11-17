@@ -27,6 +27,10 @@ public class Email {
 	private List<EmailAddress> from;
 
 	// TODO ADD USERFOLDER?
+	
+	public String getTimestamp() {
+		return dateReceived.toString().substring(0, dateReceived.toString().length() - 2);
+	}
 
 	public Email(int id, Timestamp dateReceived, String subject, double size, boolean isSeen, boolean hasAttachment,
 			UserFolder folder) {
