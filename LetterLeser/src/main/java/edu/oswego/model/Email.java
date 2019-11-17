@@ -24,6 +24,8 @@ public class Email {
 	private SentimentScore sentimentScore;
 	private UserFolder folder;
 	private List<EmailAddress> from;
+	
+	// TODO ADD USERFOLDER?
 
 	public Email(int id, Date dateReceived, String subject, double size, boolean isSeen, boolean hasAttachment) {
 		this.id = id;

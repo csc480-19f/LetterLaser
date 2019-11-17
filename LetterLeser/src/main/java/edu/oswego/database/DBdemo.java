@@ -3,7 +3,6 @@ package edu.oswego.database;
 import javax.mail.MessagingException;
 
 import edu.oswego.mail.Mailer;
-import edu.oswego.runnables.ConnectionRunnable;
 
 /**
  * Test class demonstrating some database functionality.
@@ -15,10 +14,10 @@ import edu.oswego.runnables.ConnectionRunnable;
 public class DBdemo {
 
 	public static void main(String[] args) throws MessagingException {
-		Thread ct = new Thread(new ConnectionRunnable());
-		ct.start();
+//		Thread ct = new Thread(new ConnectionRunnable());
+//		ct.start();
 		
-//		everythingWorks();
+		everythingWorks();
 	}
 	
 	private static void everythingWorks() {

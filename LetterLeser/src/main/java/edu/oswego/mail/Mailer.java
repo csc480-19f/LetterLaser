@@ -215,7 +215,6 @@ public class Mailer {
 	 * 
 	 * @param m
 	 * @return if message has attachment
-	 * @deprecated
 	 */
 	public boolean hasAttachment(Message m) {
 		try {
