@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.sql.Date;
+import java.sql.Timestamp;
 
 import static junit.framework.TestCase.assertEquals;
 
@@ -34,7 +35,7 @@ public class SnRCallableTest {
 		// So, new Date(119,10,12) is actually November 12th, 2019
 		// (Which is a Tuesday)
 		Date date = new Date(119, 10, 12);
-		Email email = new Email(0, date, null, 0, false, false, null, null, null);
+		Email email = new Email(0, new Timestamp(date.getTime()), null, 0, false, false, null, null, null);
 		try {
 			int result = (Integer) findDay.invoke(snrc, email);
 			// 0 is Sunday, 1 is Monday, 2 is Tuesday etc.
@@ -103,7 +104,7 @@ public class SnRCallableTest {
 			}
 			day++;
 			Date date = new Date(year, month, day);
-			Email email = new Email(0, date, null, 0, false, false, null, null, null);
+			Email email = new Email(0, new Timestamp(date.getTime()), null, 0, false, false, null, null, null);
 			try {
 				int result = (Integer) findDay.invoke(snrc, email);
 				assertEquals(expected, result);

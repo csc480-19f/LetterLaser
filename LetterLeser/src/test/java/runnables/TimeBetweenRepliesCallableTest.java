@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.sql.Date;
+import java.sql.Timestamp;
 
 import static junit.framework.TestCase.assertEquals;
 
@@ -35,8 +36,8 @@ public class TimeBetweenRepliesCallableTest {
 		// Note: one hour is 3.6e+6 milliseconds, so end date is set 2.5 hours later
 		// than start
 		Date endDate = new Date((long) (novTwelvth.getTime() + (3.6e+6 * 2.5)));
-		Email start = new Email(0, startDate, null, 0, false, false, null, null, null);
-		Email end = new Email(0, endDate, null, 0, false, false, null, null, null);
+		Email start = new Email(0, new Timestamp(startDate.getTime()), null, 0, false, false, null, null, null);
+		Email end = new Email(0, new Timestamp(endDate.getTime()), null, 0, false, false, null, null, null);
 		try {
 			Double result = (Double) findHour.invoke(tbrc, start, end);
 			assertEquals(2.5, result);
@@ -52,8 +53,8 @@ public class TimeBetweenRepliesCallableTest {
 		Date novTwelvth = new Date(119, 10, 12);
 		Date startDate = new Date((long) (novTwelvth.getTime() + (3.6e+6 * 2.5)));
 		Date endDate = new Date(novTwelvth.getTime());
-		Email start = new Email(0, startDate, null, 0, false, false, null, null, null);
-		Email end = new Email(0, endDate, null, 0, false, false, null, null, null);
+		Email start = new Email(0, new Timestamp(startDate.getTime()), null, 0, false, false, null, null, null);
+		Email end = new Email(0, new Timestamp(endDate.getTime()), null, 0, false, false, null, null, null);
 		try {
 			Double result = (Double) findHour.invoke(tbrc, start, end);
 			assertEquals(-2.5, result);
@@ -69,8 +70,8 @@ public class TimeBetweenRepliesCallableTest {
 		Date novTwelvth = new Date(119, 10, 12);
 		Date startDate = new Date(novTwelvth.getTime());
 		Date endDate = new Date(novTwelvth.getTime());
-		Email start = new Email(0, startDate, null, 0, false, false, null, null, null);
-		Email end = new Email(0, endDate, null, 0, false, false, null, null, null);
+		Email start = new Email(0, new Timestamp(startDate.getTime()), null, 0, false, false, null, null, null);
+		Email end = new Email(0, new Timestamp(endDate.getTime()), null, 0, false, false, null, null, null);
 		try {
 			Double result = (Double) findHour.invoke(tbrc, start, end);
 			assertEquals(0.0, result);
@@ -90,7 +91,7 @@ public class TimeBetweenRepliesCallableTest {
 		// So, new Date(119,10,12) is actually November 12th, 2019
 		// (Which is a Tuesday)
 		Date date = new Date(119, 10, 12);
-		Email email = new Email(0, date, null, 0, false, false, null, null, null);
+		Email email = new Email(0, new Timestamp(date.getTime()), null, 0, false, false, null, null, null);
 		try {
 			int result = (Integer) findDay.invoke(tbrc, email);
 			// 0 is Sunday, 1 is Monday, 2 is Tuesday etc.
@@ -159,7 +160,7 @@ public class TimeBetweenRepliesCallableTest {
 			}
 			day++;
 			Date date = new Date(year, month, day);
-			Email email = new Email(0, date, null, 0, false, false, null, null, null);
+			Email email = new Email(0, new Timestamp(date.getTime()), null, 0, false, false, null, null, null);
 			try {
 				int result = (Integer) findDay.invoke(tbrc, email);
 				assertEquals(expected, result);
