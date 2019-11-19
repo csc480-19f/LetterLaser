@@ -62,10 +62,10 @@ public class NumOfEmailsCallableTest {
                 ite.printStackTrace();
             }catch(IllegalAccessException iae){
                 iae.printStackTrace();
-            }/*catch (AssertionFailedError afe){
+            }catch (AssertionFailedError afe){
                 afe.printStackTrace();
                 //It's worth noting for now that this test only fails on the 19th hour
-            }*/
+            }
         }
 
 
