@@ -49,7 +49,6 @@ public class NumOfEmailsCallableTest {
     @Test
     void testFindHourFullDay(){
         Date novTwelvth = new Date(119,10,12);
-        //Note: one hour is 3.6e+6 milliseconds, so end date is set 2.5 hours later than start
         for(int i = 0; i < 24; i++){
             long hour = (long)3.6e+6;
             Date date = new Date(novTwelvth.getTime() + (hour*i));
@@ -64,7 +63,6 @@ public class NumOfEmailsCallableTest {
                 iae.printStackTrace();
             }catch (AssertionFailedError afe){
                 afe.printStackTrace();
-                //It's worth noting for now that this test only fails on the 19th hour
             }
         }
 
