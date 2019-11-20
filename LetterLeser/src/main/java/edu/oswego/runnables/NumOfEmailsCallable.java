@@ -5,6 +5,7 @@ import com.google.gson.JsonObject;
 import edu.oswego.model.Email;
 
 import java.sql.Date;
+import java.sql.Timestamp;
 import java.util.List;
 import java.util.concurrent.Callable;
 
@@ -64,9 +65,10 @@ public class NumOfEmailsCallable implements Callable {
 	 * @return 0 for hours 0-3:59, 1 for hours 4-7:59, ... , 5 for hours 20-23:59
 	 */
 	private int findHour(Email e) {
-		double hoursLong = e.getDateReceived().getTime() % oneDay;
+		Timestamp d = e.getDateReceived();
+		int hoursLong = (int)(d.getTime() % oneDay);
 		if(daylightSavings()) hoursLong -= (fourHours / 4);
-		int temp = ((int) hoursLong) / (int) fourHours;
+		int temp = ((int) oneDay+hoursLong) / (int) fourHours;
 		return (temp+5) % 6;
 	}
 

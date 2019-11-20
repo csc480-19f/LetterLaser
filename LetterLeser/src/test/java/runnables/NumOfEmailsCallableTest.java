@@ -65,13 +65,34 @@ public class NumOfEmailsCallableTest {
 				ite.printStackTrace();
 			} catch (IllegalAccessException iae) {
 				iae.printStackTrace();
-			} /*
+			}
+		}
+			/*
 				 * catch (AssertionFailedError afe){ afe.printStackTrace(); //It's worth noting
 				 * for now that this test only fails on the 19th hour }
 				 */
-		}
-
 	}
+
+//    @Test
+//    void testFindHourFullDay(){
+//        Date novTwelvth = new Date(119,10,12);
+//        for(int i = 0; i < 24; i++){
+//            long hour = (long)3.6e+6;
+//            Date date = new Date(novTwelvth.getTime() + (hour*i));
+//            Email email = new Email(0, date, null,0,false,null,false,null,null,null);
+//            int expected = i/4;
+//            try {
+//                int result = (Integer) findHour.invoke(noec, email);
+//                assertEquals(expected,result);
+//            }catch(InvocationTargetException ite){
+//                ite.printStackTrace();
+//            }catch(IllegalAccessException iae){
+//                iae.printStackTrace();
+//            }catch (AssertionFailedError afe){
+//                afe.printStackTrace();
+//            }
+//        }
+//	}
 
 	@Test
 	void testFindDaySingleDay() {
