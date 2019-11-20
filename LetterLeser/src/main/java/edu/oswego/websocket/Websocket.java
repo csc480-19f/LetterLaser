@@ -88,19 +88,19 @@ public class Websocket {
 			decryptedEmail = jse.decrypt(encryptedEmail);
 		} catch (BadPaddingException e) {
 			e.printStackTrace();
-			messenger.sendErrorMessage(session, "failed to decrypt email");
+			messenger.sendErrorMessage(session, "Failed to decrypt email.\n"+e.getMessage());
 			return;
 		} catch (UnsupportedEncodingException e) {
 			e.printStackTrace();
-			messenger.sendErrorMessage(session, "failed to decrypt email");
+			messenger.sendErrorMessage(session, "Failed to decrypt email.\n"+e.getMessage());
 			return;
 		} catch (IllegalBlockSizeException e) {
 			e.printStackTrace();
-			messenger.sendErrorMessage(session, "failed to decrypt email");
+			messenger.sendErrorMessage(session, "Failed to decrypt email.\n"+e.getMessage());
 			return;
 		} catch (Exception e) {
 			e.printStackTrace();
-			messenger.sendErrorMessage(session, "failed to decrypt email");
+			messenger.sendErrorMessage(session, "Failed to decrypt email. (Generic exception.)\n"+e.getMessage());
 			return;
 		}
 		StorageObject storageObject = sessionMapper.get(decryptedEmail);
@@ -118,19 +118,19 @@ public class Websocket {
 				decryptedPass = jse.decrypt(encryptedPass);
 			} catch (BadPaddingException e) {
 				e.printStackTrace();
-				messenger.sendErrorMessage(session, "failed to decrypt pass");
+				messenger.sendErrorMessage(session, "Failed to decrypt pass.\n"+e.getMessage());
 				return;
 			} catch (UnsupportedEncodingException e) {
 				e.printStackTrace();
-				messenger.sendErrorMessage(session, "failed to decrypt pass");
+				messenger.sendErrorMessage(session, "Failed to decrypt pass.\n"+e.getMessage());
 				return;
 			} catch (IllegalBlockSizeException e) {
 				e.printStackTrace();
-				messenger.sendErrorMessage(session, "failed to decrypt pass");
+				messenger.sendErrorMessage(session, "Failed to decrypt pass.\n"+e.getMessage());
 				return;
 			} catch (Exception e) {
 				e.printStackTrace();
-				messenger.sendErrorMessage(session, "failed to decrypt pass");
+				messenger.sendErrorMessage(session, "Failed to decrypt pass. (Generic exception.)\n"+e.getMessage());
 				return;
 			}
 			login(session, decryptedEmail, decryptedPass, storageObject);
@@ -150,8 +150,8 @@ public class Websocket {
 		} else if(messageType.equals("reconnect")){
 			reconnect(session);
 		}else {
-			messenger.sendUpdateStatusMessage(session, "invalid messagetype\n" + "please send one of these options:\n"
-					+ "login, filter, refresh, addfavorite, callfavorite, removefavorite or logout");
+			messenger.sendUpdateStatusMessage(session, "Invalid messageType\n" + "Please send one of these options:\n"
+					+ "login, filter, refresh, addfavorite, callfavorite, removefavorite or logout\nline 153");
 
 		}
 		System.out.println("websocket Thread finished");
@@ -195,25 +195,25 @@ public class Websocket {
 			storageObject = new StorageObject();
 			mailer = new Mailer(email, pass);
 
-			if(!messenger.sendUpdateStatusMessage(session, "establising connection")){
+			if(!messenger.sendUpdateStatusMessage(session, "Establishing connection.\nline 198")){
 				return;
 			}
 
 
 			boolean connectedToInbox = mailer.isConnected();
 			if (!connectedToInbox) {
-				messenger.sendUpdateStatusMessage(session, "failed to connect to email");
+				messenger.sendUpdateStatusMessage(session, "Failed to connect to email.\nconnectedToInbox is false.");
 				return;
 			}
 
 			try {
 				database = new Database(email, mailer);
 			} catch (Throwable t) {
-				messenger.sendErrorMessage(session, "error in db: " + t.getMessage());
+				messenger.sendErrorMessage(session, "Error in DB: \n" + t.getMessage());
 				return;
 			}
 
-			if(!messenger.sendUpdateStatusMessage(session, "established connection")){return;}
+			if(!messenger.sendUpdateStatusMessage(session, "Established connection.\nline 216")){return;}
 
 			storageObject.setDatabase(database);
 			storageObject.setMailer(mailer);
@@ -221,7 +221,7 @@ public class Websocket {
 		} else {
 			mailer = storageObject.getMailer();
 			database = storageObject.getDatabase();
-			if(!messenger.sendUpdateStatusMessage(session, "established connection")){return;}
+			if(!messenger.sendUpdateStatusMessage(session, "Established connection.\nline 224")){return;}
 		}
 
 		boolean hasEmails;
@@ -236,7 +236,7 @@ public class Websocket {
 				folders = database.importFolders();
 				favourites = database.getUserFavourites();
 			} catch (Throwable t) {
-				messenger.sendErrorMessage(session, "error in db: " + t.getMessage());
+				messenger.sendErrorMessage(session, "Error in DB: \n" + t.getMessage());
 				return;
 			}
 
@@ -255,7 +255,7 @@ public class Websocket {
 
 			refresh(storageObject, email, mailer, database, true, session);
 		} else {
-			messenger.sendUpdateStatusMessage(session, "nothing found in database, preforming fresh import");
+			messenger.sendUpdateStatusMessage(session, "Nothing found in database, performing fresh import.\nline 258");
 			refresh(storageObject, email, mailer, database, false, session);
 		}
 
@@ -274,7 +274,7 @@ public class Websocket {
 		try {
 			userFavourites = database.getUserFavourite(favname);
 		}catch(Exception e){
-			messenger.sendErrorMessage(session,"couldn't get favourtes");
+			messenger.sendErrorMessage(session,"Couldn't get favourites. (Generic exception.)\n"+e.getMessage());
 			return;
 		}
 		Handler handler = new Handler(session, database, email, userFavourites);
@@ -296,7 +296,8 @@ public class Websocket {
 			boolean validateOrPull, Session session) {
 		if (storageObject != null && storageObject.getValidationThread() != null
 				&& storageObject.getValidationThread().isAlive()) {
-			messenger.sendUpdateStatusMessage(session,"validation already occuring");
+			messenger.sendUpdateStatusMessage(session,"Validation already occurring." +
+					"\nstorageObject is not null AND storageObject.getValidationThread is not null AND isAlive is true.");
 		}
 		ValidationRunnable vr = new ValidationRunnable(mailer, database, validateOrPull, session);
 		Thread thread = new Thread(vr);
@@ -323,7 +324,7 @@ public class Websocket {
 		DateTime startDate = getStartDate(sd);
 		DateTime endDate = getEndDate(startDate, interval);
 		if (startDate == null || endDate == null) {
-			messenger.sendErrorMessage(session,"invalid dateTime");
+			messenger.sendErrorMessage(session,"Invalid dateTime.\nOne or both values are null.");
 			return;
 		}
 
@@ -334,21 +335,21 @@ public class Websocket {
 			added = database.insertUserFavourites(favoriteName, startDate.toDate(), endDate.toDate(),
 					Interval.parse(interval), attachment, seen, foldername);
 		} catch (Throwable t) {
-			messenger.sendErrorMessage(session, "error in db: " + t.getMessage());
+			messenger.sendErrorMessage(session, "Error in DB: \n" + t.getMessage());
 			return;
 		}
 
 		if (added) {
-			messenger.sendUpdateStatusMessage(session, "Favorite has been added");
+			messenger.sendUpdateStatusMessage(session, "Favorite has been added.\nadded is true.");
 		} else {
-			messenger.sendUpdateStatusMessage(session, "No FolderName");
+			messenger.sendUpdateStatusMessage(session, "No FolderName.\nadded is false.");
 		}
 
 		List<UserFavourites> favourites;
 		try {
 			favourites = database.getUserFavourites();
 		} catch (Throwable t) {
-			messenger.sendErrorMessage(session, "error in db: " + t.getMessage());
+			messenger.sendErrorMessage(session, "Error in DB: \n" + t.getMessage());
 			return;
 		}
 
@@ -375,16 +376,16 @@ public class Websocket {
 		try {
 			database.removeUserFavourite(favoriteName);
 		} catch (Throwable t) {
-			messenger.sendErrorMessage(session, "error in db: " + t.getMessage());
+			messenger.sendErrorMessage(session, "Error in DB: " + t.getMessage());
 			return;
 		}
-		messenger.sendUpdateStatusMessage(session, "Favorite has been removed");
+		messenger.sendUpdateStatusMessage(session, "Favorite has been removed.\nline 382");
 
 		List<UserFavourites> favourites;
 		try {
 			favourites = database.getUserFavourites();
 		}catch(Exception e){
-			messenger.sendErrorMessage(session,"error in db: "+ e.getMessage());
+			messenger.sendErrorMessage(session,"Error in DB: (Generic exception.)\n"+ e.getMessage());
 			return;
 		}
 
@@ -416,7 +417,7 @@ public class Websocket {
 	private void reconnect(Session session){
 		StorageObject storageObject = sessionMapper.get("email");
 		if(storageObject==null){
-			messenger.sendErrorMessage(session,"no instance found, login again");
+			messenger.sendErrorMessage(session,"No instance found, login again.\nstorageObject was null.");
 		}else{
 			storageObject.getValidationRunnable().setSession(session);
 		}
@@ -475,10 +476,10 @@ public class Websocket {
 			else{
 				count++;
 				if(count>=15){
-					messenger.sendErrorMessage(session,"server busy, try again later");
+					messenger.sendErrorMessage(session,"Server busy, try again later.\ncount >= 15");
 					return false;
 				}else {
-					if(!messenger.sendUpdateStatusMessage(session, "waiting for connection to open\nattempt: " + count)){
+					if(!messenger.sendUpdateStatusMessage(session, "Waiting for connection to open.\nAttempt: " + count)){
 						return false;
 					}
 				}
