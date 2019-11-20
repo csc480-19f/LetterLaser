@@ -41,6 +41,13 @@ public class Database {
 
 	private EmailAddress user;
 	private Mailer mailer;
+	
+	public void nuke() {
+		//set validated email count to 1
+		query("UPDATE ");
+		query("DELETE ");
+		query("DELETE ");
+	}
 
 	// for an email
 	public List<EmailAddress> getRecipient(int emailId) {
@@ -107,11 +114,10 @@ public class Database {
 				Email em;
 				//// need sentiment score and folder id?
 				if (rs.getObject(8) != null) {
-					em = new Email(rs.getInt(1), rs.getDate(2), rs.getString(3), rs.getDouble(4), rs.getBoolean(5),
-							rs.getString(6), rs.getBoolean(7), getSentimentScoreById(rs.getInt(8)));
+					em = new Email(rs.getInt(1), (java.sql.Timestamp) rs.getObject(2), rs.getString(3), rs.getDouble(4), rs.getBoolean(5), rs.getBoolean(6), getSentimentScoreById(rs.getInt(7)), getFolderById(rs.getInt(rs.getInt(8))));
+					//em = new Email(rs.getInt(1), rs.getDate(2), rs.getString(3), rs.getDouble(4), rs.getBoolean(5), rs.getBoolean(6), rs.getString(6), rs.getBoolean(7), getSentimentScoreById(rs.getInt(7)));
 				} else {
-					em = new Email(rs.getInt(1), rs.getDate(2), rs.getString(3), rs.getDouble(4), rs.getBoolean(5),
-							rs.getString(6), rs.getBoolean(7));
+					em = new Email(rs.getInt(1),(java.sql.Timestamp) rs.getObject(2), rs.getString(3), rs.getDouble(4), rs.getBoolean(5), rs.getBoolean(6), getFolderById(rs.getInt(rs.getInt(8))));//, getFolderById(rs.getInt(8)));
 				}
 				DbUtils.closeQuietly(rs);
 				DbUtils.closeQuietly(connection);
@@ -280,7 +286,7 @@ public class Database {
 	public List<UserFolder> pull() {
 		List<UserFolder> folderList = importFolders();
 
-		if (getValidatedEmails() == mailer.getTotalEmailCount())
+		if (getValidatedEmails() == 0)
 			return folderList;
 
 		List<Integer> emailIdList = new ArrayList<>();
@@ -290,30 +296,40 @@ public class Database {
 		DebugLogger.logEvent(Database.class.getName(), Level.INFO, "Pulling emails from " + user.getEmailAddress());
 		int s = 0;
 		int stopper = 1; // limit our pull for testing
-
 		for (UserFolder f : folderList) {
 			Message[] msgs = mailer.pullEmails(f.getFolder().getFullName()); // Do not use "[Gmail]/All Mail");
-			for (Message m : msgs) {
-				try {
-					List<EmailAddress> fromList = insertEmailAddress(m.getFrom());// get this list and return for
-																					// user_email table
-					int emailId = insertEmail(m, folderList, emailIdList);
-					for (EmailAddress ea : fromList) {
-						insertReceivedEmails(emailId, ea.getId());
+			long start = System.nanoTime();
+			int emailCount = 0;
+			System.out.println("emails = " + msgs.length);
+				for (Message m : msgs) {
+					try {
+						List<EmailAddress> fromList = insertEmailAddress(m.getFrom());// get this list and return for
+																						// user_email table
+						long estart = System.nanoTime();
+						int emailId = insertEmail(m, folderList, emailIdList);
+						long eend = System.nanoTime();
+						emailCount++;
+
+						System.out.println("email inserted: " + emailCount);
+						System.out.println("time to add: " + ((eend - estart) * .000000001));
+						for (EmailAddress ea : fromList) {
+							insertReceivedEmails(emailId, ea.getId());
+						}
+						insertUserEmail(user, emailId);
+						emailIdList.add(emailId);
+
+						messageList.add(mailer.getTextFromMessage(m));
+
+						/*
+						 * s++; if (s > stopper) break;
+						 */
+
+					} catch (MessagingException e) {
+						DebugLogger.logEvent(Database.class.getName(), Level.WARNING, e.getMessage());
 					}
-					insertUserEmail(user, emailId);
-					emailIdList.add(emailId);
-
-					messageList.add(mailer.getTextFromMessage(m));
-
-					s++;
-					if (s > stopper)
-						break;
-
-				} catch (MessagingException e) {
-					DebugLogger.logEvent(Database.class.getName(), Level.WARNING, e.getMessage());
 				}
-			}
+			long end = System.nanoTime();
+			System.out.println("time all emails in seconds: " + ((end - start) * .000000001));
 			// break;
 			// strange ghost email added at the end....?
 
@@ -322,8 +338,8 @@ public class Database {
 			// If not already in folder, copy it over.
 			// NULL POINTER EXCEPTION. FIX DIS yo.
 
-			mailer.markEmailsInFolder(f.getFolder().getFullName(), msgs);
-			msgLengthList.add(msgs.length);
+//			mailer.markEmailsInFolder(f.getFolder().getFullName(), msgs);
+//			msgLengthList.add(msgs.length);
 			// semes to work so far...
 			// break;
 		}
@@ -336,10 +352,10 @@ public class Database {
 		// calculateSentimentScore(emailIdList.get(i), ss[i]);
 		// }
 
-		int sum = 0;
-		for (Integer c : msgLengthList)
-			sum += c;
-		setValidatedEmailCount(sum);
+//		int sum = 0;
+//		for (Integer c : msgLengthList)
+//			sum += c;
+		setValidatedEmailCount(1);
 
 		DebugLogger.logEvent(Database.class.getName(), Level.INFO,
 				"Emails have been pulled for " + user.getId() + " <" + user.getEmailAddress() + ">");
@@ -371,7 +387,7 @@ public class Database {
 			filterStatements.add("date_received >= '" + startDate + "'");
 		if (endDate != null) // engine will calculate endDate with interval given to them.
 			filterStatements.add("date_received <= '" + endDate + "'");
-		if (seen)
+		if (!folderName.trim().equals("") || folderName != null)
 			filterStatements.add("folder_id = " + getFolderId(folderName));
 
 		for (int i = 0; i < filterStatements.size(); i++) {
@@ -388,8 +404,8 @@ public class Database {
 			rs = connection.prepareStatement(selectionStatement, Statement.RETURN_GENERATED_KEYS).executeQuery();
 
 			while (rs.next()) {
-				Email e = new Email(rs.getInt(1), rs.getDate(2), rs.getString(3), rs.getDouble(4), rs.getBoolean(5),
-						rs.getString(6), rs.getBoolean(7), null, getFolderById(rs.getInt(9)),
+				Email e = new Email(rs.getInt(1), (java.sql.Timestamp) rs.getObject(2), rs.getString(3), rs.getDouble(4), rs.getBoolean(5),
+						rs.getBoolean(6), null, getFolderById(rs.getInt(8)),
 						getReceivedEmail(rs.getInt(1)));
 				emailList.add(e);
 			}
@@ -760,8 +776,8 @@ public class Database {
 			for (Folder f : folders) {
 				if (!folderExists(f.getFullName(), folderList) && !f.getFullName().equals("[Gmail]")
 						&& !f.getFullName().equals("CSC480_19F") && !f.getFullName().equals("[Gmail]/All Mail")) {
-
-					ps = connection.prepareStatement("INSERT INTO folder (fold_name) VALUE ('" + f.getFullName() + "')",
+					String folderName = parseAddress(f.getFullName()); // parses apostrophe in folders
+					ps = connection.prepareStatement("INSERT INTO folder (fold_name) VALUE ('" + folderName + "')",
 							Statement.RETURN_GENERATED_KEYS);
 					if (ps.executeUpdate() == 0)
 						DebugLogger.logEvent(Database.class.getName(), Level.WARNING,
@@ -846,7 +862,7 @@ public class Database {
 		ResultSet rs = null;
 		try {
 			ps = connection.prepareStatement(
-					"INSERT INTO email (date_received, subject, size, seen, has_attachment, file_name, folder_id) VALUE (?, ?, ?, ?, ?, ?, ?);",
+					"INSERT INTO email (date_received, subject, size, seen, has_attachment, folder_id) VALUE (?, ?, ?, ?, ?, ?);",
 					Statement.RETURN_GENERATED_KEYS);
 			ps.setObject(1, m.getReceivedDate());
 			ps.setString(2, m.getSubject());
@@ -856,11 +872,6 @@ public class Database {
 			boolean hasAttachment = mailer.hasAttachment(m);
 			ps.setBoolean(5, hasAttachment);
 
-			String fileName = null;
-			if (hasAttachment) {
-				fileName = mailer.getAttachmentName(m);
-			}
-			ps.setString(6, fileName);
 
 			int folderId = -1;
 			for (UserFolder f : folderList) {
@@ -869,7 +880,7 @@ public class Database {
 					break;
 				}
 			}
-			ps.setInt(7, folderId);
+			ps.setInt(6, folderId);
 
 			if (ps.executeUpdate() == 0)
 				DebugLogger.logEvent(Database.class.getName(), Level.WARNING,
@@ -906,7 +917,7 @@ public class Database {
 	 */
 	public boolean emailAddressExists(String emailAddress) {
 		int size = -1;
-		
+
 		Connection connection = getConnection();
 		ResultSet rs = null;
 		try {
@@ -1223,7 +1234,7 @@ public class Database {
 	 * 
 	 * @see #truncateTable
 	 */
-	public void truncateTables() {
+	public static void truncateTables() {
 		for (String tbl : Settings.DATABASE_TABLES)
 			truncateTable(tbl);
 		DebugLogger.logEvent(Database.class.getName(), Level.SEVERE, "Database tables have been truncated completely.");
@@ -1234,8 +1245,27 @@ public class Database {
 	 * 
 	 * @param table
 	 */
-	public void truncateTable(String table) {
-		query("TRUNCATE TABLE " + table + ";");
+	public static void truncateTable(String table) {
+		Connection connection = null;
+		ResultSet rs = null;
+
+		try {
+			Class.forName("com.mysql.cj.jdbc.Driver");
+			connection = DriverManager.getConnection("jdbc:mysql://" + Settings.DATABASE_HOST + ":" + Settings.DATABASE_PORT
+					+ "/" + "information_schema" + "?useUnicode=true&characterEncoding=UTF-8&serverTimezone=UTC&user="
+					+ Settings.DATABASE_USERNAME + "&password=" + Settings.DATABASE_PASSWORD);
+			rs = connection.prepareStatement("TRUNCATE TABLE " + table).executeQuery();
+			DbUtils.closeQuietly(rs);
+			DbUtils.closeQuietly(connection);
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			DbUtils.closeQuietly(rs);
+			DbUtils.closeQuietly(connection);
+		}
+//		query("TRUNCATE TABLE " + table + ";");
 		DebugLogger.logEvent(Database.class.getName(), Level.SEVERE, table + " has been truncated completely");
 	}
 
@@ -1384,27 +1414,44 @@ public class Database {
 
 		return ss;
 	}
-	
-	public static int getActivateConnections() {
+
+	/*
+	 * public static boolean isConnectionOpen() { return getActivateConnections() <=
+	 * edu.oswego.database.Settings.THRESHOLD_CONNECTION; }
+	 */
+	public static boolean isConnection() {
 		int threads = -1;
 		Connection connection = null;
 		ResultSet rs = null;
-		
+		boolean error = false;
+
 		try {
-			connection = DriverManager.getConnection("jdbc:mysql://" + Settings.DATABASE_HOST + ":" + Settings.DATABASE_PORT + "/" + "information_schema" + "?useUnicode=true&characterEncoding=UTF-8&serverTimezone=UTC&user=" + Settings.DATABASE_USERNAME + "&password=" + Settings.DATABASE_PASSWORD);
+			Class.forName("com.mysql.cj.jdbc.Driver");
+			connection = DriverManager
+					.getConnection("jdbc:mysql://" + Settings.DATABASE_HOST + ":" + Settings.DATABASE_PORT + "/"
+							+ "information_schema" + "?useUnicode=true&characterEncoding=UTF-8&serverTimezone=UTC&user="
+							+ Settings.DATABASE_USERNAME + "&password=" + Settings.DATABASE_PASSWORD);
 			rs = connection.prepareStatement("SELECT COUNT(*) FROM PROCESSLIST").executeQuery();
 
 			while (rs.next())
 				threads = rs.getInt(1);
-			
+
 		} catch (SQLException e1) {
 			e1.printStackTrace();
+			error = true;
+		} catch (Exception e) {
+			e.printStackTrace();
+			error = true;
 		} finally {
 			DbUtils.closeQuietly(rs);
 			DbUtils.closeQuietly(connection);
 		}
-		
-		return threads;
+		if (error) {
+			return false;
+		} else {
+			return threads <= Settings.THRESHOLD_CONNECTION;
+		}
+
 	}
 
 }

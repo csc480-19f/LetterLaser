@@ -1,6 +1,6 @@
 package edu.oswego.model;
 
-import java.sql.Date;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,68 +13,69 @@ import java.util.List;
  */
 
 public class Email {
-	
+
 	private int id;
-	private Date dateReceived;
+	private Timestamp dateReceived;
 	private String subject;
 	private double size;
 	private boolean isSeen;
-	private String fileName;
 	private boolean hasAttachment;
 
 	private SentimentScore sentimentScore;
 	private UserFolder folder;
 	private List<EmailAddress> from;
 
-	public Email(int id, Date dateReceived, String subject, double size, boolean isSeen, String fileName,
-			boolean hasAttachment) {
+	// TODO ADD USERFOLDER?
+	
+	public String getTimestamp() {
+		return dateReceived.toString().substring(0, dateReceived.toString().length() - 2);
+	}
+
+	public Email(int id, Timestamp dateReceived, String subject, double size, boolean isSeen, boolean hasAttachment,
+			UserFolder folder) {
 		this.id = id;
 		this.dateReceived = dateReceived;
 		this.subject = subject;
 		this.size = size;
 		this.isSeen = isSeen;
-		this.fileName = fileName;
 		this.hasAttachment = hasAttachment;
 		this.sentimentScore = null;
-		this.folder = null;
+		this.folder = folder;
 		this.from = new ArrayList<>();
 	}
-	
-	public Email(int id, Date dateReceived, String subject, double size, boolean isSeen, String fileName,
-			boolean hasAttachment, SentimentScore sentimentScore) {
+
+	public Email(int id, Timestamp dateReceived, String subject, double size, boolean isSeen, boolean hasAttachment,
+			SentimentScore sentimentScore) {
 		this.id = id;
 		this.dateReceived = dateReceived;
 		this.subject = subject;
 		this.size = size;
 		this.isSeen = isSeen;
-		this.fileName = fileName;
 		this.hasAttachment = hasAttachment;
 		this.sentimentScore = sentimentScore;
 		this.from = new ArrayList<>();
 	}
-	
-	public Email(int id, Date dateReceived, String subject, double size, boolean isSeen, String fileName,
-			boolean hasAttachment, SentimentScore sentimentScore, UserFolder folder) {
+
+	public Email(int id, Timestamp dateReceived, String subject, double size, boolean isSeen, boolean hasAttachment,
+			SentimentScore sentimentScore, UserFolder folder) {
 		this.id = id;
 		this.dateReceived = dateReceived;
 		this.subject = subject;
 		this.size = size;
 		this.isSeen = isSeen;
-		this.fileName = fileName;
 		this.hasAttachment = hasAttachment;
 		this.sentimentScore = sentimentScore;
 		this.folder = folder;
 		this.from = new ArrayList<>();
 	}
 
-	public Email(int id, Date dateReceived, String subject, double size, boolean isSeen, String fileName,
-			boolean hasAttachment, SentimentScore sentimentScore, UserFolder folder, List<EmailAddress> from) {
+	public Email(int id, Timestamp dateReceived, String subject, double size, boolean isSeen, boolean hasAttachment,
+			SentimentScore sentimentScore, UserFolder folder, List<EmailAddress> from) {
 		this.id = id;
 		this.dateReceived = dateReceived;
 		this.subject = subject;
 		this.size = size;
 		this.isSeen = isSeen;
-		this.fileName = fileName;
 		this.hasAttachment = hasAttachment;
 		this.sentimentScore = sentimentScore;
 		this.folder = folder;
@@ -85,7 +86,7 @@ public class Email {
 		return id;
 	}
 
-	public Date getDateReceived() {
+	public Timestamp getDateReceived() {
 		return dateReceived;
 	}
 
@@ -99,10 +100,6 @@ public class Email {
 
 	public boolean isSeen() {
 		return isSeen;
-	}
-
-	public String getFileName() {
-		return fileName;
 	}
 
 	public boolean hasAttachment() {
