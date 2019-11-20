@@ -27,8 +27,7 @@ public class DomainCallableTest {
         for(int i = 0; i < 10; i++){
             List<EmailAddress> senders = new ArrayList<>();
             senders.add(new EmailAddress(0, "mdoran@oswego.edu"));
-            Email e = new Email(0, null, "", 0, false, false, null, null, senders);
-            emails.add(e);
+//            emails.add(e);
         }
         domainObjects.add(new DomainObject("edu","oswego", 10));
         for(int i = 0; i < 9; i++){

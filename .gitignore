@@ -2,7 +2,11 @@
 .github/
 /github
 
+<<<<<<< HEAD
 # intellij files
+=======
+# Intelij files
+>>>>>>> branch 'master' of https://github.com/csc480-19f/LetterLeser.git
 .idea/
 
 # MacOS sys files

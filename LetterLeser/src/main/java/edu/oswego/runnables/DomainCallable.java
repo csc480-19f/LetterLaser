@@ -41,6 +41,7 @@ public class DomainCallable implements Callable {
 			}
 		}
 
+		JsonObject emailsByDomain = new JsonObject();
 		JsonArray domainObjs = new JsonArray();
 		for (String domain : domains.keySet()) {
 			JsonObject domainObj = new JsonObject();
@@ -56,6 +57,7 @@ public class DomainCallable implements Callable {
 			domainObj.add("domainobj", innerData);
 			domainObjs.add(domainObj);
 		}
-		return domainObjs;
+		emailsByDomain.add("emailbydomain", domainObjs);
+		return emailsByDomain;
 	}
 }
