@@ -34,20 +34,20 @@ public class ValidationRunnable implements Runnable {
 		Thread.currentThread().setName("validation");
 		System.out.println("validation started");
 		if (validateOrPull) {
-			messenger.sendUpdateStatusMessage(session, "validating emails");
+			messenger.sendUpdateStatusMessage(session, "Validating emails.\nvalidateOrPull is true.");
 
 			try {
 				database.nuke();
 				database.pull();
 			} catch (Throwable t) {
 				t.printStackTrace();
-				messenger.sendErrorMessage(session, "error in db: " + t.getMessage());
+				messenger.sendErrorMessage(session, "Error in DB: \n" + t.getMessage());
 				return;
 			}
-			messenger.sendUpdateStatusMessage(session, "finished validating");
+			messenger.sendUpdateStatusMessage(session, "Finished validating.\nline 47");
 
 		} else {
-			messenger.sendUpdateStatusMessage(session, "Pulling folders and emails");
+			messenger.sendUpdateStatusMessage(session, "Pulling folders and emails.\nvalidateOrPull is false.");
 
 			List<UserFolder> folders;
 			List<UserFavourites> favourites;
@@ -56,7 +56,7 @@ public class ValidationRunnable implements Runnable {
 				favourites = database.getUserFavourites();
 			} catch (Throwable t) {
 				t.printStackTrace();
-				messenger.sendErrorMessage(session, "error in db: " + t.getMessage());
+				messenger.sendErrorMessage(session, "Error in DB: \n" + t.getMessage());
 				return;
 			}
 
