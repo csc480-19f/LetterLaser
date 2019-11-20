@@ -28,28 +28,28 @@ public class DomainCallableTest {
         for(int i = 0; i < 10; i++){
             List<EmailAddress> senders = new ArrayList<>();
             senders.add(new EmailAddress(0, "mdoran@oswego.edu"));
-            Email e = new Email(0, null, "", 0, false, "", false, null, null, senders);
+            Email e = new Email(0, null, "", 0, false, false, null, null, senders);
             emails.add(e);
         }
         domainObjects.add(new DomainObject("edu","oswego", 10));
         for(int i = 0; i < 9; i++){
             List<EmailAddress> senders = new ArrayList<>();
             senders.add(new EmailAddress(0, "mdoran@oswego.com"));
-            Email e = new Email(0, null, "", 0, false, "", false, null, null, senders);
+            Email e = new Email(0, null, "", 0, false, false, null, null, senders);
             emails.add(e);
         }
         domainObjects.add(new DomainObject("com","oswego", 9));
         for(int i = 0; i < 8; i++){
             List<EmailAddress> senders = new ArrayList<>();
             senders.add(new EmailAddress(0, "mdoran@oswego.org"));
-            Email e = new Email(0, null, "", 0, false, "", false, null, null, senders);
+            Email e = new Email(0, null, "", 0, false, false, null, null, senders);
             emails.add(e);
         }
         domainObjects.add(new DomainObject("org","oswego", 8));
         for(int i = 0; i < 7; i++){
             List<EmailAddress> senders = new ArrayList<>();
             senders.add(new EmailAddress(0, "mdoran@clarkson.edu"));
-            Email e = new Email(0, null, "", 0, false, "", false, null, null, senders);
+            Email e = new Email(0, null, "", 0, false, false, null, null, senders);
             emails.add(e);
         }
         domainObjects.add(new DomainObject("edu","clarkson", 7));

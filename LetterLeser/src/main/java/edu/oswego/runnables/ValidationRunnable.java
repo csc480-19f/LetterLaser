@@ -34,6 +34,7 @@ public class ValidationRunnable implements Runnable {
 			messenger.sendUpdateStatusMessage(session, "validating emails");
 
 			try {
+				database.nuke();
 				database.pull();
 			} catch (Throwable t) {
 				messenger.sendErrorMessage(session, "error in db: " + t.getMessage());

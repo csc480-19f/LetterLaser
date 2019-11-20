@@ -44,9 +44,10 @@ public class Database {
 	
 	public void nuke() {
 		//set validated email count to 1
-		query("UPDATE ");
-		query("DELETE ");
-		query("DELETE ");
+		query("UPDATE user SET validated_emails = 0 WHERE id = " + user.getId() + ";");
+		query("DELETE FROM received_email JOIN email ON received_email.email_id = email.id JOIN user_email ON email.id = user_email.email_id WHERE user_email.user_id = " + user.getId() + ";");
+		query("DELETE FROM email JOIN user_email ON email.id = user_email.email_id WHERE user_email.user_id = " + user.getId() + ";");
+		query("DELETE FROM user_email WHERE user_id = " + user.getId() + ";");
 	}
 
 	// for an email
