@@ -24,6 +24,7 @@ public class SentimentScoreCallable implements Callable {
 	public Object call() throws Exception {
 		int positive = 0;
 		for (Email e : emails) {
+			if(e.getSentimentScore()==null){continue;}
 			int score = AnalyzeThis.evaluateSentiment(e.getSentimentScore());
 			if (score == 2) {
 				positive += 1;

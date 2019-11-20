@@ -27,9 +27,12 @@ public class ValidationRunnable implements Runnable {
 		this.session = session;
 	}
 
+	public void setSession(Session session){this.session = session;}
+
 	@Override
 	public void run() {
 		Thread.currentThread().setName("validation");
+		System.out.println("validation started");
 		if (validateOrPull) {
 			messenger.sendUpdateStatusMessage(session, "validating emails");
 
@@ -37,6 +40,7 @@ public class ValidationRunnable implements Runnable {
 				database.nuke();
 				database.pull();
 			} catch (Throwable t) {
+				t.printStackTrace();
 				messenger.sendErrorMessage(session, "error in db: " + t.getMessage());
 				return;
 			}
@@ -51,6 +55,7 @@ public class ValidationRunnable implements Runnable {
 				folders = database.pull();
 				favourites = database.getUserFavourites();
 			} catch (Throwable t) {
+				t.printStackTrace();
 				messenger.sendErrorMessage(session, "error in db: " + t.getMessage());
 				return;
 			}
@@ -69,6 +74,7 @@ public class ValidationRunnable implements Runnable {
 			js.add("favoritename", ja1);
 			messenger.sendMessageToClient(session, js);
 		}
+		System.out.println("validationRunnable finished");
 	}
 
 }

@@ -12,8 +12,7 @@ import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 
 import javax.websocket.Session;
-import java.io.IOException;
-import java.sql.SQLException;
+import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
@@ -58,9 +57,14 @@ public class Handler implements Runnable {
 				DateTime startDate = new DateTime(DateTimeFormat.forPattern("yyyy/MM/dd HH:mm:ss").parseMillis(sd));
 				DateTime endDate = getEndDate(startDate, interval);
 				List<Email> emails;
+
+				SimpleDateFormat formater = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+				String stringStartDate = formater.format(startDate.toDate());
+				String stringEndDate = formater.format(endDate.toDate());
+
 				try {
-					emails = database.getEmailByFilter(attachment, startDate.toDate().toString(),
-							endDate.toDate().toString(), seen, folderName);
+					emails = database.getEmailByFilter(attachment, stringStartDate,
+                            stringEndDate, seen, folderName);
 				}catch(Throwable t){
 					messenger.sendErrorMessage(session,"error in db: "+t.getMessage());
 					return;
@@ -86,16 +90,7 @@ public class Handler implements Runnable {
 
 	private void performCalculations(List<Email> emailList) {
 		if(emailList.isEmpty()){
-			JsonObject js = new JsonObject();
-			js.addProperty("messagetype", "statusupdate");
-
-			js.addProperty("message", "no emails obtained with current filter");
-
-			try {
-				session.getBasicRemote().sendText(js.toString());
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
+			messenger.sendUpdateStatusMessage(session,"no emails obtained with current filter");
 			return;
 		}
 
@@ -127,12 +122,12 @@ public class Handler implements Runnable {
 		t6.start();
 		JsonObject js;
 		try {
-			int sentiment = (int) ssc.get(20, TimeUnit.SECONDS);
-			JsonArray domain = (JsonArray) dc.get(20, TimeUnit.SECONDS);
-			JsonArray folder = (JsonArray) fc.get(20, TimeUnit.SECONDS);
-			JsonArray numOfMail = (JsonArray) noec.get(20, TimeUnit.SECONDS);
-			JsonObject sendNRec = (JsonObject) snrc.get(20, TimeUnit.SECONDS);
-			JsonObject timeBetween = (JsonObject) tbrc.get(20, TimeUnit.SECONDS);
+			int sentiment = (int) ssc.get(2, TimeUnit.MINUTES);
+			JsonArray domain = (JsonArray) dc.get(2, TimeUnit.MINUTES);
+			JsonArray folder = (JsonArray) fc.get(2, TimeUnit.MINUTES);
+			JsonArray numOfMail = (JsonArray) noec.get(2, TimeUnit.MINUTES);
+			JsonObject sendNRec = (JsonObject) snrc.get(2, TimeUnit.MINUTES);
+			JsonObject timeBetween = (JsonObject) tbrc.get(2, TimeUnit.MINUTES);
 
 			js = new JsonObject();
 			js.addProperty("messagetype", "graphs");
@@ -158,6 +153,7 @@ public class Handler implements Runnable {
 			messenger.sendErrorMessage(session,"request ended\n" +
 					"TimeoutException Occurred\n" +
 					e.getMessage());
+			messenger.sendUpdateStatusMessage(session,"calculation too longer than 2 minutes, plase ");
 			return;
 		}catch(Exception e){
 			messenger.sendErrorMessage(session,"request ended\n" +
@@ -166,6 +162,7 @@ public class Handler implements Runnable {
 			return;
 		}
 		messenger.sendMessageToClient(session,js);
+		System.out.println("handler thread finished");
 
 	}
 
@@ -178,6 +175,8 @@ public class Handler implements Runnable {
 			return startDate.plusWeeks(1);
 		}
 	}
+
+
 
 
 }

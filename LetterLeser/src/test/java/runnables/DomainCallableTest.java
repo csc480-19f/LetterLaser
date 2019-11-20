@@ -1,20 +1,19 @@
 package runnables;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
 import edu.oswego.model.Email;
 import edu.oswego.model.EmailAddress;
 import edu.oswego.runnables.DomainCallable;
-
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class DomainCallableTest {
 
@@ -35,6 +34,7 @@ public class DomainCallableTest {
         for(int i = 0; i < 9; i++){
             List<EmailAddress> senders = new ArrayList<>();
             senders.add(new EmailAddress(0, "mdoran@oswego.com"));
+            senders.add(new EmailAddress(0, "mdoran@clarkson.edu"));
             Email e = new Email(0, null, "", 0, false, false, null, null, senders);
             emails.add(e);
         }
@@ -42,6 +42,7 @@ public class DomainCallableTest {
         for(int i = 0; i < 8; i++){
             List<EmailAddress> senders = new ArrayList<>();
             senders.add(new EmailAddress(0, "mdoran@oswego.org"));
+            senders.add(new EmailAddress(0, "mdoran@yahoo.com"));
             Email e = new Email(0, null, "", 0, false, false, null, null, senders);
             emails.add(e);
         }
@@ -49,6 +50,7 @@ public class DomainCallableTest {
         for(int i = 0; i < 7; i++){
             List<EmailAddress> senders = new ArrayList<>();
             senders.add(new EmailAddress(0, "mdoran@clarkson.edu"));
+            senders.add(new EmailAddress(0, "mdoran@something.dum"));
             Email e = new Email(0, null, "", 0, false, false, null, null, senders);
             emails.add(e);
         }

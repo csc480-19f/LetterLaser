@@ -25,7 +25,7 @@ public class SentimentScoreTest {
 
         //First test tests all positive.
         for(int q = 0; q < 100; q++){
-            Email e = new Email(q, null, null, 0, false, null,
+            Email e = new Email(q, null, null, 0, false,
                     false, new SentimentScore(1,0,0, 1), null);
             emails.add(e);
         }
@@ -41,7 +41,7 @@ public class SentimentScoreTest {
         //This test tests all negative.
         emails = new ArrayList<>();
         for(int q = 0; q < 100; q++){
-            Email e = new Email(q, null, null, 0, false, null,
+            Email e = new Email(q, null, null, 0, false,
                     false, new SentimentScore(0,1,0, -1), null);
             emails.add(e);
         }
@@ -62,7 +62,7 @@ public class SentimentScoreTest {
             int even = q%2;
             if(even==0) neg++;
             else pos++;
-            Email e = new Email(q, null, null, 0, false, null,
+            Email e = new Email(q, null, null, 0, false,
                     false, new SentimentScore(0,0,0, even), null);
             emails.add(e);
         }
@@ -84,7 +84,7 @@ public class SentimentScoreTest {
             SentimentScore s = new SentimentScore(0,0,0, comp);
             int resultingNum = AnalyzeThis.evaluateSentiment(s);
             if(resultingNum==2) pos++;
-            Email e = new Email(q, null, null, 0, false, null,
+            Email e = new Email(q, null, null, 0, false,
                     false, s, null);
             emails.add(e);
         }

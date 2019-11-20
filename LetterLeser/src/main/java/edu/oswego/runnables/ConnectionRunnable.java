@@ -9,6 +9,9 @@ import org.apache.commons.dbutils.DbUtils;
 
 import edu.oswego.database.Settings;
 
+/**
+ * @deprecated
+ */
 public class ConnectionRunnable implements Runnable {
 	
 	@Override
@@ -32,11 +35,11 @@ public class ConnectionRunnable implements Runnable {
 		
 	}
 
-	private boolean isConnectionOpen() {
+	private static boolean isConnectionOpen() {
 		return getActivateConnections() <= edu.oswego.database.Settings.THRESHOLD_CONNECTION;
 	}
 	
-	private int getActivateConnections() {
+	private static int getActivateConnections() {
 		int threads = -1;
 		Connection connection = null;
 		ResultSet rs = null;

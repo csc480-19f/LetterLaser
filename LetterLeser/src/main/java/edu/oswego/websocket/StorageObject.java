@@ -13,6 +13,11 @@ public class StorageObject {
 	private ValidationRunnable validationRunnable;
 	private Mailer mailer;
 	private Database database;
+	private JSDecryptor jsDecryptor;
+
+	public JSDecryptor getJsDecryptor(){return jsDecryptor;}
+
+	public void setJsDecryptor(JSDecryptor jsDecryptor){this.jsDecryptor = jsDecryptor;}
 
 	public Thread getHanderThread() {
 		return handlerThread;

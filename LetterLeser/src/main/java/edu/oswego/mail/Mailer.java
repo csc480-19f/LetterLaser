@@ -162,7 +162,7 @@ public class Mailer {
 		if (msgs == null)
 			if (msgs.length == 0)
 				return;
-
+		
 		System.out.println("MARKING: " + originFolderName + " :: " + msgs.length);
 
 		Folder folder = null;
@@ -240,6 +240,7 @@ public class Mailer {
 	 * 
 	 * @param m
 	 * @return name of attachment
+	 * @deprecated
 	 */
 	public String getAttachmentName(Message m) {
 		try {
@@ -247,12 +248,14 @@ public class Mailer {
 			for (int i = 0; i < multiPart.getCount(); i++) {
 				MimeBodyPart part = (MimeBodyPart) multiPart.getBodyPart(i);
 				if (Part.ATTACHMENT.equalsIgnoreCase(part.getDisposition()))
-					return part.getFileName().toString();
+					return part.getFileName();
 			}
 		} catch (MessagingException e) {
 			DebugLogger.logEvent(Mailer.class.getName(), Level.WARNING, e.getMessage());
 		} catch (IOException e) {
 			DebugLogger.logEvent(Mailer.class.getName(), Level.WARNING, e.getMessage());
+		} catch(Exception e){
+			return "ERR";
 		}
 
 		return "";
