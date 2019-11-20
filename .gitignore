@@ -2,6 +2,9 @@
 .github/
 /github
 
+# Intelij files
+.idea/
+
 # MacOS sys files
 .DS_STORE
 .DS_Store
