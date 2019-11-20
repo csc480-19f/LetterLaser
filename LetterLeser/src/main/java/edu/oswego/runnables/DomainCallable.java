@@ -24,11 +24,19 @@ public class DomainCallable implements Callable {
 			List<EmailAddress> senders = e.getFrom();
 			for (EmailAddress ea : senders) {
 				String domain = ea.getEmailAddress().split("@")[1];
+				String parent = domain.split("\\.")[0];
 				if (domains.containsKey(domain)) {
-					int x = domains.get(domain);
-					domains.put(domain, ++x);
-				} else {
+					int d = domains.get(domain);
+					int p = domains.get(parent);
+					domains.put(domain, ++d);
+					domains.put(parent, ++p);
+				} else if(domains.containsKey(parent)){
+					int p = domains.get(parent);
+					domains.put(parent, ++p);
 					domains.put(domain, 1);
+				}else{
+					domains.put(domain, 1);
+					domains.put(parent, 1);
 				}
 			}
 		}
@@ -38,9 +46,13 @@ public class DomainCallable implements Callable {
 		for (String domain : domains.keySet()) {
 			JsonObject domainObj = new JsonObject();
 			JsonObject innerData = new JsonObject();
+
 			String[] domainMeta = domain.split("\\.");
-			innerData.addProperty("domainname", domainMeta[1]);
-			innerData.addProperty("domainparent", domainMeta[0]);
+			String domainName = (domainMeta.length == 2)? domainMeta[1] : domainMeta[0];
+			String domainParent = (domainMeta.length == 2)? domainMeta[0] : "0";
+
+			innerData.addProperty("domainname", domainName);
+			innerData.addProperty("domainparent", domainParent);
 			innerData.addProperty("contribution", domains.get(domain));
 			domainObj.add("domainobj", innerData);
 			domainObjs.add(domainObj);
