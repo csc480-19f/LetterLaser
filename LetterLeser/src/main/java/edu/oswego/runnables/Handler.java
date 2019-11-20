@@ -66,19 +66,19 @@ public class Handler implements Runnable {
 					emails = database.getEmailByFilter(attachment, stringStartDate,
                             stringEndDate, seen, folderName);
 				}catch(Throwable t){
-					messenger.sendErrorMessage(session,"error in db: "+t.getMessage());
+					messenger.sendErrorMessage(session,"Error in DB: \n"+t.getMessage());
 					return;
 				}
 				performCalculations(emails);
 			}catch(IllegalArgumentException e){
-				messenger.sendErrorMessage(session,"error:\n" + e.getMessage());
+				messenger.sendErrorMessage(session,"Error:\n" + e.getMessage());
 			}
 		} else if (userFavourites != null) {
 			List<Email> emails = null;
 			try {
 				emails = database.getEmailByFilter(userFavourites.isHasAttachment(), userFavourites.getStartDate().toString(), userFavourites.getEndDate().toString(), userFavourites.isSeen(), userFavourites.getFolder().getFolder().getFullName());
 			}catch(Throwable t){
-				messenger.sendErrorMessage(session,"error in db: "+t.getMessage());
+				messenger.sendErrorMessage(session,"Error in DB: \n"+t.getMessage());
 				return;
 			}
 			performCalculations(emails);
@@ -90,7 +90,7 @@ public class Handler implements Runnable {
 
 	private void performCalculations(List<Email> emailList) {
 		if(emailList.isEmpty()){
-			messenger.sendUpdateStatusMessage(session,"no emails obtained with current filter");
+			messenger.sendUpdateStatusMessage(session,"No emails obtained with current filter.\emailList.isEmpty is true.");
 			return;
 		}
 
@@ -143,20 +143,21 @@ public class Handler implements Runnable {
 
 		} catch (InterruptedException e) {
 			e.printStackTrace();
-			messenger.sendErrorMessage(session,"request ended Callable interrupted\n"+e.getMessage());
+			messenger.sendErrorMessage(session,"Request ended Callable interrupted\n"+e.getMessage());
 			return;
 		} catch (ExecutionException e) {
 			e.printStackTrace();
-			messenger.sendErrorMessage(session,"request ended executionException:\n"+e.getMessage());
+			messenger.sendErrorMessage(session,"Request ended executionException:\n"+e.getMessage());
 			return;
 		} catch (TimeoutException e) {
-			messenger.sendErrorMessage(session,"request ended\n" +
+			messenger.sendErrorMessage(session,"Request ended\n" +
 					"TimeoutException Occurred\n" +
 					e.getMessage());
-			messenger.sendUpdateStatusMessage(session,"calculation too longer than 2 minutes, plase ");
+			messenger.sendUpdateStatusMessage(session,"Calculation took longer than 2 minutes, please.\n" +
+					e.getMessage());
 			return;
 		}catch(Exception e){
-			messenger.sendErrorMessage(session,"request ended\n" +
+			messenger.sendErrorMessage(session,"Request ended\n" +
 					"unknown exception Occurred\n"  +
 					e.getMessage());
 			return;
