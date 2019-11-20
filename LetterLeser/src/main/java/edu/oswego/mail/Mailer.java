@@ -162,7 +162,7 @@ public class Mailer {
 		if (msgs == null)
 			if (msgs.length == 0)
 				return;
-
+		
 		System.out.println("MARKING: " + originFolderName + " :: " + msgs.length);
 
 		Folder folder = null;

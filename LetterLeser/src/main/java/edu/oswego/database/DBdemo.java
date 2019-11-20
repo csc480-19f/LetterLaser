@@ -26,17 +26,17 @@ public class DBdemo {
 		Mailer mailer = new Mailer(edu.oswego.mail.Settings.EMAIL_ADDRESS, edu.oswego.mail.Settings.EMAIL_PWD);
 		Database db = new Database(edu.oswego.mail.Settings.EMAIL_ADDRESS, mailer);
 
-		System.out.println(db.getValidatedEmails());
-		// db.truncateTables();
-		db.pull();
-		db.showConnections();
+//		System.out.println(db.getValidatedEmails());
+		 Database.truncateTables();
+//		db.pull();
+//		db.showConnections();
 
 
-		db.showTables();
+//		db.showTables();
 		double time = (double) ((System.currentTimeMillis() - ct) * .001);
 		System.out.println("Total runtime: " + time + " seconds\n");
 
-		db.truncateTables();
+//		db.truncateTables();
 	}
 
 }

@@ -41,6 +41,11 @@ public class Database {
 
 	private EmailAddress user;
 	private Mailer mailer;
+	
+	public void nuke() {
+		//set validated email count to 1
+		query("");
+	}
 
 	// for an email
 	public List<EmailAddress> getRecipient(int emailId) {
@@ -279,7 +284,7 @@ public class Database {
 	public List<UserFolder> pull() {
 		List<UserFolder> folderList = importFolders();
 
-		if (getValidatedEmails() == mailer.getTotalEmailCount())
+		if (getValidatedEmails() == 0)
 			return folderList;
 
 		List<Integer> emailIdList = new ArrayList<>();
@@ -331,8 +336,8 @@ public class Database {
 			// If not already in folder, copy it over.
 			// NULL POINTER EXCEPTION. FIX DIS yo.
 
-			mailer.markEmailsInFolder(f.getFolder().getFullName(), msgs);
-			msgLengthList.add(msgs.length);
+//			mailer.markEmailsInFolder(f.getFolder().getFullName(), msgs);
+//			msgLengthList.add(msgs.length);
 			// semes to work so far...
 			// break;
 		}
@@ -345,10 +350,10 @@ public class Database {
 		// calculateSentimentScore(emailIdList.get(i), ss[i]);
 		// }
 
-		int sum = 0;
-		for (Integer c : msgLengthList)
-			sum += c;
-		setValidatedEmailCount(sum);
+//		int sum = 0;
+//		for (Integer c : msgLengthList)
+//			sum += c;
+		setValidatedEmailCount(1);
 
 		DebugLogger.logEvent(Database.class.getName(), Level.INFO,
 				"Emails have been pulled for " + user.getId() + " <" + user.getEmailAddress() + ">");
@@ -769,8 +774,8 @@ public class Database {
 			for (Folder f : folders) {
 				if (!folderExists(f.getFullName(), folderList) && !f.getFullName().equals("[Gmail]")
 						&& !f.getFullName().equals("CSC480_19F") && !f.getFullName().equals("[Gmail]/All Mail")) {
-
-					ps = connection.prepareStatement("INSERT INTO folder (fold_name) VALUE ('" + f.getFullName() + "')",
+					String folderName = parseAddress(f.getFullName()); // parses apostrophe in folders
+					ps = connection.prepareStatement("INSERT INTO folder (fold_name) VALUE ('" + folderName + "')",
 							Statement.RETURN_GENERATED_KEYS);
 					if (ps.executeUpdate() == 0)
 						DebugLogger.logEvent(Database.class.getName(), Level.WARNING,
