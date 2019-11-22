@@ -26,6 +26,7 @@ import edu.oswego.database.Database;
 import edu.oswego.debug.DebugLogger;
 import edu.oswego.model.Email;
 import edu.oswego.model.EmailAddress;
+import edu.oswego.model.ReceivedEmail;
 import edu.oswego.model.SentimentScore;
 import edu.oswego.model.UserFolder;
 
@@ -49,7 +50,8 @@ public class Mailer {
 		List<String> messageList = new ArrayList<>();
 		List<Integer> msgLengthList = new ArrayList<>();
 		List<Email> emailList = new ArrayList<>();
-		List<EmailAddress> receivedEmailList = new ArrayList<>();
+		
+		List<ReceivedEmail> receivedEmailList = new ArrayList<>();
 		
 		DebugLogger.logEvent(Database.class.getName(), Level.INFO, "Pulling emails from " + emailAddress);
 		
@@ -60,27 +62,14 @@ public class Mailer {
 					try {
 						List<EmailAddress> fromList = insertEmailAddress(m.getFrom());
 						// TODO insert sentiment score
-						emailList.add(new Email(0, m.getReceivedDate(), m.getSubject(), m.getSize(), m.getFlags().contains(Flags.Flag.SEEN), hasAttachment(m), new SentimentScore(), f));
+						Email email = new Email(0, m.getReceivedDate(), m.getSubject(), m.getSize(), m.getFlags().contains(Flags.Flag.SEEN), hasAttachment(m), new SentimentScore(), f);
+						emailList.add(email);
 						
 						for (EmailAddress ea : fromList) {
-//							insertReceivedEmails(emailId, ea.getId());
+							receivedEmailList.add(new ReceivedEmail(email, ea));
 						}
 						
-						
-//						int emailId = insertEmail(m, , emailIdList);
-//
-//						
-//						for (EmailAddress ea : fromList) {
-//							insertReceivedEmails(emailId, ea.getId());
-//						}
-//						insertUserEmail(user, emailId);
-//						emailIdList.add(emailId);
-//
 //						messageList.add(mailer.getTextFromMessage(m));
-//
-//						/*
-//						 * s++; if (s > stopper) break;
-//						 */
 
 					} catch (MessagingException e) {
 						DebugLogger.logEvent(Database.class.getName(), Level.WARNING, e.getMessage());
@@ -88,10 +77,6 @@ public class Mailer {
 				}
 		}
 		return folderList;
-	}
-	
-	private void insertReceivedEmails(int emailId, int emailAddrId) { 
-		
 	}
 	
 	public List<UserFolder> importFolders() {
