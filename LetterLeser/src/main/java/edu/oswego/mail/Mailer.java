@@ -26,9 +26,9 @@ import edu.oswego.database.Database;
 import edu.oswego.debug.DebugLogger;
 import edu.oswego.model.Email;
 import edu.oswego.model.EmailAddress;
-import edu.oswego.model.ReceivedEmail;
 import edu.oswego.model.SentimentScore;
 import edu.oswego.model.UserFolder;
+import edu.oswego.sentiment.AnalyzeThis;
 
 /**
  * Mailer class that has the Session/Store objects as well as host/port/tls
@@ -46,12 +46,10 @@ public class Mailer {
 	
 	public List<UserFolder> pull() {
 		List<UserFolder> folderList = importFolders();
-		List<Integer> emailIdList = new ArrayList<>();
 		List<String> messageList = new ArrayList<>();
-		List<Integer> msgLengthList = new ArrayList<>();
 		List<Email> emailList = new ArrayList<>();
 		
-		List<ReceivedEmail> receivedEmailList = new ArrayList<>();
+		List<EmailAddress> receivedEmailList = new ArrayList<>();
 		
 		DebugLogger.logEvent(Database.class.getName(), Level.INFO, "Pulling emails from " + emailAddress);
 		
@@ -61,21 +59,33 @@ public class Mailer {
 				for (Message m : msgs) {
 					try {
 						List<EmailAddress> fromList = insertEmailAddress(m.getFrom());
-						// TODO insert sentiment score
+						for (EmailAddress ea : fromList) {
+							receivedEmailList.add(ea);
+						}
+						
 						Email email = new Email(0, m.getReceivedDate(), m.getSubject(), m.getSize(), m.getFlags().contains(Flags.Flag.SEEN), hasAttachment(m), new SentimentScore(), f);
 						emailList.add(email);
 						
-						for (EmailAddress ea : fromList) {
-							receivedEmailList.add(new ReceivedEmail(email, ea));
-						}
-						
-//						messageList.add(mailer.getTextFromMessage(m));
+						messageList.add(getTextFromMessage(m));
 
 					} catch (MessagingException e) {
 						DebugLogger.logEvent(Database.class.getName(), Level.WARNING, e.getMessage());
 					}
 				}
 		}
+		
+//		AnalyzeThis.evaluateSentiment(s);
+		
+//		for (int i = 0; i < messageList.size(); i++) {
+//			
+//			emailList.get(i).setSentimentScore(null);
+//		}
+//		
+//		for (Email e: emailList) {
+			// TODO insert sentiment score
+//			e.setSentimentScore(null);
+//			
+//		}
 		return folderList;
 	}
 	

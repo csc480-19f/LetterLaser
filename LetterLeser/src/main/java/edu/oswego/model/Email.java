@@ -105,6 +105,10 @@ public class Email {
 	public boolean hasAttachment() {
 		return hasAttachment;
 	}
+	
+	public void setSentimentScore(SentimentScore sentimentScore) {
+		this.sentimentScore = sentimentScore;
+	}
 
 	public SentimentScore getSentimentScore() {
 		return sentimentScore;
