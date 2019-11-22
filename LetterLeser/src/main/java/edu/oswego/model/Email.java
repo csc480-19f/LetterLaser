@@ -1,7 +1,7 @@
 package edu.oswego.model;
 
-import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -15,7 +15,7 @@ import java.util.List;
 public class Email {
 
 	private int id;
-	private Timestamp dateReceived;
+	private Date dateReceived;
 	private String subject;
 	private double size;
 	private boolean isSeen;
@@ -27,11 +27,11 @@ public class Email {
 
 	// TODO ADD USERFOLDER?
 	
-	public String getTimestamp() {
+	public String getDate() {
 		return dateReceived.toString().substring(0, dateReceived.toString().length() - 2);
 	}
 
-	public Email(int id, Timestamp dateReceived, String subject, double size, boolean isSeen, boolean hasAttachment,
+	public Email(int id, Date dateReceived, String subject, double size, boolean isSeen, boolean hasAttachment,
 			UserFolder folder) {
 		this.id = id;
 		this.dateReceived = dateReceived;
@@ -44,7 +44,7 @@ public class Email {
 		this.from = new ArrayList<>();
 	}
 
-	public Email(int id, Timestamp dateReceived, String subject, double size, boolean isSeen, boolean hasAttachment,
+	public Email(int id, Date dateReceived, String subject, double size, boolean isSeen, boolean hasAttachment,
 			SentimentScore sentimentScore) {
 		this.id = id;
 		this.dateReceived = dateReceived;
@@ -56,7 +56,7 @@ public class Email {
 		this.from = new ArrayList<>();
 	}
 
-	public Email(int id, Timestamp dateReceived, String subject, double size, boolean isSeen, boolean hasAttachment,
+	public Email(int id, Date dateReceived, String subject, double size, boolean isSeen, boolean hasAttachment,
 			SentimentScore sentimentScore, UserFolder folder) {
 		this.id = id;
 		this.dateReceived = dateReceived;
@@ -69,7 +69,7 @@ public class Email {
 		this.from = new ArrayList<>();
 	}
 
-	public Email(int id, Timestamp dateReceived, String subject, double size, boolean isSeen, boolean hasAttachment,
+	public Email(int id, Date dateReceived, String subject, double size, boolean isSeen, boolean hasAttachment,
 			SentimentScore sentimentScore, UserFolder folder, List<EmailAddress> from) {
 		this.id = id;
 		this.dateReceived = dateReceived;
@@ -86,7 +86,7 @@ public class Email {
 		return id;
 	}
 
-	public Timestamp getDateReceived() {
+	public Date getDateReceived() {
 		return dateReceived;
 	}
 

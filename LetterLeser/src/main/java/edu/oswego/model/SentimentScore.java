@@ -4,6 +4,8 @@ public class SentimentScore {
 
 	private double positive, negative, neutral, compound;
 
+	public SentimentScore() {}
+	
 	public SentimentScore(double positive, double negative, double neutral, double compound) {
 		this.positive = positive;
 		this.negative = negative;

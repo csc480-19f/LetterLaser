@@ -1,11 +1,6 @@
 package edu.oswego.mail;
 
 import java.io.IOException;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -27,11 +22,11 @@ import javax.mail.Transport;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMultipart;
 
-import org.apache.commons.dbutils.DbUtils;
-
 import edu.oswego.database.Database;
 import edu.oswego.debug.DebugLogger;
+import edu.oswego.model.Email;
 import edu.oswego.model.EmailAddress;
+import edu.oswego.model.SentimentScore;
 import edu.oswego.model.UserFolder;
 
 /**
@@ -53,6 +48,7 @@ public class Mailer {
 		List<Integer> emailIdList = new ArrayList<>();
 		List<String> messageList = new ArrayList<>();
 		List<Integer> msgLengthList = new ArrayList<>();
+		List<Email> emailList = new ArrayList<>();
 		
 		DebugLogger.logEvent(Database.class.getName(), Level.INFO, "Pulling emails from " + emailAddress);
 		
@@ -62,6 +58,10 @@ public class Mailer {
 				for (Message m : msgs) {
 					try {
 						List<EmailAddress> fromList = insertEmailAddress(m.getFrom());
+						// TODO insert sentiment score
+						emailList.add(new Email(0, m.getReceivedDate(), m.getSubject(), m.getSize(), m.getFlags().contains(Flags.Flag.SEEN), hasAttachment(m), new SentimentScore(), f));
+						
+						
 						
 //						int emailId = insertEmail(m, , emailIdList);
 //
