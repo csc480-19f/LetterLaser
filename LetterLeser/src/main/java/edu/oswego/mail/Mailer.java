@@ -63,7 +63,7 @@ public class Mailer {
 							receivedEmailList.add(ea);
 						}
 						
-						Email email = new Email(0, m.getReceivedDate(), m.getSubject(), m.getSize(), m.getFlags().contains(Flags.Flag.SEEN), hasAttachment(m), new SentimentScore(), f);
+						Email email = new Email(0, m.getReceivedDate(), m.getSubject(), m.getSize(), m.getFlags().contains(Flags.Flag.SEEN), hasAttachment(m), new SentimentScore(), f.getFolder().getFullName());
 						emailList.add(email);
 						
 						messageList.add(getTextFromMessage(m));
@@ -81,7 +81,7 @@ public class Mailer {
 //			emailList.get(i).setSentimentScore(null);
 //		}
 //		
-//		for (Email e: emailList) {
+//		for (Email e: emailList) {	
 			// TODO insert sentiment score
 //			e.setSentimentScore(null);
 //			

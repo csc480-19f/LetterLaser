@@ -1,3 +1,5 @@
+package edu.oswego.mail;
+
 import edu.oswego.model.Email;
 import java.io.*;
 import java.util.ArrayList;
