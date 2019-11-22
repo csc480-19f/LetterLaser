@@ -28,7 +28,6 @@ import edu.oswego.model.Email;
 import edu.oswego.model.EmailAddress;
 import edu.oswego.model.SentimentScore;
 import edu.oswego.model.UserFolder;
-import edu.oswego.sentiment.AnalyzeThis;
 
 /**
  * Mailer class that has the Session/Store objects as well as host/port/tls
@@ -63,7 +62,7 @@ public class Mailer {
 							receivedEmailList.add(ea);
 						}
 						
-						Email email = new Email(0, m.getReceivedDate(), m.getSubject(), m.getSize(), m.getFlags().contains(Flags.Flag.SEEN), hasAttachment(m), new SentimentScore(), f.getFolder().getFullName());
+						Email email = new Email(0, m.getReceivedDate(), m.getSubject(), m.getSize(), m.getFlags().contains(Flags.Flag.SEEN), hasAttachment(m), new SentimentScore(), f);
 						emailList.add(email);
 						
 						messageList.add(getTextFromMessage(m));

@@ -4,8 +4,6 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import edu.oswego.model.Email;
 
-import javax.mail.Folder;
-import javax.mail.MessagingException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
@@ -65,22 +63,12 @@ public class FolderCallable implements Callable {
 		private HashMap<String,String> parents = new HashMap<>();
 		private HashMap<String, Integer> contribution = new HashMap<>();
 		public FolderMapper(List<Email> emails){
-			try {
-				for (Email e : emails) {
-					Folder current = e.getFolder().getFolder();
-					Folder parent;
-					parent = current.getParent();
-					while (parent.getName() != "") {
-						incrementKey(contribution, current.getName());
-						parents.put(current.getName(), parent.getName());
-						current = parent;
-						parent = current.getParent();
-
-					}
-					incrementKey(contribution, current.getName());
+			for (Email e : emails) {
+				String[] folders = e.getFolder().split("/");
+				for (int i = folders.length - 1; i >= 0; i--) {
+					parents.put(folders[i],((i-1) < 0)? "0" : folders[i-1]);
+					incrementKey(contribution, folders[i]);
 				}
-			}catch(MessagingException e){
-				e.printStackTrace();
 			}
 		}
 
