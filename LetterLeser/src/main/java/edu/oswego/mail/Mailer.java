@@ -1,6 +1,8 @@
 package edu.oswego.mail;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 import java.util.logging.Level;
 
@@ -18,7 +20,10 @@ import javax.mail.Transport;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMultipart;
 
+import edu.oswego.database.Database;
 import edu.oswego.debug.DebugLogger;
+import edu.oswego.model.EmailAddress;
+import edu.oswego.model.UserFolder;
 
 /**
  * Mailer class that has the Session/Store objects as well as host/port/tls
@@ -33,6 +38,127 @@ public class Mailer {
 	private Session session;
 	private Store storage;
 	private String emailAddress, password;
+	
+	public List<UserFolder> pull() {
+		List<Integer> emailIdList = new ArrayList<>();
+		List<String> messageList = new ArrayList<>();
+		List<Integer> msgLengthList = new ArrayList<>();
+
+		DebugLogger.logEvent(Database.class.getName(), Level.INFO, "Pulling emails from " + user.getEmailAddress());
+		for (UserFolder f : folderList) {
+			Message[] msgs = mailer.pullEmails(f.getFolder().getFullName()); // Do not use "[Gmail]/All Mail");
+			long start = System.nanoTime();
+			int emailCount = 0;
+			System.out.println("emails = " + msgs.length);
+				for (Message m : msgs) {
+					try {
+						List<EmailAddress> fromList = insertEmailAddress(m.getFrom());// get this list and return for
+																						// user_email table
+						long estart = System.nanoTime();
+						int emailId = insertEmail(m, folderList, emailIdList);
+						long eend = System.nanoTime();
+						emailCount++;
+
+						System.out.println("email inserted: " + emailCount);
+						System.out.println("time to add: " + ((eend - estart) * .000000001));
+						for (EmailAddress ea : fromList) {
+							insertReceivedEmails(emailId, ea.getId());
+						}
+						insertUserEmail(user, emailId);
+						emailIdList.add(emailId);
+
+						messageList.add(mailer.getTextFromMessage(m));
+
+						/*
+						 * s++; if (s > stopper) break;
+						 */
+
+					} catch (MessagingException e) {
+						DebugLogger.logEvent(Database.class.getName(), Level.WARNING, e.getMessage());
+					}
+				}
+			long end = System.nanoTime();
+			System.out.println("time all emails in seconds: " + ((end - start) * .000000001));
+		}
+
+		// TODO CHECK IF THIS WORKS
+		// String[] mArr = messageList.toArray(new String[messageList.size()]);
+		// SentimentScore[] ss = AnalyzeThis.process(mArr);
+		// for (int i = 0; i < emailIdList.size(); i++) {
+		// System.out.println("SS CALC");
+		// calculateSentimentScore(emailIdList.get(i), ss[i]);
+		// }
+
+		DebugLogger.logEvent(Database.class.getName(), Level.INFO,
+				"Emails have been pulled for " + user.getId() + " <" + user.getEmailAddress() + ">");
+		return folderList;
+	}
+	
+	public List<UserFolder> pull() {
+		List<UserFolder> folderList = importFolders();
+		List<Integer> emailIdList = new ArrayList<>();
+		List<String> messageList = new ArrayList<>();
+		List<Integer> msgLengthList = new ArrayList<>();
+		
+		DebugLogger.logEvent(Database.class.getName(), Level.INFO, "Pulling emails from " + emailAddress);
+		
+		for (UserFolder f : folderList) {
+			Message[] msgs = pullEmails(f.getFolder().getFullName()); // Do not use "[Gmail]/All Mail");
+			long start = System.nanoTime();
+			int emailCount = 0;
+			System.out.println("emails = " + msgs.length);
+				for (Message m : msgs) {
+					try {
+						List<EmailAddress> fromList = insertEmailAddress(m.getFrom());// get this list and return for
+																						// user_email table
+						long estart = System.nanoTime();
+						int emailId = insertEmail(m, folderList, emailIdList);
+						long eend = System.nanoTime();
+						emailCount++;
+
+						System.out.println("email inserted: " + emailCount);
+						System.out.println("time to add: " + ((eend - estart) * .000000001));
+						for (EmailAddress ea : fromList) {
+							insertReceivedEmails(emailId, ea.getId());
+						}
+						insertUserEmail(user, emailId);
+						emailIdList.add(emailId);
+
+						messageList.add(mailer.getTextFromMessage(m));
+
+						/*
+						 * s++; if (s > stopper) break;
+						 */
+
+					} catch (MessagingException e) {
+						DebugLogger.logEvent(Database.class.getName(), Level.WARNING, e.getMessage());
+					}
+				}
+			long end = System.nanoTime();
+			System.out.println("time all emails in seconds: " + ((end - start) * .000000001));
+		}
+		
+		
+		
+		return folderList;
+	}
+	
+	public List<UserFolder> importFolders() {
+		List<UserFolder> folderList = new ArrayList<>();
+		Folder[] folders;
+		try {
+			folders = getStorage().getDefaultFolder().list("*");
+			for (Folder f : folders) {
+				if (!f.getFullName().equals("[Gmail]") && !f.getFullName().equals("CSC480_19F") && !f.getFullName().equals("[Gmail]/All Mail")) {
+					folderList.add(new UserFolder(0, f));
+				}
+			}
+		} catch (MessagingException e) {
+			e.printStackTrace();
+		}
+		
+		return folderList;
+	}
 
 	/**
 	 * Creates a mailer object.

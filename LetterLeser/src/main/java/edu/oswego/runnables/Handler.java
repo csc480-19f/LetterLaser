@@ -90,7 +90,7 @@ public class Handler implements Runnable {
 
 	private void performCalculations(List<Email> emailList) {
 		if(emailList.isEmpty()){
-			messenger.sendUpdateStatusMessage(session,"No emails obtained with current filter.\emailList.isEmpty is true.");
+			messenger.sendUpdateStatusMessage(session,"No emails obtained with current filter emailList.isEmpty is true.");
 			return;
 		}
 
