@@ -1,13 +1,20 @@
 package edu.oswego.mail;
 
 import java.io.IOException;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 import java.util.logging.Level;
 
+import javax.mail.Address;
 import javax.mail.AuthenticationFailedException;
 import javax.mail.BodyPart;
+import javax.mail.Flags;
 import javax.mail.Folder;
 import javax.mail.Message;
 import javax.mail.MessagingException;
@@ -19,6 +26,8 @@ import javax.mail.Store;
 import javax.mail.Transport;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMultipart;
+
+import org.apache.commons.dbutils.DbUtils;
 
 import edu.oswego.database.Database;
 import edu.oswego.debug.DebugLogger;
@@ -109,10 +118,12 @@ public class Mailer {
 			System.out.println("emails = " + msgs.length);
 				for (Message m : msgs) {
 					try {
-						List<EmailAddress> fromList = insertEmailAddress(m.getFrom());// get this list and return for
-																						// user_email table
+						List<EmailAddress> fromList = insertEmailAddress(m.getFrom());
 						long estart = System.nanoTime();
-						int emailId = insertEmail(m, folderList, emailIdList);
+						
+						
+						
+						int emailId = insertEmail(m, , emailIdList);
 						long eend = System.nanoTime();
 						emailCount++;
 
@@ -160,6 +171,20 @@ public class Mailer {
 		return folderList;
 	}
 
+	private List<EmailAddress> insertEmailAddress(Address[] addresses) {
+		List<EmailAddress> emailAddrList = new ArrayList<>();
+		for (Address a : addresses) {
+			emailAddrList.add(new EmailAddress(0, a.toString()));
+		}
+		return emailAddrList;
+	}
+	
+	private int insertEmail(Message m, List<UserFolder> folderList, List<Integer> emailIdList) {
+		
+
+		return -1;
+	}
+	
 	/**
 	 * Creates a mailer object.
 	 * 
