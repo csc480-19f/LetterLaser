@@ -49,6 +49,7 @@ public class Mailer {
 		List<String> messageList = new ArrayList<>();
 		List<Integer> msgLengthList = new ArrayList<>();
 		List<Email> emailList = new ArrayList<>();
+		List<EmailAddress> receivedEmailList = new ArrayList<>();
 		
 		DebugLogger.logEvent(Database.class.getName(), Level.INFO, "Pulling emails from " + emailAddress);
 		
@@ -61,6 +62,9 @@ public class Mailer {
 						// TODO insert sentiment score
 						emailList.add(new Email(0, m.getReceivedDate(), m.getSubject(), m.getSize(), m.getFlags().contains(Flags.Flag.SEEN), hasAttachment(m), new SentimentScore(), f));
 						
+						for (EmailAddress ea : fromList) {
+//							insertReceivedEmails(emailId, ea.getId());
+						}
 						
 						
 //						int emailId = insertEmail(m, , emailIdList);
@@ -84,6 +88,10 @@ public class Mailer {
 				}
 		}
 		return folderList;
+	}
+	
+	private void insertReceivedEmails(int emailId, int emailAddrId) { 
+		
 	}
 	
 	public List<UserFolder> importFolders() {
