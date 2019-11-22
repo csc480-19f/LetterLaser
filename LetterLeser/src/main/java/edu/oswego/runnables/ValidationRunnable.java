@@ -37,7 +37,7 @@ public class ValidationRunnable implements Runnable {
 			messenger.sendUpdateStatusMessage(session, "Validating emails.\nvalidateOrPull is true.");
 
 			try {
-				database.nuke();
+
 				database.pull();
 			} catch (Throwable t) {
 				t.printStackTrace();
@@ -69,7 +69,7 @@ public class ValidationRunnable implements Runnable {
 				ja.add(favourites.get(i).getName());
 			}
 			JsonObject js = new JsonObject();
-			js.addProperty("messagetype", "foldername");
+			js.addProperty("messagetype", "logininfo");
 			js.add("foldername", ja);
 			js.add("favoritename", ja1);
 			messenger.sendMessageToClient(session, js);

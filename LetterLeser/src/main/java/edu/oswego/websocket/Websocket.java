@@ -472,23 +472,8 @@ public class Websocket {
 		while(true){
 			if(Database.isConnection()){
 				return true;
-			}
-			else{
-				count++;
-				if(count>=15){
-					messenger.sendErrorMessage(session,"Server busy, try again later.\ncount >= 15");
-					return false;
-				}else {
-					if(!messenger.sendUpdateStatusMessage(session, "Waiting for connection to open.\nAttempt: " + count)){
-						return false;
-					}
-				}
-
-				try {
-					Thread.sleep(333);
-				} catch (InterruptedException e) {
-
-				}
+			}else{
+				return false;
 			}
 		}
 	}
