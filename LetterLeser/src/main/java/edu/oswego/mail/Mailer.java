@@ -396,4 +396,19 @@ public class Mailer {
 		return text;
 	}
 
+	public void closeMailer(){
+		try {
+			storage.close();
+		} catch (MessagingException e) {
+			e.printStackTrace();
+		}
+	}
+
+	public List<Email> getListOfEmails(javax.websocket.Session javaxWebsocketSession, String foldername){
+		Message[] messaages = pullEmails(foldername);
+
+		//TODO someone fill this method in please
+		return null;
+	}
+
 }

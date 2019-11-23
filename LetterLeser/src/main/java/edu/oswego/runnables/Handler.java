@@ -45,46 +45,46 @@ public class Handler implements Runnable {
 
 	@Override
 	public void run() {
-		Thread.currentThread().setName("handler");
-
-		if (jsonObject != null) {
-			try {
-				String folderName = jsonObject.get("foldername").getAsString();
-				String sd = jsonObject.get("date").getAsString();
-				String interval = jsonObject.get("interval").getAsString();
-				boolean attachment = jsonObject.get("attachment").getAsBoolean();
-				boolean seen = jsonObject.get("seen").getAsBoolean();
-				DateTime startDate = new DateTime(DateTimeFormat.forPattern("yyyy/MM/dd HH:mm:ss").parseMillis(sd));
-				DateTime endDate = getEndDate(startDate, interval);
-				List<Email> emails;
-
-				SimpleDateFormat formater = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-				String stringStartDate = formater.format(startDate.toDate());
-				String stringEndDate = formater.format(endDate.toDate());
-
-				try {
-					emails = database.getEmailByFilter(attachment, stringStartDate,
-                            stringEndDate, seen, folderName);
-				}catch(Throwable t){
-					messenger.sendErrorMessage(session,"Error in DB: \n"+t.getMessage());
-					return;
-				}
-				performCalculations(emails);
-			}catch(IllegalArgumentException e){
-				messenger.sendErrorMessage(session,"Error:\n" + e.getMessage());
-			}
-		} else if (userFavourites != null) {
-			List<Email> emails = null;
-			try {
-				emails = database.getEmailByFilter(userFavourites.isHasAttachment(), userFavourites.getStartDate().toString(), userFavourites.getEndDate().toString(), userFavourites.isSeen(), userFavourites.getFolder().getFolder().getFullName());
-			}catch(Throwable t){
-				messenger.sendErrorMessage(session,"Error in DB: \n"+t.getMessage());
-				return;
-			}
-			performCalculations(emails);
-		} else {
-			System.out.println("no userfav or json so no calc can be preformed");
-		}
+//		Thread.currentThread().setName("handler");
+//
+//		if (jsonObject != null) {
+//			try {
+//				String folderName = jsonObject.get("foldername").getAsString();
+//				String sd = jsonObject.get("date").getAsString();
+//				String interval = jsonObject.get("interval").getAsString();
+//				boolean attachment = jsonObject.get("attachment").getAsBoolean();
+//				boolean seen = jsonObject.get("seen").getAsBoolean();
+//				DateTime startDate = new DateTime(DateTimeFormat.forPattern("yyyy/MM/dd HH:mm:ss").parseMillis(sd));
+//				DateTime endDate = getEndDate(startDate, interval);
+//				List<Email> emails;
+//
+//				SimpleDateFormat formater = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+//				String stringStartDate = formater.format(startDate.toDate());
+//				String stringEndDate = formater.format(endDate.toDate());
+//
+//				try {
+//					emails = database.getEmailByFilter(attachment, stringStartDate,
+//                            stringEndDate, seen, folderName);
+//				}catch(Throwable t){
+//					messenger.sendErrorMessage(session,"Error in DB: \n"+t.getMessage());
+//					return;
+//				}
+//				performCalculations(emails);
+//			}catch(IllegalArgumentException e){
+//				messenger.sendErrorMessage(session,"Error:\n" + e.getMessage());
+//			}
+//		} else if (userFavourites != null) {
+//			List<Email> emails = null;
+//			try {
+//				emails = database.getEmailByFilter(userFavourites.isHasAttachment(), userFavourites.getStartDate().toString(), userFavourites.getEndDate().toString(), userFavourites.isSeen(), userFavourites.getFolder().getFolder().getFullName());
+//			}catch(Throwable t){
+//				messenger.sendErrorMessage(session,"Error in DB: \n"+t.getMessage());
+//				return;
+//			}
+//			performCalculations(emails);
+//		} else {
+//			System.out.println("no userfav or json so no calc can be preformed");
+//		}
 
 	}
 

@@ -31,50 +31,50 @@ public class ValidationRunnable implements Runnable {
 
 	@Override
 	public void run() {
-		Thread.currentThread().setName("validation");
-		System.out.println("validation started");
-		if (validateOrPull) {
-			messenger.sendUpdateStatusMessage(session, "Validating emails.\nvalidateOrPull is true.");
-
-			try {
-
-				database.pull();
-			} catch (Throwable t) {
-				t.printStackTrace();
-				messenger.sendErrorMessage(session, "Error in DB: \n" + t.getMessage());
-				return;
-			}
-			messenger.sendUpdateStatusMessage(session, "Finished validating.\nline 47");
-
-		} else {
-			messenger.sendUpdateStatusMessage(session, "Pulling folders and emails.\nvalidateOrPull is false.");
-
-			List<UserFolder> folders;
-			List<UserFavourites> favourites;
-			try {
-				folders = database.pull();
-				favourites = database.getUserFavourites();
-			} catch (Throwable t) {
-				t.printStackTrace();
-				messenger.sendErrorMessage(session, "Error in DB: \n" + t.getMessage());
-				return;
-			}
-
-			JsonArray ja = new JsonArray();
-			JsonArray ja1 = new JsonArray();
-			for (int i = 0; i < folders.size(); i++) {
-				ja.add(folders.get(i).getFolder().getFullName());
-			}
-			for (int i = 0; i < favourites.size(); i++) {
-				ja.add(favourites.get(i).getName());
-			}
-			JsonObject js = new JsonObject();
-			js.addProperty("messagetype", "logininfo");
-			js.add("foldername", ja);
-			js.add("favoritename", ja1);
-			messenger.sendMessageToClient(session, js);
-		}
-		System.out.println("validationRunnable finished");
+//		Thread.currentThread().setName("validation");
+//		System.out.println("validation started");
+//		if (validateOrPull) {
+//			messenger.sendUpdateStatusMessage(session, "Validating emails.\nvalidateOrPull is true.");
+//
+//			try {
+//
+//				database.pull();
+//			} catch (Throwable t) {
+//				t.printStackTrace();
+//				messenger.sendErrorMessage(session, "Error in DB: \n" + t.getMessage());
+//				return;
+//			}
+//			messenger.sendUpdateStatusMessage(session, "Finished validating.\nline 47");
+//
+//		} else {
+//			messenger.sendUpdateStatusMessage(session, "Pulling folders and emails.\nvalidateOrPull is false.");
+//
+//			List<UserFolder> folders;
+//			List<UserFavourites> favourites;
+//			try {
+//				folders = database.pull();
+//				favourites = database.getUserFavourites();
+//			} catch (Throwable t) {
+//				t.printStackTrace();
+//				messenger.sendErrorMessage(session, "Error in DB: \n" + t.getMessage());
+//				return;
+//			}
+//
+//			JsonArray ja = new JsonArray();
+//			JsonArray ja1 = new JsonArray();
+//			for (int i = 0; i < folders.size(); i++) {
+//				ja.add(folders.get(i).getFolder().getFullName());
+//			}
+//			for (int i = 0; i < favourites.size(); i++) {
+//				ja.add(favourites.get(i).getName());
+//			}
+//			JsonObject js = new JsonObject();
+//			js.addProperty("messagetype", "logininfo");
+//			js.add("foldername", ja);
+//			js.add("favoritename", ja1);
+//			messenger.sendMessageToClient(session, js);
+//		}
+//		System.out.println("validationRunnable finished");
 	}
 
 }
