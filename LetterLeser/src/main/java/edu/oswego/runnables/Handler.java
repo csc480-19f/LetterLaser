@@ -1,43 +1,38 @@
 package edu.oswego.runnables;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
-
-import edu.oswego.database.Database;
-import edu.oswego.model.Email;
-import edu.oswego.model.UserFavourites;
-
-import edu.oswego.websocket.Messenger;
-import org.joda.time.DateTime;
-import org.joda.time.format.DateTimeFormat;
-
-import javax.websocket.Session;
-import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import javax.websocket.Session;
+
+import org.joda.time.DateTime;
+
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+
+import edu.oswego.model.Email;
+import edu.oswego.model.UserFavourites;
+import edu.oswego.websocket.Messenger;
+
 public class Handler implements Runnable {
-	private Database database;
 	private JsonObject jsonObject;
 	private UserFavourites userFavourites;
 	private String email;
 	private Session session;
 	private Messenger messenger = new Messenger();
 
-	public Handler(Session session, Database database, String email, JsonObject jsonObject) {
+	public Handler(Session session, String email, JsonObject jsonObject) {
 		this.session = session;
-		this.database = database;
 		this.jsonObject = jsonObject;
 		this.email = email;
 		this.userFavourites=null;
 	}
 
-	public Handler(Session session, Database database, String email, UserFavourites userFavourites) {
+	public Handler(Session session, String email, UserFavourites userFavourites) {
 		this.session = session;
-		this.database = database;
 		this.userFavourites = userFavourites;
 		this.email = email;
 		this.jsonObject=null;

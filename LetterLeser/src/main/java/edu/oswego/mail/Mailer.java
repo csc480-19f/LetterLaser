@@ -2,16 +2,26 @@ package edu.oswego.mail;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 import java.util.logging.Level;
 
-import javax.mail.*;
+import javax.mail.Address;
+import javax.mail.AuthenticationFailedException;
+import javax.mail.BodyPart;
+import javax.mail.Flags;
+import javax.mail.Folder;
+import javax.mail.Message;
+import javax.mail.MessagingException;
+import javax.mail.Multipart;
+import javax.mail.NoSuchProviderException;
+import javax.mail.Part;
+import javax.mail.Session;
+import javax.mail.Store;
+import javax.mail.Transport;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMultipart;
 
-import edu.oswego.database.Database;
 import edu.oswego.debug.DebugLogger;
 import edu.oswego.model.Email;
 import edu.oswego.model.EmailAddress;
@@ -40,7 +50,7 @@ public class Mailer {
 
 		List<EmailAddress> receivedEmailList = new ArrayList<>();
 
-		DebugLogger.logEvent(Database.class.getName(), Level.INFO, "Pulling emails from " + emailAddress);
+//		DebugLogger.logEvent(Database.class.getName(), Level.INFO, "Pulling emails from " + emailAddress);
 
 		for (UserFolder f : folderList) {
 //			List<Email> emails = pullEmails(f.getFolder()); // Do not use "[Gmail]/All Mail");

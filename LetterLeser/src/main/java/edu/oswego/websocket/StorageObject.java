@@ -1,6 +1,5 @@
 package edu.oswego.websocket;
 
-import edu.oswego.database.Database;
 import edu.oswego.mail.Mailer;
 import edu.oswego.runnables.Handler;
 import edu.oswego.runnables.ValidationRunnable;
@@ -12,7 +11,6 @@ public class StorageObject {
 	private Thread validationThread;
 	private ValidationRunnable validationRunnable;
 	private Mailer mailer;
-	private Database database;
 	private JSDecryptor jsDecryptor;
 
 	public JSDecryptor getJsDecryptor(){return jsDecryptor;}
@@ -57,14 +55,6 @@ public class StorageObject {
 
 	public Mailer getMailer() {
 		return mailer;
-	}
-
-	public void setDatabase(Database database) {
-		this.database = database;
-	}
-
-	public Database getDatabase() {
-		return database;
 	}
 
 }
