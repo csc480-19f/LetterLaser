@@ -134,7 +134,7 @@ public class Websocket {
 	@OnError
 	public void onError(Throwable t, Session session) {
 		System.out.println("onError::");
-		//t.printStackTrace();
+		t.printStackTrace();
 	}
 
 	/*
