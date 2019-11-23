@@ -74,7 +74,9 @@ public class Websocket {
 		String messageType = jsonMessage.get("messagetype").getAsString();
 		String decryptedEmail = decryptString(session,jsonMessage.get("email").getAsString());
 
-		if(decryptedEmail==null){return;}
+		if(decryptedEmail==null){
+			return;
+		}
 
 		StorageObject storageObject = sessionMapper.get(decryptedEmail);
 
@@ -175,13 +177,14 @@ public class Websocket {
 	// TODO Still needs testing
 	private void filter(Session session, String email, JsonObject filter) {
 		Mailer mailer = sessionMapper.get(email).getMailer();
-		String foldername = filter.get("folder").getAsString();
+		String foldername = filter.get("foldername").getAsString();
 
 		messenger.sendUpdateStatusMessage(session,"attempting to pull your emails\nthis can take a while");
 		List<Email> emails = mailer.getListOfEmails(session,messenger,foldername);
 
 		if(emails==null){
 			messenger.sendUpdateStatusMessage(session,"no emails exist in that folder");
+			return;
 		}
 
 		messenger.sendUpdateStatusMessage(session,"the emails have been compiled, we will start running the calculations");
