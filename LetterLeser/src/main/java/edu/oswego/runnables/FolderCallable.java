@@ -38,10 +38,10 @@ public class FolderCallable implements Callable {
 
 			String folderParent = (fm.hasParent(folder))? fm.getParent(folder) : "0";
 
-			innerData.addProperty("foldername", folder);
-			innerData.addProperty("folderparent", folderParent);
+			innerData.addProperty("domainname", folder);
+			innerData.addProperty("domainparent", folderParent);
 			innerData.addProperty("contribution", fm.getContribution(folder));
-			folderObj.add("folderobj", innerData);
+			folderObj.add("domainobj", innerData);
 			folderObjs.add(folderObj);
 		}
 

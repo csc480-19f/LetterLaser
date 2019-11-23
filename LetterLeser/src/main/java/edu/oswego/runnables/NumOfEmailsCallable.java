@@ -77,7 +77,7 @@ public class NumOfEmailsCallable implements Callable {
 			return 3;
 		}else if(hour>=16 && hour<20){
 			return 4;
-		}else if(hour>=20 && hour<23){
+		}else if(hour>=20 && hour<24){
 			return 5;
 		}
 		return 0;

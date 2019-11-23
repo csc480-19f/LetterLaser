@@ -86,10 +86,8 @@ public class TimeBetweenRepliesCallable implements Callable {
                 if(emailThread==null){continue;}
                 Email first = emailThread.get(i);
                 Email next = emailThread.get(i+1);
-                String sd = first.getDateReceived().toString();
-                String ed = next.getDateReceived().toString();
-                DateTime startDate = new DateTime(DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss").parseMillis(sd));
-                DateTime endDate = new DateTime(DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss").parseMillis(ed));
+                DateTime startDate = new DateTime(first.getDateReceived());
+                DateTime endDate = new DateTime(next.getDateReceived());
                 int hours;
                 try {
 					hours = Hours.hoursBetween(startDate, endDate).getHours();
@@ -101,7 +99,7 @@ public class TimeBetweenRepliesCallable implements Callable {
                 //if sent else recieved
                 if(first.getFrom().get(0).getEmailAddress().equalsIgnoreCase(user)){
                     sentOrRecieved = 0;
-                }else{
+                 }else{
                     sentOrRecieved = 1;
                 }
 
