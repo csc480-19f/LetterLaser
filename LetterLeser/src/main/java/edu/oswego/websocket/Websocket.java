@@ -262,15 +262,15 @@ public class Websocket {
 			timeBetween = (JsonObject) tbrc.get(2, TimeUnit.MINUTES);
 		} catch (InterruptedException e) {
 			e.printStackTrace();
-			messenger.sendUpdateStatusMessage(session,"sorry but we ran into an error with our calculations: InterruptedException");
+			messenger.sendUpdateStatusMessage(session,"sorry but we ran into an error with our calculations: InterruptedException : "+e.getMessage());
 			return;
 		} catch (ExecutionException e) {
 			e.printStackTrace();
-			messenger.sendUpdateStatusMessage(session,"sorry but we ran into an error with our calculations: ExecutionException");
+			messenger.sendUpdateStatusMessage(session,"sorry but we ran into an error with our calculations: ExecutionException : "+e.getMessage());
 			return;
 		} catch (TimeoutException e) {
 			e.printStackTrace();
-			messenger.sendUpdateStatusMessage(session,"sorry but we ran into an error with our calculations: TimeoutException");
+			messenger.sendUpdateStatusMessage(session,"sorry but we ran into an error with our calculations: TimeoutException : "+e.getMessage());
 			return;
 		}catch(Exception e){
 			e.printStackTrace();
