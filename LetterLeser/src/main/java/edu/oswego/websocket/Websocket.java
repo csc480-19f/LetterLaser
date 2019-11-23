@@ -1,6 +1,6 @@
 package edu.oswego.websocket;
 
-import java.io.IOException;
+
 import java.io.UnsupportedEncodingException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -134,6 +134,7 @@ public class Websocket {
 	@OnError
 	public void onError(Throwable t, Session session) {
 		System.out.println("onError::");
+		messenger.sendUpdateStatusMessage(session,"well an error was thrown and actually crashed the thread. The error => "+t.getMessage());
 		t.printStackTrace();
 	}
 
