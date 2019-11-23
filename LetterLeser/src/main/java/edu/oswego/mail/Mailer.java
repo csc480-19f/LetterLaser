@@ -284,6 +284,8 @@ public class Mailer {
 
 				List<EmailAddress> from = new ArrayList<>();
 				for(Address a : m.getFrom()) {
+                    System.out.println(a.toString());
+                    
 					String address = a.toString().split("<|>")[1];
 					from.add(new EmailAddress(0, address));
                 }
