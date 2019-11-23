@@ -1,8 +1,10 @@
 package edu.oswego.websocket;
 
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.*;
 
@@ -180,13 +182,13 @@ public class Websocket {
 		String foldername = filter.get("foldername").getAsString();
 
 		messenger.sendUpdateStatusMessage(session,"attempting to pull your emails\nthis can take a while");
-		List<Email> emails = mailer.getListOfEmails(session,messenger,foldername);
+		List<Email> emails = mailer.pullEmails(session, messenger, foldername);
 
 		if(emails==null){
 			messenger.sendUpdateStatusMessage(session,"no emails exist in that folder");
 			return;
 		}
-
+		Collections.sort(emails);
 		messenger.sendUpdateStatusMessage(session,"the emails have been compiled, we will start running the calculations");
 		calculations(session,email,emails);
 	}
@@ -269,6 +271,10 @@ public class Websocket {
 		} catch (TimeoutException e) {
 			e.printStackTrace();
 			messenger.sendUpdateStatusMessage(session,"sorry but we ran into an error with our calculations: TimeoutException");
+			return;
+		}catch(Exception e){
+			e.printStackTrace();
+			messenger.sendUpdateStatusMessage(session,"sorry but we ran into an error with our calculations: Exception : "+e.getMessage());
 			return;
 		}
 

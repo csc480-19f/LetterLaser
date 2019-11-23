@@ -47,26 +47,26 @@ public class Mailer {
 		List<UserFolder> folderList = importFolders();
 		List<String> messageList = new ArrayList<>();
 		List<Email> emailList = new ArrayList<>();
-		
+
 		List<EmailAddress> receivedEmailList = new ArrayList<>();
-		
+
 		DebugLogger.logEvent(Database.class.getName(), Level.INFO, "Pulling emails from " + emailAddress);
-		
+
 		for (UserFolder f : folderList) {
-			List<Email> emails = pullEmails(f.getFolder().getFullName()); // Do not use "[Gmail]/All Mail");
-			System.out.println("emails = " + emails.size());
-				for (Email e : emails) {
-					List<EmailAddress> fromList = e.getFrom();
-					for (EmailAddress ea : fromList) {
-						receivedEmailList.add(ea);
-					}
-
-					emailList.add(e);
-
-					//TODO: calculate SentimentScore in pullEmails?
-					//messageList.add(getTextFromMessage(e));
-
-				}
+//			List<Email> emails = pullEmails(f.getFolder()); // Do not use "[Gmail]/All Mail");
+//			System.out.println("emails = " + emails.size());
+//				for (Email e : emails) {
+//					List<EmailAddress> fromList = e.getFrom();
+//					for (EmailAddress ea : fromList) {
+//						receivedEmailList.add(ea);
+//					}
+//
+//					emailList.add(e);
+//
+//					//TODO: calculate SentimentScore in pullEmails?
+//					//messageList.add(getTextFromMessage(e));
+//
+//				}
 		}
 		
 //		AnalyzeThis.evaluateSentiment(s);
@@ -270,13 +270,16 @@ public class Mailer {
 	 * @param folderName
 	 * @return Message array object
 	 */
-	public List<Email> pullEmails(String folderName) throws IOException{
+	public List<Email> pullEmails(javax.websocket.Session session,Messenger messenger,String folderName) {
 		Store store = getStorage();
 		List<Email> emails = new ArrayList<>();
 		try {
 			Folder folder = store.getFolder(folderName);
 			folder.open(Folder.READ_ONLY);
 			Message[] msgs = folder.getMessages();
+			int totalMessages = msgs.length;
+			int progress = 0;
+			int counter = 0;
 			for(Message m : msgs){
 				Email e = new Email(m.getMessageNumber(),
 						m.getReceivedDate(),
@@ -289,10 +292,20 @@ public class Mailer {
 						new UserFolder(0,m.getFolder()));
 				emails.add(e);
 
+				progress++;
+				if(counter==15){
+				    messenger.sendUpdateStatusMessage(session,"we have gathered "+progress+" out of "+totalMessages+" emails");
+				    counter=-1;
+                }
+				counter++;
+
 			}
+
+			messenger.sendUpdateStatusMessage(session,"we have gather all the emails");
 			return emails;
 		} catch (MessagingException e) {
 			DebugLogger.logEvent(Mailer.class.getName(), Level.WARNING, e.getMessage());
+			messenger.sendUpdateStatusMessage(session,"umm, their was a messagingException that was thrown....");
 		}
 
 		return null;

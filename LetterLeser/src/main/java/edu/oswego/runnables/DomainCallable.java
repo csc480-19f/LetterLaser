@@ -58,6 +58,6 @@ public class DomainCallable implements Callable {
 			domainObjs.add(domainObj);
 		}
 		emailsByDomain.add("emailbydomain", domainObjs);
-		return emailsByDomain;
+		return domainObjs;
 	}
 }

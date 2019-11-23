@@ -46,7 +46,7 @@ public class FolderCallable implements Callable {
 		}
 
 		emailsByFolder.add("emailbyfolder", folderObjs);
-		return emailsByFolder;
+		return folderObjs;
 	}
 
 
