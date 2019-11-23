@@ -1,7 +1,5 @@
 package edu.oswego.websocket;
 
-import java.io.IOException;
-
 import java.io.UnsupportedEncodingException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -69,13 +67,10 @@ public class Websocket {
 		JsonObject jsonMessage = new JsonParser().parse(message).getAsJsonObject();
 
 		if (jsonMessage == null) {
-			try {
-				session.getBasicRemote().sendText("invalid_jsonObject: you've been disconnected");
-				session.close();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
+			messenger.sendErrorMessage(session,"invalid jsonMessage try again");
+			return;
 		}
+
 		String messageType = jsonMessage.get("messagetype").getAsString();
 		String decryptedEmail = decryptString(session,jsonMessage.get("email").getAsString());
 
@@ -155,7 +150,7 @@ public class Websocket {
 			return;
 		}
 
-		StorageObject storageObject1 = sessionMapper.get(email);
+
 		if(storageObject==null){
 			storageObject=new StorageObject();
 			storageObject.setMailer(mailer);

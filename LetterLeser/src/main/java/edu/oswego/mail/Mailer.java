@@ -407,7 +407,7 @@ public class Mailer {
 
 	public List<Email> getListOfEmails(javax.websocket.Session javaxWebsocketSession, Messenger messenger, String foldername){
 		Message[] messaages = pullEmails(foldername);
-
+		
 		//TODO someone fill this method in please
 		return null;
 	}
