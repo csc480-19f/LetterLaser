@@ -2,27 +2,20 @@ package edu.oswego.runnables;
 
 import javax.websocket.Session;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
-
-import edu.oswego.database.Database;
 import edu.oswego.mail.Mailer;
-import edu.oswego.model.UserFavourites;
-import edu.oswego.model.UserFolder;
 import edu.oswego.websocket.Messenger;
-import java.util.List;
 
 public class ValidationRunnable implements Runnable {
 
 	private Mailer mailer;
-	private Database database;
+//	private Database database;
 	private boolean validateOrPull;
 	private Session session;
 	private Messenger messenger = new Messenger();
 
-	public ValidationRunnable(Mailer mailer, Database database, boolean validateOrPull, Session session) {
+	public ValidationRunnable(Mailer mailer, boolean validateOrPull, Session session) {
 		this.mailer = mailer;
-		this.database = database;
+//		this.database = database;
 		this.validateOrPull = validateOrPull;
 		this.session = session;
 	}

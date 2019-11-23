@@ -9,8 +9,8 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import edu.oswego.database.Settings;
 import edu.oswego.mail.Mailer;
+import edu.oswego.mail.Settings;
 
 /**
  * All test for mailer methods go here.
