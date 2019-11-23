@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Properties;
 import java.util.logging.Level;
 
-import javax.mail.Address;
 import javax.mail.AuthenticationFailedException;
 import javax.mail.BodyPart;
 import javax.mail.Flags;
@@ -44,7 +43,7 @@ public class Mailer {
 	private Store storage;
 	private String emailAddress, password;
 	
-	public List<UserFolder> pull() {
+	public List<UserFolder> pull() throws IOException{
 		List<UserFolder> folderList = importFolders();
 		List<String> messageList = new ArrayList<>();
 		List<Email> emailList = new ArrayList<>();
@@ -54,23 +53,19 @@ public class Mailer {
 		DebugLogger.logEvent(Database.class.getName(), Level.INFO, "Pulling emails from " + emailAddress);
 		
 		for (UserFolder f : folderList) {
-			Message[] msgs = pullEmails(f.getFolder().getFullName()); // Do not use "[Gmail]/All Mail");
-			System.out.println("emails = " + msgs.length);
-				for (Message m : msgs) {
-					try {
-						List<EmailAddress> fromList = insertEmailAddress(m.getFrom());
-						for (EmailAddress ea : fromList) {
-							receivedEmailList.add(ea);
-						}
-						
-						Email email = new Email(0, m.getReceivedDate(), m.getSubject(), m.getSize(), m.getFlags().contains(Flags.Flag.SEEN), hasAttachment(m), new SentimentScore(), f);
-						emailList.add(email);
-						
-						messageList.add(getTextFromMessage(m));
-
-					} catch (MessagingException e) {
-						DebugLogger.logEvent(Database.class.getName(), Level.WARNING, e.getMessage());
+			List<Email> emails = pullEmails(f.getFolder().getFullName()); // Do not use "[Gmail]/All Mail");
+			System.out.println("emails = " + emails.size());
+				for (Email e : emails) {
+					List<EmailAddress> fromList = e.getFrom();
+					for (EmailAddress ea : fromList) {
+						receivedEmailList.add(ea);
 					}
+
+					emailList.add(e);
+
+					//TODO: calculate SentimentScore in pullEmails?
+					//messageList.add(getTextFromMessage(e));
+
 				}
 		}
 		
@@ -106,13 +101,6 @@ public class Mailer {
 		return folderList;
 	}
 
-	private List<EmailAddress> insertEmailAddress(Address[] addresses) {
-		List<EmailAddress> emailAddrList = new ArrayList<>();
-		for (Address a : addresses) {
-			emailAddrList.add(new EmailAddress(0, a.toString()));
-		}
-		return emailAddrList;
-	}
 	
 	private int insertEmail(Message m, List<UserFolder> folderList, List<Integer> emailIdList) {
 		
@@ -282,13 +270,27 @@ public class Mailer {
 	 * @param folderName
 	 * @return Message array object
 	 */
-	public Message[] pullEmails(String folderName) {
+	public List<Email> pullEmails(String folderName) throws IOException{
 		Store store = getStorage();
+		List<Email> emails = new ArrayList<>();
 		try {
 			Folder folder = store.getFolder(folderName);
 			folder.open(Folder.READ_ONLY);
 			Message[] msgs = folder.getMessages();
-			return msgs;
+			for(Message m : msgs){
+				Email e = new Email(m.getMessageNumber(),
+						m.getReceivedDate(),
+						m.getSubject(),
+						m.getSize(),
+						m.isSet(Flags.Flag.SEEN),
+						hasAttachment(m),
+						//Here is probably where we should calculate sentiment scores if anywhere
+						new SentimentScore(0,0,0,0),
+						new UserFolder(0,m.getFolder()));
+				emails.add(e);
+
+			}
+			return emails;
 		} catch (MessagingException e) {
 			DebugLogger.logEvent(Mailer.class.getName(), Level.WARNING, e.getMessage());
 		}
@@ -403,13 +405,6 @@ public class Mailer {
 		} catch (MessagingException e) {
 			e.printStackTrace();
 		}
-	}
-
-	public List<Email> getListOfEmails(javax.websocket.Session javaxWebsocketSession, Messenger messenger, String foldername){
-		Message[] messaages = pullEmails(foldername);
-		
-		//TODO someone fill this method in please
-		return null;
 	}
 
 }
