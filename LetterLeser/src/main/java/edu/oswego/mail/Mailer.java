@@ -273,7 +273,10 @@ public class Mailer {
 			for(Message m : msgs){
 
 				List<EmailAddress> from = new ArrayList<>();
-				for(Address a : m.getFrom()) from.add(new EmailAddress(0, a.toString()));
+				for(Address a : m.getFrom()) {
+                    from.add(new EmailAddress(0, a.toString()));
+                    System.out.println(a.toString());
+                }
 
 				Email e = new Email(m.getMessageNumber(),
 						m.getReceivedDate(),
@@ -286,7 +289,6 @@ public class Mailer {
 						new UserFolder(0,m.getFolder()),
 						from);
 				emails.add(e);
-
 				progress++;
 				if(counter==15){
 				    messenger.sendUpdateStatusMessage(session,"we have gathered "+progress+" out of "+totalMessages+" emails");
