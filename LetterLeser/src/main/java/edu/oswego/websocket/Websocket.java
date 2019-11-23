@@ -183,7 +183,7 @@ public class Websocket {
 		String foldername = filter.get("folder").getAsString();
 
 		messenger.sendUpdateStatusMessage(session,"attempting to pull your emails\nthis can take a while");
-		List<Email> emails = mailer.getListOfEmails(session,foldername);
+		List<Email> emails = mailer.getListOfEmails(session,messenger,foldername);
 
 		if(emails==null){
 			messenger.sendUpdateStatusMessage(session,"no emails exist in that folder");

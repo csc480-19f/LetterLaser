@@ -28,6 +28,7 @@ import edu.oswego.model.Email;
 import edu.oswego.model.EmailAddress;
 import edu.oswego.model.SentimentScore;
 import edu.oswego.model.UserFolder;
+import edu.oswego.websocket.Messenger;
 
 /**
  * Mailer class that has the Session/Store objects as well as host/port/tls
@@ -404,7 +405,7 @@ public class Mailer {
 		}
 	}
 
-	public List<Email> getListOfEmails(javax.websocket.Session javaxWebsocketSession, String foldername){
+	public List<Email> getListOfEmails(javax.websocket.Session javaxWebsocketSession, Messenger messenger, String foldername){
 		Message[] messaages = pullEmails(foldername);
 
 		//TODO someone fill this method in please
