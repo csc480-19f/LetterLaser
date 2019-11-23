@@ -2,22 +2,12 @@ package edu.oswego.mail;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 import java.util.logging.Level;
 
-import javax.mail.AuthenticationFailedException;
-import javax.mail.BodyPart;
-import javax.mail.Flags;
-import javax.mail.Folder;
-import javax.mail.Message;
-import javax.mail.MessagingException;
-import javax.mail.Multipart;
-import javax.mail.NoSuchProviderException;
-import javax.mail.Part;
-import javax.mail.Session;
-import javax.mail.Store;
-import javax.mail.Transport;
+import javax.mail.*;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMultipart;
 
@@ -281,6 +271,10 @@ public class Mailer {
 			int progress = 0;
 			int counter = 0;
 			for(Message m : msgs){
+
+				List<EmailAddress> from = new ArrayList<>();
+				for(Address a : m.getFrom()) from.add(new EmailAddress(0, a.toString()));
+
 				Email e = new Email(m.getMessageNumber(),
 						m.getReceivedDate(),
 						m.getSubject(),
@@ -289,7 +283,8 @@ public class Mailer {
 						hasAttachment(m),
 						//Here is probably where we should calculate sentiment scores if anywhere
 						new SentimentScore(0,0,0,0),
-						new UserFolder(0,m.getFolder()));
+						new UserFolder(0,m.getFolder()),
+						from);
 				emails.add(e);
 
 				progress++;
