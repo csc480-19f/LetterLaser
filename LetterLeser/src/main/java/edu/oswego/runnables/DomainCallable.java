@@ -24,7 +24,7 @@ public class DomainCallable implements Callable {
 			List<EmailAddress> senders = e.getFrom();
 			for (EmailAddress ea : senders) {
 				String domain = ea.getEmailAddress().split("@")[1];
-				String parent = domain.split("\\.")[0];
+				String parent = domain.split("\\.")[1];
 				if (domains.containsKey(domain)) {
 					int d = domains.get(domain);
 					int p = domains.get(parent);
@@ -48,8 +48,8 @@ public class DomainCallable implements Callable {
 			JsonObject innerData = new JsonObject();
 
 			String[] domainMeta = domain.split("\\.");
-			String domainName = (domainMeta.length == 2)? domainMeta[1] : domainMeta[0];
-			String domainParent = (domainMeta.length == 2)? domainMeta[0] : "0";
+			String domainName = domainMeta[0];
+			String domainParent = (domainMeta.length == 2)? domainMeta[1] : "0";
 
 			innerData.addProperty("domainname", domainName);
 			innerData.addProperty("domainparent", domainParent);
