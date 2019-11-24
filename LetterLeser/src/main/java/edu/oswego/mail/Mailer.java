@@ -282,13 +282,17 @@ public class Mailer {
 			int counter = 0;
 			for(Message m : msgs){
 
+				boolean damnBugs = false;
 				List<EmailAddress> from = new ArrayList<>();
 				for(Address a : m.getFrom()) {
-					String [] temp = a.toString().split("<|>");
-					String address = temp[temp.length-2];
-					from.add(new EmailAddress(0, address));
+					try {
+						String[] temp = a.toString().split("<|>");
+						String address = temp[temp.length - 1];
+						from.add(new EmailAddress(0, address));
+					}catch(Exception e){
+						System.out.println(a.toString());damnBugs = true;}
                 }
-
+				if(damnBugs){progress++;continue;}
 				Email e = new Email(m.getMessageNumber(),
 						m.getReceivedDate(),
 						m.getSubject(),
