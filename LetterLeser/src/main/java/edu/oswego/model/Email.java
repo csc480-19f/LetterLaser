@@ -65,7 +65,7 @@ public class Email implements Comparable {
 		this.isSeen = isSeen;
 		this.hasAttachment = hasAttachment;
 		this.sentimentScore = null;
-		this.folder = folder.getFolder().getFullName();
+		this.folder = (folder != null)? folder.getFolder().getFullName() : null;
 		this.from = new ArrayList<>();
 	}
 
@@ -90,7 +90,7 @@ public class Email implements Comparable {
 		this.isSeen = isSeen;
 		this.hasAttachment = hasAttachment;
 		this.sentimentScore = sentimentScore;
-		this.folder = folder.getFolder().getFullName();
+		this.folder = (folder != null)? folder.getFolder().getFullName() : null;
 		this.from = new ArrayList<>();
 	}
 
@@ -103,7 +103,7 @@ public class Email implements Comparable {
 		this.isSeen = isSeen;
 		this.hasAttachment = hasAttachment;
 		this.sentimentScore = sentimentScore;
-		this.folder = folder.getFolder().getFullName();
+		this.folder = (folder != null)? folder.getFolder().getFullName() : null;
 		this.from = from;
 	}
 

@@ -7,6 +7,7 @@ import edu.oswego.model.EmailAddress;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.Callable;
 
 public class DomainCallable implements Callable {
@@ -18,46 +19,60 @@ public class DomainCallable implements Callable {
 
 	@Override
 	public Object call() {
-		HashMap<String, Integer> domains = new HashMap<>();
 
-		for (Email e : emails) {
-			List<EmailAddress> senders = e.getFrom();
-			for (EmailAddress ea : senders) {
-				String domain = ea.getEmailAddress().split("@")[1];
-				String parent = domain.split("\\.")[1];
-				if (domains.containsKey(domain)) {
-					int d = domains.get(domain);
-					int p = domains.get(parent);
-					domains.put(domain, ++d);
-					domains.put(parent, ++p);
-				} else if(domains.containsKey(parent)){
-					int p = domains.get(parent);
-					domains.put(parent, ++p);
-					domains.put(domain, 1);
-				}else{
-					domains.put(domain, 1);
-					domains.put(parent, 1);
-				}
-			}
-		}
+	    DomainMapper dm = new DomainMapper(emails);
+
 
 		JsonObject emailsByDomain = new JsonObject();
 		JsonArray domainObjs = new JsonArray();
-		for (String domain : domains.keySet()) {
+		for (String domain : dm.getDomains()) {
 			JsonObject domainObj = new JsonObject();
 			JsonObject innerData = new JsonObject();
 
-			String[] domainMeta = domain.split("\\.");
-			String domainName = domainMeta[0];
-			String domainParent = (domainMeta.length == 2)? domainMeta[1] : "0";
+			String domainParent = (dm.hasParent(domain))? dm.getParent(domain) : "0";
 
-			innerData.addProperty("domainname", domainName);
+			innerData.addProperty("domainname", domain);
 			innerData.addProperty("domainparent", domainParent);
-			innerData.addProperty("contribution", domains.get(domain));
+			innerData.addProperty("contribution", dm.getContribution(domain));
 			domainObj.add("domainobj", innerData);
 			domainObjs.add(domainObj);
 		}
 		emailsByDomain.add("emailbydomain", domainObjs);
 		return domainObjs;
 	}
+
+	private class DomainMapper{
+
+	    private HashMap<String, Integer> contribution = new HashMap<String, Integer>();
+	    private HashMap<String, String> parents = new HashMap<>();
+	    public DomainMapper(List<Email> emails){
+	        for(Email e : emails){
+	           for(EmailAddress ea : e.getFrom()){
+	               String [] domainParts = ea.getEmailAddress().split("@")[1].split("\\.");
+                   for (int i = 0; i < domainParts.length; i++) {
+                       parents.put(domainParts[i],((i+1) == domainParts.length)? "0" : domainParts[i+1]);
+                       incrementKey(contribution, domainParts[i]);
+                   }
+               }
+            }
+        }
+
+        public Set<String> getDomains(){ return contribution.keySet(); }
+
+        public boolean hasParent(String k){ return parents.containsKey(k); }
+
+        public String getParent(String k){ return parents.get(k); }
+
+        public int getContribution(String k ){ return contribution.get(k); }
+
+        private HashMap<String, Integer> incrementKey(HashMap<String,Integer> map, String key) {
+            if(map.containsKey(key)){
+                int x = map.get(key);
+                map.put(key, ++x);
+            }else{
+                map.put(key, 1);
+            }
+            return map;
+        }
+    }
 }
