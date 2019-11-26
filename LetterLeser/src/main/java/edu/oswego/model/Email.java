@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-public class Email implements Comparable {
+public class Email implements Comparable<Email> {
 
 	private int id;
 	private Date dateReceived;
@@ -31,16 +31,11 @@ public class Email implements Comparable {
 		this.size = bb.getDouble();
 		this.isSeen = (bb.getInt() == 1);
 		this.hasAttachment = (bb.getInt() == 1);
-		double pos = bb.getDouble();
-		double neg = bb.getDouble();
-		double neu = bb.getDouble();
-		double cpd = bb.getDouble();
-		this.sentimentScore = new SentimentScore(pos, neg, neu, cpd);
+		this.sentimentScore = new SentimentScore(bb.getDouble(), bb.getDouble(), bb.getDouble(), bb.getDouble());
 		int folderLength = bb.getInt();
 		char[] folderChars = new char[folderLength];
-		for (int i = 0; i < folderLength; i++) {
+		for (int i = 0; i < folderLength; i++)
 			folderChars[i] = bb.getChar();
-		}
 		this.folder = new String(folderChars);
 		this.from = new ArrayList<>();
 		int fromSize = bb.getInt();
@@ -157,11 +152,11 @@ public class Email implements Comparable {
 			fromSize += (2 * ea.getEmailAddress().length());
 		}
 
-		return 4 // id (int)
+		return Integer.SIZE // id (int) 
 				+ 8 // dateReceived (TimeStamp, can be constructed with long)
-				+ subjectSize + 8 // size (double)
-				+ 4 // isSeen (boolean, stored as int)
-				+ 4 // hasAttachment (boolean, stored as int)
+				+ subjectSize + Double.SIZE // size (double)
+				+ Integer.SIZE // isSeen (boolean, stored as int)
+				+ Integer.SIZE // hasAttachment (boolean, stored as int)
 				+ sentimentScoreSize + folderSize + fromSize;
 	}
 
@@ -199,7 +194,7 @@ public class Email implements Comparable {
 	}
 
 	@Override
-	public int compareTo(Object o) {
+	public int compareTo(Email o) {
 		Email e = (Email) o;
 		if (this.getDateReceived().getTime() > e.getDateReceived().getTime()) {
 			return 1;
