@@ -193,6 +193,9 @@ public class Websocket {
 		if (emails == null) {
 			messenger.sendUpdateStatusMessage(session, "no emails exist in that folder");
 			return;
+		}else if(emails.size()==0){
+			messenger.sendUpdateStatusMessage(session, "no emails exist in that folder");
+			return;
 		}
 		Collections.sort(emails);
 		messenger.sendUpdateStatusMessage(session,
@@ -220,6 +223,7 @@ public class Websocket {
 	}
 
 	private void calculations(Session session, String email, List<Email> emailList) {
+
 		SentimentScoreCallable sentimentScoreCallable = new SentimentScoreCallable(emailList);
 		DomainCallable domainCallable = new DomainCallable(emailList);
 		FolderCallable folderCallable = new FolderCallable(emailList);
