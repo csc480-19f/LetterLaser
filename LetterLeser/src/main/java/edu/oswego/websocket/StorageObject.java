@@ -13,9 +13,13 @@ public class StorageObject {
 	private Mailer mailer;
 	private JSDecryptor jsDecryptor;
 
-	public JSDecryptor getJsDecryptor(){return jsDecryptor;}
+	public JSDecryptor getJsDecryptor() {
+		return jsDecryptor;
+	}
 
-	public void setJsDecryptor(JSDecryptor jsDecryptor){this.jsDecryptor = jsDecryptor;}
+	public void setJsDecryptor(JSDecryptor jsDecryptor) {
+		this.jsDecryptor = jsDecryptor;
+	}
 
 	public Thread getHanderThread() {
 		return handlerThread;
