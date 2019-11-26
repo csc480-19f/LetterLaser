@@ -48,8 +48,8 @@ public class TimeBetweenRepliesCallable implements Callable {
 		ArrayList<Email> replies = new ArrayList<>();
 		for (Email e: emails) {
 			if(e.getSubject()==null){continue;}
-			if(e.getSubject().length()<=3){starts.add(e);}
-			if(!e.getSubject().substring(0,4).contains("Re: ")){
+			if(e.getSubject().length()<=4){starts.add(e);continue;}
+			if(!e.getSubject().substring(0,4).equals("Re: ")){
 				starts.add(e);
 			}else{
 				replies.add(e);
