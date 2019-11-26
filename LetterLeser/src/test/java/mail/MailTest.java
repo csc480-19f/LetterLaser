@@ -2,6 +2,8 @@ package mail;
 
 import static org.junit.Assert.assertEquals;
 
+import java.util.List;
+
 import javax.mail.Folder;
 import javax.mail.MessagingException;
 
@@ -11,6 +13,8 @@ import org.junit.jupiter.api.Test;
 
 import edu.oswego.mail.Mailer;
 import edu.oswego.mail.Settings;
+import edu.oswego.model.Email;
+import edu.oswego.websocket.Messenger;
 
 /**
  * All test for mailer methods go here.
@@ -60,7 +64,15 @@ public class MailTest {
 	@Test
 	void testTotalEmailCount() {
 		int num = mailer.getTotalEmailCount();
-		assertEquals(num, 13693);
+//		System.out.println(mailer.getTotalEmailCount());
+		assertEquals(num, 13706);
+	}
+	
+	@Test
+	void testPull() {
+		List<Email> eList = mailer.pullEmails(new Messenger(), "INBOX");
+		System.out.println(eList);
+		assertEquals(eList.size() > 0, true);
 	}
 
 }

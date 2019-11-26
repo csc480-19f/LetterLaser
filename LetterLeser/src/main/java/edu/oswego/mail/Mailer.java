@@ -278,6 +278,58 @@ public class Mailer {
 
 		return null;
 	}
+	
+	public List<Email> pullEmails(Messenger messenger, String folderName) {
+		Store store = getStorage();
+		List<Email> emails = new ArrayList<>();
+		try {
+			Folder folder = store.getFolder(folderName);
+			folder.open(Folder.READ_ONLY);
+			Message[] msgs = folder.getMessages();
+			int totalMessages = msgs.length;
+			int progress = 0;
+			int counter = 0;
+			for (Message m : msgs) {
+
+				boolean damnBugs = false;
+				List<EmailAddress> from = new ArrayList<>();
+				for (Address a : m.getFrom()) {
+					try {
+						String[] temp = a.toString().split("<|>");
+						String address = temp[temp.length - 1];
+						from.add(new EmailAddress(0, address));
+					} catch (Exception e) {
+						System.out.println(a.toString());
+						damnBugs = true;
+					}
+				}
+				if (damnBugs) {
+					progress++;
+					continue;
+				}
+				Email e = new Email(m.getMessageNumber(), m.getReceivedDate(), m.getSubject(), m.getSize(),
+						m.isSet(Flags.Flag.SEEN), hasAttachment(m),
+						// Here is probably where we should calculate sentiment scores if anywhere
+						// AnalyzeThis.evaluateSentiment(m.getContent().toString()), - Jim
+						new SentimentScore(0, 0, 0, 0), 
+						new UserFolder(0, m.getFolder()), 
+						from);
+				emails.add(e);
+				progress++;
+				if (counter == 15) {
+					counter = -1;
+				}
+				counter++;
+
+			}
+
+			return emails;
+		} catch (MessagingException e) {
+			DebugLogger.logEvent(Mailer.class.getName(), Level.WARNING, e.getMessage());
+		}
+
+		return null;
+	}
 
 	/**
 	 * Checks if a message has an attachment via multipart and mimebodypart
