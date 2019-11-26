@@ -18,27 +18,27 @@ public class FileManager {
 	 *            The emails to be serialized
 	 * @throws IOException
 	 */
-	public void serializeFolder(String user, List<Email> emails) throws IOException {
-		File folder = new File("emails");
-		if (!folder.exists())
-			folder.mkdir();
-
-		String imapFolder = emails.get(0).getFolder();
-
-		File f = new File("emails/" + user + "-" + imapFolder);
-		if (!f.exists())
-			f.createNewFile();
-		OutputStream os = new FileOutputStream(f, true);
-		os.flush();
-
-		for (Email email : emails) {
-			byte[] bytes = email.toBytes();
-			os.write(bytes.length);
-			os.write(bytes);
-		}
-
-		os.close();
-	}
+//	public void serializeFolder(String user, List<Email> emails) throws IOException {
+//		File folder = new File("emails");
+//		if (!folder.exists())
+//			folder.mkdir();
+//
+//		String imapFolder = emails.get(0).getFolder();
+//
+//		File f = new File("emails/" + user + "-" + imapFolder);
+//		if (!f.exists())
+//			f.createNewFile();
+//		OutputStream os = new FileOutputStream(f, true);
+//		os.flush();
+//
+//		for (Email email : emails) {
+//			byte[] bytes = email.toBytes();
+//			os.write(bytes.length);
+//			os.write(bytes);
+//		}
+//
+//		os.close();
+//	}
 
 	/**
 	 * deserializeFolder: deserializes and returns a list of emails from the given
@@ -52,23 +52,23 @@ public class FileManager {
 	 * @return a list of emails from the given folder
 	 * @throws IOException
 	 */
-	public List<Email> deserializeFolder(String user, String imapFolder) throws IOException {
-		File folder = new File("emails");
-		if (!folder.exists())
-			return null;
-		File f = new File("emails/" + user + "-" + imapFolder);
-		if (!f.exists())
-			return null;
-
-		List<Email> emails = new ArrayList<>();
-		InputStream is = new FileInputStream(f);
-		while (is.available() != 0) {
-			int length = is.read();
-			byte[] bytes = new byte[length];
-			is.read(bytes);
-			emails.add(new Email(bytes));
-		}
-		is.close();
-		return emails;
-	}
+//	public List<Email> deserializeFolder(String user, String imapFolder) throws IOException {
+//		File folder = new File("emails");
+//		if (!folder.exists())
+//			return null;
+//		File f = new File("emails/" + user + "-" + imapFolder);
+//		if (!f.exists())
+//			return null;
+//
+//		List<Email> emails = new ArrayList<>();
+//		InputStream is = new FileInputStream(f);
+//		while (is.available() != 0) {
+//			int length = is.read();
+//			byte[] bytes = new byte[length];
+//			is.read(bytes);
+//			emails.add(new Email(bytes));
+//		}
+//		is.close();
+//		return emails;
+//	}
 }

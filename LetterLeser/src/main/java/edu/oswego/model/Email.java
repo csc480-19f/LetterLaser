@@ -17,6 +17,10 @@ public class Email implements Comparable<Email> {
 	private SentimentScore sentimentScore;
 	private String folder;
 	private List<EmailAddress> from;
+	
+	public Email(String folder) {
+		this.folder = folder;
+	};
 
 	public Email(byte[] bytes) {
 		ByteBuffer bb = ByteBuffer.wrap(bytes);
