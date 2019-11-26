@@ -7,6 +7,7 @@ import org.joda.time.DateTime;
 import org.joda.time.Hours;
 import org.joda.time.format.DateTimeFormat;
 
+import java.time.DayOfWeek;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -15,9 +16,6 @@ import java.util.concurrent.Callable;
 public class TimeBetweenRepliesCallable implements Callable {
 	private List<Email> emails;
 	private String user;
-
-	private static final double oneDay = 86400000;
-	private static final double oneHour = 3600000;
 
 	/**
 	 * @author Phoenix Boisnier
@@ -40,75 +38,149 @@ public class TimeBetweenRepliesCallable implements Callable {
      * 	    indexes [3][x] are total for recieve
 	 */
 	@Override
-	public Object call() throws Exception {
+	public Object call() {
 		//The returned value, a 2-d array that stores the average time between sent at [0][x], and received at [1][x].
 		double[][] times = new double[4][7];
 		//This is the total number of emails sent, corresponding to the times in the array above.
 		//This bit will save us time later.
-		ArrayList<String> keys = new ArrayList<>();
-
-		/*
-		This section converts the emails array list into a hash map.
-		This hash map has an array list stored as its value at the subject key as emails in a conversation all have
-		the same subject, at least for gmail.
-		 */
-		HashMap<String, ArrayList<Email>> subjects = new HashMap<>();
-		for(Email e : emails){
-			String subj = e.getSubject();
-			//If the subject exists in subjects already
-			if(subjects.containsKey(subj)){
-				subjects.get(subj).add(e);
-			}
-			//Or if it exists as a reply
-			else if(subj.length() >= 4 && subj.substring(0,4).equalsIgnoreCase("Re: ")){
-				ArrayList<Email> list = subjects.get(subj.substring(4));
-				if(list!=null){
-					list.add(e);
-				}else{
-					subj = subj.substring(4);
-					subjects.put(subj, new ArrayList<Email>());
-					subjects.get(subj).add(e);
-					keys.add(subj);
-				}
-			}
-			//Or is it's new
-			else{
-				subjects.put(subj, new ArrayList<Email>());
-				subjects.get(subj).add(e);
-				keys.add(subj);
+		//sort between start and reply
+		ArrayList<Email> starts = new ArrayList<>();
+		ArrayList<Email> replies = new ArrayList<>();
+		for (Email e: emails) {
+			if(e.getSubject()==null){continue;}
+			if(e.getSubject().length()<=3){starts.add(e);}
+			if(!e.getSubject().substring(0,4).contains("Re: ")){
+				starts.add(e);
+			}else{
+				replies.add(e);
 			}
 		}
 
+		if(replies.size()==0){
+			return getReply(times);
+		}
 
-		for(String key : keys){
-            ArrayList<Email> emailThread = subjects.get(key);
-            for(int i=0;i<emailThread.size()-1;i++){
-                if(emailThread==null){continue;}
-                Email first = emailThread.get(i);
-                Email next = emailThread.get(i+1);
-                DateTime startDate = new DateTime(first.getDateReceived());
-                DateTime endDate = new DateTime(next.getDateReceived());
-                int hours;
-                try {
-					hours = Hours.hoursBetween(startDate, endDate).getHours();
-				}catch(Exception e){
-                	continue;
+		//sort into threads
+		ArrayList<ArrayList<Email>> threads = new ArrayList<>();
+		for(Email e : replies){
+			boolean notSorted = true;
+			String replySubject = e.getSubject().substring(4);
+
+			for(ArrayList<Email> thread : threads){
+				if(thread==null){continue;}
+				if(thread.get(0).getSubject().equals(replySubject)){
+					thread.add(e);
+					notSorted=false;
+					break;
 				}
-                int dayOfWeek = getIndexOfDay(startDate.dayOfWeek().toString());
+			}
+
+			if(notSorted){
+				for(Email email : starts){
+					if(email.getSubject().equals(replySubject)){
+						ArrayList<Email> thread = new ArrayList<>();
+						thread.add(email);
+						thread.add(e);
+						threads.add(thread);
+					}
+				}
+			}
+
+		}
+
+		//calculation for each thread
+		for(ArrayList<Email> thread : threads){
+			for(int i=0;i<thread.size()-1;i++){
+				Email first = thread.get(i);
+				Email next = thread.get(i+1);
+				DateTime startDate = new DateTime(first.getDateReceived());
+                DateTime endDate = new DateTime(next.getDateReceived());
+                Hours h = Hours.hoursBetween(startDate,endDate);
+                int hour;
+                if(h==null){
+                	hour=0;
+                }else{
+                	hour=h.getHours();
+				}
+
+				int dayOfWeek = getIndexOfDay(startDate.dayOfWeek());
                 int sentOrRecieved;
-                //if sent else recieved
-                if(first.getFrom().get(0).getEmailAddress().equalsIgnoreCase(user)){
+				if(first.getFrom().get(0).getEmailAddress().equalsIgnoreCase(user)){
                     sentOrRecieved = 0;
                  }else{
                     sentOrRecieved = 1;
                 }
 
-                times[sentOrRecieved][dayOfWeek] = times[sentOrRecieved][dayOfWeek] + hours;
-                times[sentOrRecieved+2][dayOfWeek] = times[sentOrRecieved+2][dayOfWeek] + 1;
+				times[sentOrRecieved][dayOfWeek] = times[sentOrRecieved][dayOfWeek]+hour;
+				times[sentOrRecieved+2][dayOfWeek] = times[sentOrRecieved+2][dayOfWeek]+1;
 
-            }
+			}
+		}
 
-        }
+
+		return getReply(times);
+		/*
+		This section converts the emails array list into a hash map.
+		This hash map has an array list stored as its value at the subject key as emails in a conversation all have
+		the same subject, at least for gmail.
+		 */
+//		HashMap<String, ArrayList<Email>> subjects = new HashMap<>();
+//		for(Email e : emails){
+//			String subj = e.getSubject();
+//			//If the subject exists in subjects already
+//			if(subjects.containsKey(subj)){
+//				subjects.get(subj).add(e);
+//			}
+//			//Or if it exists as a reply
+//			else if(subj.length() >= 4 && subj.substring(0,4).equalsIgnoreCase("Re: ")){
+//				ArrayList<Email> list = subjects.get(subj.substring(4));
+//				if(list!=null){
+//					list.add(e);
+//				}else{
+//					subj = subj.substring(4);
+//					subjects.put(subj, new ArrayList<Email>());
+//					subjects.get(subj).add(e);
+//					keys.add(subj);
+//				}
+//			}
+//			//Or is it's new
+//			else{
+//				subjects.put(subj, new ArrayList<Email>());
+//				subjects.get(subj).add(e);
+//				keys.add(subj);
+//			}
+//		}
+
+
+//		for(String key : keys){
+//            ArrayList<Email> emailThread = subjects.get(key);
+//            for(int i=0;i<emailThread.size()-1;i++){
+//                if(emailThread==null){continue;}
+//                Email first = emailThread.get(i);
+//                Email next = emailThread.get(i+1);
+//                DateTime startDate = new DateTime(first.getDateReceived());
+//                DateTime endDate = new DateTime(next.getDateReceived());
+//                int hours;
+//                try {
+//					hours = Hours.hoursBetween(startDate, endDate).getHours();
+//				}catch(Exception e){
+//                	continue;
+//				}
+//                int dayOfWeek = getIndexOfDay(startDate.dayOfWeek().toString());
+//                int sentOrRecieved;
+//                //if sent else recieved
+//                if(first.getFrom().get(0).getEmailAddress().equalsIgnoreCase(user)){
+//                    sentOrRecieved = 0;
+//                 }else{
+//                    sentOrRecieved = 1;
+//                }
+//
+//                times[sentOrRecieved][dayOfWeek] = times[sentOrRecieved][dayOfWeek] + hours;
+//                times[sentOrRecieved+2][dayOfWeek] = times[sentOrRecieved+2][dayOfWeek] + 1;
+//
+//            }
+//
+//        }
 		//Here's where that bit from earlier is going to save us time.
 		/*for(String key : keys){
 			ArrayList<Email> conversation = subjects.remove(key);
@@ -179,19 +251,23 @@ public class TimeBetweenRepliesCallable implements Callable {
                 times[0][q] /= totals[0][q];
                 times[1][q] /= totals[1][q];
 		}*/
-		for(int i=0;i<7;i++){
-		    if(times[2][i]!=0){
-                times[0][i] = times[0][i]/times[2][i];
-            }else{
-                times[0][i]=0;
-            }
-		    if(times[3][i]!=0){
-                times[1][i] = times[1][i]/times[3][i];
-            }else{
-                times[1][i]=0;
-            }
-        }
 
+
+	}
+
+	private JsonObject getReply(double[][] times){
+		for(int i=0;i<7;i++){
+			if(times[2][i]!=0){
+				times[0][i] = times[0][i]/times[2][i];
+			}else{
+				times[0][i]=0;
+			}
+			if(times[3][i]!=0){
+				times[1][i] = times[1][i]/times[3][i];
+			}else{
+				times[1][i]=0;
+			}
+		}
 		JsonObject combined = new JsonObject();
 		JsonArray sent = new JsonArray();
 		JsonArray rece = new JsonArray();
@@ -205,18 +281,19 @@ public class TimeBetweenRepliesCallable implements Callable {
 		return combined;
 	}
 
-	private int getIndexOfDay(String day){
-	    if(day.equalsIgnoreCase("sunday")){
+	private int getIndexOfDay(DateTime.Property day){
+
+	    if(day.get()==DayOfWeek.SUNDAY.getValue()){
 	        return 0;
-        }else if(day.equalsIgnoreCase("monday")){
+        }else if(day.get()==DayOfWeek.MONDAY.getValue()){
             return 1;
-        }else if(day.equalsIgnoreCase("tuesday")){
+        }else if(day.get()==DayOfWeek.TUESDAY.getValue()){
             return 2;
-        }else if(day.equalsIgnoreCase("wednesday")){
+        }else if(day.get()==DayOfWeek.WEDNESDAY.getValue()){
             return 3;
-        }else if(day.equalsIgnoreCase("thursday")){
+        }else if(day.get()==DayOfWeek.THURSDAY.getValue()){
             return 4;
-        }else if(day.equalsIgnoreCase("friday")){
+        }else if(day.get()==DayOfWeek.FRIDAY.getValue()){
             return 5;
         }else{//saturday
             return 6;
