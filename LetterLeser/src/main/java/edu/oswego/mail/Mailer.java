@@ -27,6 +27,7 @@ import edu.oswego.model.Email;
 import edu.oswego.model.EmailAddress;
 import edu.oswego.model.SentimentScore;
 import edu.oswego.model.UserFolder;
+import edu.oswego.sentiment.AnalyzeThis;
 import edu.oswego.websocket.Messenger;
 
 /**
@@ -42,78 +43,30 @@ public class Mailer {
 	private Session session;
 	private Store storage;
 	private String emailAddress, password;
-	
-	public List<UserFolder> pull() throws IOException{
-		List<UserFolder> folderList = importFolders();
-		List<String> messageList = new ArrayList<>();
-		List<Email> emailList = new ArrayList<>();
 
-		List<EmailAddress> receivedEmailList = new ArrayList<>();
-
-//		DebugLogger.logEvent(Database.class.getName(), Level.INFO, "Pulling emails from " + emailAddress);
-
-		for (UserFolder f : folderList) {
-//			List<Email> emails = pullEmails(f.getFolder()); // Do not use "[Gmail]/All Mail");
-//			System.out.println("emails = " + emails.size());
-//				for (Email e : emails) {
-//					List<EmailAddress> fromList = e.getFrom();
-//					for (EmailAddress ea : fromList) {
-//						receivedEmailList.add(ea);
-//					}
-//
-//					emailList.add(e);
-//
-//					//TODO: calculate SentimentScore in pullEmails?
-//					//messageList.add(getTextFromMessage(e));
-//
-//				}
-		}
-		
-//		AnalyzeThis.evaluateSentiment(s);
-		
-//		for (int i = 0; i < messageList.size(); i++) {
-//			
-//			emailList.get(i).setSentimentScore(null);
-//		}
-//		
-//		for (Email e: emailList) {	
-			// TODO insert sentiment score
-//			e.setSentimentScore(null);
-//			
-//		}
-		return folderList;
-	}
-	
 	public List<UserFolder> importFolders() {
 		List<UserFolder> folderList = new ArrayList<>();
 		Folder[] folders;
 		try {
 			folders = getStorage().getDefaultFolder().list("*");
 			for (Folder f : folders) {
-				if (!f.getFullName().equals("[Gmail]") && !f.getFullName().equals("CSC480_19F") && !f.getFullName().equals("[Gmail]/All Mail")) {
+				if (!f.getFullName().equals("[Gmail]") && !f.getFullName().equals("CSC480_19F")
+						&& !f.getFullName().equals("[Gmail]/All Mail")) {
 					folderList.add(new UserFolder(0, f));
 				}
 			}
 		} catch (MessagingException e) {
 			e.printStackTrace();
 		}
-		
+
 		return folderList;
 	}
 
-	
-	private int insertEmail(Message m, List<UserFolder> folderList, List<Integer> emailIdList) {
-		
-
-		return -1;
-	}
-	
 	/**
 	 * Creates a mailer object.
 	 * 
 	 * @param emailAddress
 	 * @param password
-	 * @see .Database
 	 */
 	public Mailer(String emailAddress, String password) {
 		this.emailAddress = emailAddress;
@@ -219,7 +172,7 @@ public class Mailer {
 		} catch (MessagingException e) {
 			e.printStackTrace();
 		}
-		
+
 		return sum;
 	}
 
@@ -230,39 +183,39 @@ public class Mailer {
 	 * @param originFolderName
 	 * @param msgs
 	 */
-	public void markEmailsInFolder(String originFolderName, Message[] msgs) { // TODO change this to javaxmail folder
-		// MAKE HIDDEN FOLDER... maybe subscribed?
-
-		if (msgs == null)
-			if (msgs.length == 0)
-				return;
-		
-		System.out.println("MARKING: " + originFolderName + " :: " + msgs.length);
-
-		Folder folder = null;
-		try {
-			folder = getStorage().getFolder("CSC480_19F");
-
-			if (!folder.exists()) {
-				if (folder.create(Folder.HOLDS_MESSAGES)) {
-					folder.setSubscribed(true);
-					System.out.println("FOLDER MADE!");
-				}
-			}
-
-			folder.open(Folder.READ_WRITE);
-
-			Folder originFolder = getStorage().getFolder(originFolderName);
-			originFolder.open(Folder.READ_WRITE);
-			// MUST CHECK IF MESSAGE ALREADY EXISTS IN FOLDER OR NOT. ONLY COPY IF NOT. DID
-			// NOT DO YET.
-			if (msgs.length > 0)
-				originFolder.copyMessages(msgs, folder);
-			// originFolder.close();
-		} catch (MessagingException e) {
-			DebugLogger.logEvent(Mailer.class.getName(), Level.WARNING, e.getMessage());
-		}
-	}
+//	public void markEmailsInFolder(String originFolderName, Message[] msgs) { // TODO change this to javaxmail folder
+//		// MAKE HIDDEN FOLDER... maybe subscribed?
+//
+//		if (msgs == null)
+//			if (msgs.length == 0)
+//				return;
+//
+//		System.out.println("MARKING: " + originFolderName + " :: " + msgs.length);
+//
+//		Folder folder = null;
+//		try {
+//			folder = getStorage().getFolder("CSC480_19F");
+//
+//			if (!folder.exists()) {
+//				if (folder.create(Folder.HOLDS_MESSAGES)) {
+//					folder.setSubscribed(true);
+//					System.out.println("FOLDER MADE!");
+//				}
+//			}
+//
+//			folder.open(Folder.READ_WRITE);
+//
+//			Folder originFolder = getStorage().getFolder(originFolderName);
+//			originFolder.open(Folder.READ_WRITE);
+//			// MUST CHECK IF MESSAGE ALREADY EXISTS IN FOLDER OR NOT. ONLY COPY IF NOT. DID
+//			// NOT DO YET.
+//			if (msgs.length > 0)
+//				originFolder.copyMessages(msgs, folder);
+//			// originFolder.close();
+//		} catch (MessagingException e) {
+//			DebugLogger.logEvent(Mailer.class.getName(), Level.WARNING, e.getMessage());
+//		}
+//	}
 
 	/**
 	 * Gets all the emails from a folder
@@ -270,7 +223,7 @@ public class Mailer {
 	 * @param folderName
 	 * @return Message array object
 	 */
-	public List<Email> pullEmails(javax.websocket.Session session,Messenger messenger,String folderName) {
+	public List<Email> pullEmails(javax.websocket.Session session, Messenger messenger, String folderName) {
 		Store store = getStorage();
 		List<Email> emails = new ArrayList<>();
 		try {
@@ -280,44 +233,47 @@ public class Mailer {
 			int totalMessages = msgs.length;
 			int progress = 0;
 			int counter = 0;
-			for(Message m : msgs){
+			for (Message m : msgs) {
 
 				boolean damnBugs = false;
 				List<EmailAddress> from = new ArrayList<>();
-				for(Address a : m.getFrom()) {
+				for (Address a : m.getFrom()) {
 					try {
 						String[] temp = a.toString().split("<|>");
 						String address = temp[temp.length - 1];
 						from.add(new EmailAddress(0, address));
-					}catch(Exception e){
-						System.out.println(a.toString());damnBugs = true;}
-                }
-				if(damnBugs){progress++;continue;}
-				Email e = new Email(m.getMessageNumber(),
-						m.getReceivedDate(),
-						m.getSubject(),
-						m.getSize(),
-						m.isSet(Flags.Flag.SEEN),
-						hasAttachment(m),
-						//Here is probably where we should calculate sentiment scores if anywhere
-						new SentimentScore(0,0,0,0),
-						new UserFolder(0,m.getFolder()),
+					} catch (Exception e) {
+						System.out.println(a.toString());
+						damnBugs = true;
+					}
+				}
+				if (damnBugs) {
+					progress++;
+					continue;
+				}
+				Email e = new Email(m.getMessageNumber(), m.getReceivedDate(), m.getSubject(), m.getSize(),
+						m.isSet(Flags.Flag.SEEN), hasAttachment(m),
+						// Here is probably where we should calculate sentiment scores if anywhere
+						// AnalyzeThis.evaluateSentiment(m.getContent().toString()), - Jim
+						new SentimentScore(0, 0, 0, 0), 
+						new UserFolder(0, m.getFolder()), 
 						from);
 				emails.add(e);
 				progress++;
-				if(counter==15){
-				    messenger.sendUpdateStatusMessage(session,"we have gathered "+progress+" out of "+totalMessages+" emails");
-				    counter=-1;
-                }
+				if (counter == 15) {
+					messenger.sendUpdateStatusMessage(session,
+							"we have gathered " + progress + " out of " + totalMessages + " emails");
+					counter = -1;
+				}
 				counter++;
 
 			}
 
-			messenger.sendUpdateStatusMessage(session,"we have gather all the emails");
+			messenger.sendUpdateStatusMessage(session, "we have gather all the emails");
 			return emails;
 		} catch (MessagingException e) {
 			DebugLogger.logEvent(Mailer.class.getName(), Level.WARNING, e.getMessage());
-			messenger.sendUpdateStatusMessage(session,"umm, their was a messagingException that was thrown....");
+			messenger.sendUpdateStatusMessage(session, "umm, their was a messagingException that was thrown....");
 		}
 
 		return null;
@@ -367,7 +323,7 @@ public class Mailer {
 			DebugLogger.logEvent(Mailer.class.getName(), Level.WARNING, e.getMessage());
 		} catch (IOException e) {
 			DebugLogger.logEvent(Mailer.class.getName(), Level.WARNING, e.getMessage());
-		} catch(Exception e){
+		} catch (Exception e) {
 			return "ERR";
 		}
 
@@ -424,7 +380,7 @@ public class Mailer {
 		return text;
 	}
 
-	public void closeMailer(){
+	public void closeMailer() {
 		try {
 			storage.close();
 		} catch (MessagingException e) {
