@@ -27,7 +27,6 @@ import edu.oswego.model.Email;
 import edu.oswego.model.EmailAddress;
 import edu.oswego.model.SentimentScore;
 import edu.oswego.model.UserFolder;
-import edu.oswego.sentiment.AnalyzeThis;
 import edu.oswego.websocket.Messenger;
 
 /**
@@ -35,7 +34,7 @@ import edu.oswego.websocket.Messenger;
  * settings.
  * 
  * @author Jimmy Nguyen
- * @since 10/27/2019
+ * @since 12/01/2019
  */
 
 public class Mailer {
@@ -286,7 +285,7 @@ public class Mailer {
 			Folder folder = store.getFolder(folderName);
 			folder.open(Folder.READ_ONLY);
 			Message[] msgs = folder.getMessages();
-			int totalMessages = msgs.length;
+//			int totalMessages = msgs.length;
 			int progress = 0;
 			int counter = 0;
 			for (Message m : msgs) {

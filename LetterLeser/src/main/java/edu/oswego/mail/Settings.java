@@ -20,11 +20,7 @@ public class Settings {
 		try {
 			Scanner scanner = new Scanner(new File("credentials.txt"));
 
-			scanner.nextLine();
-			scanner.nextLine();
-			scanner.nextLine();
-			scanner.nextLine();
-			scanner.nextLine();
+			scanner.nextLine();scanner.nextLine();scanner.nextLine();scanner.nextLine();scanner.nextLine();
 			edu.oswego.mail.Settings.EMAIL_ADDRESS = scanner.nextLine();
 			edu.oswego.mail.Settings.EMAIL_PWD = scanner.nextLine();
 

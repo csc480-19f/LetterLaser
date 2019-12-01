@@ -1,12 +1,6 @@
 package edu.oswego.mail;
 
-import edu.oswego.model.Email;
-import java.io.*;
-import java.util.ArrayList;
-import java.util.List;
-
 public class FileManager {
-
 	/**
 	 * serializeFolder: Takes a List of emails and appends them to a file by the
 	 * name [Email]-[Folder]. If no file by this name exists, then it is created.
