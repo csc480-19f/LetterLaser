@@ -14,7 +14,7 @@ import edu.oswego.model.SentimentScore;
 public class AnalyzeThis {
 	private static final String pathToSentimentOnPi = "~/javaServer/apache-tomcat-9.0.26/webapps/LetterLeser/WEB-INF/classes/edu/oswego/sentiment/";
 	// if we run into issues with other dir then we use the hard coded one above
-	private final static String pathToSentiment = System.getProperty("user.dir") + File.separator + "LetterLeser"
+	private final static String pathToSentiment = System.getProperty("user.dir") //+ File.separator + "LetterLeser"
 			+ File.separator + "src" + File.separator + "main" + File.separator + "java" + File.separator + "edu"
 			+ File.separator + "oswego" + File.separator + "sentiment" + File.separator;
 	private final static File sentimentByEmail = new File(pathToSentiment + "SentimentByEmail.py");
@@ -28,7 +28,7 @@ public class AnalyzeThis {
 	 * @param userEmail
 	 *            The user's email address; used to make filenames unique.
 	 */
-	public AnalyzeThis(String[] emails, String userEmail) {
+	public AnalyzeThis(String[] emails, String userEmail) throws IOException {
 		scores = process(emails, userEmail);
 	}
 
@@ -51,33 +51,33 @@ public class AnalyzeThis {
 	 *            The list of emails to be analyzed.
 	 * @return An array of emails' corresponding sentiment score objects.
 	 */
-	private SentimentScore[] process(String[] emails, String userEmail) {
+	private SentimentScore[] process(String[] emails, String userEmail) throws IOException {
 		SentimentScore[] scores = new SentimentScore[emails.length];
 
 		// This section feeds the python code the enciphered .txt file and demands the
 		// sentiment results.
 		String filePath = AnalyzeThis.encipher(emails, userEmail);
-
-		try {
-			Process p = Runtime.getRuntime()
-					.exec("python " + sentimentByEmail.getPath() + " " + filePath + " " + userEmail);
-			BufferedReader in = new BufferedReader(new InputStreamReader(p.getInputStream()), 8);
-			String vals = in.readLine();
-			File input = new File(vals);
-			Scanner scone = new Scanner(input);
-			for (int q = 0; q < emails.length; q++) {
-				String line = scone.nextLine();
-				Scanner scune = new Scanner(line);
-				SentimentScore s = new SentimentScore(Double.parseDouble(scune.next()),
-						Double.parseDouble(scune.next()), Double.parseDouble(scune.next()),
-						Double.parseDouble(scune.next()));
-				scores[q] = s;
-			}
-			p.destroy();
-		} catch (IOException e) {
-			e.printStackTrace();
-			System.out.println("Oh no.");
+		Process p = Runtime.getRuntime()
+				.exec("python " + sentimentByEmail.getPath() + " " + filePath + " " + userEmail + " " + pathToSentiment);
+		BufferedReader in = new BufferedReader(new InputStreamReader(p.getInputStream()), 8);
+		BufferedReader err = new BufferedReader(new InputStreamReader(p.getErrorStream()), 8);
+		String erLine = err.readLine();
+		while(erLine != null){
+			System.out.println(erLine);
+			erLine = err.readLine();
 		}
+		String vals = in.readLine();
+		File input = new File(vals);
+		Scanner scone = new Scanner(input);
+		for (int q = 0; q < emails.length; q++) {
+			String line = scone.nextLine();
+			Scanner scune = new Scanner(line);
+			SentimentScore s = new SentimentScore(Double.parseDouble(scune.next()),
+					Double.parseDouble(scune.next()), Double.parseDouble(scune.next()),
+					Double.parseDouble(scune.next()));
+			scores[q] = s;
+		}
+		p.destroy();
 		// Get your fresh, hot results here.
 		return scores;
 
@@ -96,6 +96,7 @@ public class AnalyzeThis {
 		File pyIn = new File(pathToSentiment + "pythonInput" + userEmail + ".txt");
 
 		try {
+			if(pyIn.exists()) pyIn.delete();
 			pyIn.createNewFile();
 			FileWriter write = new FileWriter(pyIn);
 			for (String email : emails) {

@@ -1,8 +1,5 @@
 package edu.oswego.runnables;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
-import com.google.protobuf.Enum;
 import edu.oswego.model.Email;
 import edu.oswego.sentiment.AnalyzeThis;
 

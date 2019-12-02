@@ -147,9 +147,10 @@ def vigOut(phrase, keyword):
 # This is where our emails are contained.
 emailFile = open(sys.argv[1], 'r')
 
-sep = os.path.sep
+#sep = os.path.sep
+#dirpath = os.getcwd()+sep+"LetterLeser"+sep+"src"+sep+"main"+sep+"java"+sep+"edu"+sep+"oswego"+sep+"sentiment"+sep
 
-dirpath = os.getcwd()+sep+"LetterLeser"+sep+"src"+sep+"main"+sep+"java"+sep+"edu"+sep+"oswego"+sep+"sentiment"+sep
+dirpath = sys.argv[3]
 
 # This is where we put them.
 emails = []

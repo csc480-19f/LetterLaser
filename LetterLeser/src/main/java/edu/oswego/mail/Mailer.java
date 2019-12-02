@@ -27,6 +27,7 @@ import edu.oswego.model.Email;
 import edu.oswego.model.EmailAddress;
 import edu.oswego.model.SentimentScore;
 import edu.oswego.model.UserFolder;
+import edu.oswego.sentiment.AnalyzeThis;
 import edu.oswego.websocket.Messenger;
 
 /**
@@ -232,6 +233,7 @@ public class Mailer {
 			int totalMessages = msgs.length;
 			int progress = 0;
 			int counter = 0;
+			SentimentScore [] scores = this.getSentimentScores(msgs);
 			for (Message m : msgs) {
 
 				boolean damnBugs = false;
@@ -250,11 +252,13 @@ public class Mailer {
 					progress++;
 					continue;
 				}
-				Email e = new Email(m.getMessageNumber(), m.getReceivedDate(), m.getSubject(), m.getSize(),
-						m.isSet(Flags.Flag.SEEN), hasAttachment(m),
-						// Here is probably where we should calculate sentiment scores if anywhere
-						// AnalyzeThis.evaluateSentiment(m.getContent().toString()), - Jim
-						new SentimentScore(0, 0, 0, 0), 
+				Email e = new Email(m.getMessageNumber(),
+						m.getReceivedDate(),
+						m.getSubject(),
+						m.getSize(),
+						m.isSet(Flags.Flag.SEEN),
+						hasAttachment(m),
+						scores[progress],
 						new UserFolder(0, m.getFolder()), 
 						from);
 				emails.add(e);
@@ -272,7 +276,10 @@ public class Mailer {
 			return emails;
 		} catch (MessagingException e) {
 			DebugLogger.logEvent(Mailer.class.getName(), Level.WARNING, e.getMessage());
-			messenger.sendUpdateStatusMessage(session, "umm, their was a messagingException that was thrown....");
+			messenger.sendUpdateStatusMessage(session, "umm, there was a messagingException that was thrown....");
+		} catch (IOException e) {
+			DebugLogger.logEvent(Mailer.class.getName(), Level.WARNING, e.getMessage());
+			messenger.sendUpdateStatusMessage(session, "umm, there was an IOException that was thrown....");
 		}
 
 		return null;
@@ -288,8 +295,8 @@ public class Mailer {
 //			int totalMessages = msgs.length;
 			int progress = 0;
 			int counter = 0;
+			SentimentScore [] scores = this.getSentimentScores(msgs);
 			for (Message m : msgs) {
-
 				boolean damnBugs = false;
 				List<EmailAddress> from = new ArrayList<>();
 				for (Address a : m.getFrom()) {
@@ -306,12 +313,14 @@ public class Mailer {
 					progress++;
 					continue;
 				}
-				Email e = new Email(m.getMessageNumber(), m.getReceivedDate(), m.getSubject(), m.getSize(),
-						m.isSet(Flags.Flag.SEEN), hasAttachment(m),
-						// Here is probably where we should calculate sentiment scores if anywhere
-						// AnalyzeThis.evaluateSentiment(m.getContent().toString()), - Jim
-						new SentimentScore(0, 0, 0, 0), 
-						new UserFolder(0, m.getFolder()), 
+				Email e = new Email(m.getMessageNumber(),
+						m.getReceivedDate(),
+						m.getSubject(),
+						m.getSize(),
+						m.isSet(Flags.Flag.SEEN),
+						hasAttachment(m),
+						scores[progress],
+						new UserFolder(0, m.getFolder()),
 						from);
 				emails.add(e);
 				progress++;
@@ -325,9 +334,18 @@ public class Mailer {
 			return emails;
 		} catch (MessagingException e) {
 			DebugLogger.logEvent(Mailer.class.getName(), Level.WARNING, e.getMessage());
+		} catch (IOException e) {
+			DebugLogger.logEvent(Mailer.class.getName(), Level.WARNING, e.getMessage());
 		}
-
 		return null;
+	}
+
+	private SentimentScore [] getSentimentScores(Message [] messages) throws IOException, MessagingException{
+		String [] contents = new String[messages.length];
+		for(int i = 0; i < messages.length; i++)
+			contents[i] = messages[i].getContent().toString();
+		AnalyzeThis a = new AnalyzeThis(contents,emailAddress);
+		return a.getScores();
 	}
 
 	/**
