@@ -111,6 +111,8 @@ public class Mailer {
 			properties.put("mail.imap.host", Settings.HOST);
 			properties.put("mail.imap.port", Settings.PORT);
 			properties.put("mail.imap.starttls.enable", Settings.TLS_ENABLED);
+			properties.put("mail.smtps.timeout", Settings.TIMEOUT);
+			properties.put("mail.smtps.connectiontimeout", Settings.TIMEOUT);
 			session = Session.getDefaultInstance(properties);
 		}
 		return session;

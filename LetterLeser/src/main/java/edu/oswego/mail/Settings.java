@@ -12,6 +12,7 @@ public class Settings {
 	public static final boolean TLS_ENABLED = true;
 	public static String EMAIL_ADDRESS = "";
 	public static String EMAIL_PWD = "";
+	public static final String TIMEOUT = "600000";
 
 	private Settings() {
 	} // Cannot instantiate an object
