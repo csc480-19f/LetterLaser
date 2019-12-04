@@ -10,6 +10,7 @@ import java.util.concurrent.*;
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
+import javax.json.Json;
 import javax.websocket.OnClose;
 import javax.websocket.OnError;
 import javax.websocket.OnMessage;
@@ -252,7 +253,7 @@ public class Websocket {
 		t6.start();
 
 		messenger.sendUpdateStatusMessage(session, "we are running all calculations atm");
-		int sentiment;
+		JsonObject sentiment;
 		JsonArray domain;
 		JsonArray folder;
 		JsonArray numOfMail;
@@ -260,7 +261,7 @@ public class Websocket {
 		JsonObject timeBetween;
 		try {
 			messenger.sendUpdateStatusMessage(session, "getting your sentiment info");
-			sentiment = (int) ssc.get(2, TimeUnit.MINUTES);
+			sentiment = (JsonObject) ssc.get(2, TimeUnit.MINUTES);
 			messenger.sendUpdateStatusMessage(session, "got the sentiment\ngetting your domain info");
 			domain = (JsonArray) dc.get(2, TimeUnit.MINUTES);
 			messenger.sendUpdateStatusMessage(session, "got the domain info\ngetting your folder info");

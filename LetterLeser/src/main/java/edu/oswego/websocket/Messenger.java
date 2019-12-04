@@ -48,11 +48,11 @@ public class Messenger {
 		return sendToClient(session,jsonObject);
 	}
 
-	public boolean sendGraphData(Session session,int sentiment,JsonArray domain,JsonArray folder,JsonArray numOfMail,JsonObject sendNRec,JsonObject timeBetween){
+	public boolean sendGraphData(Session session,JsonObject sentiment,JsonArray domain,JsonArray folder,JsonArray numOfMail,JsonObject sendNRec,JsonObject timeBetween){
 		JsonObject js = new JsonObject();
 		js.addProperty("messagetype", "graphs");
 		JsonObject graph = new JsonObject();
-		graph.addProperty("sentimentscore", sentiment);
+		graph.add("sentimentscore", sentiment);
 		graph.add("emailbydomain", domain);
 		graph.add("emailbyfolder", folder);
 		graph.add("emailssentandrecieved", sendNRec);
