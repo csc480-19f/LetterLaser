@@ -117,7 +117,7 @@ public class Handler implements Runnable {
 		t6.start();
 		JsonObject js;
 		try {
-			int sentiment = (int) ssc.get(2, TimeUnit.MINUTES);
+			JsonObject sentiment = (JsonObject) ssc.get(2, TimeUnit.MINUTES);
 			JsonArray domain = (JsonArray) dc.get(2, TimeUnit.MINUTES);
 			JsonArray folder = (JsonArray) fc.get(2, TimeUnit.MINUTES);
 			JsonArray numOfMail = (JsonArray) noec.get(2, TimeUnit.MINUTES);
@@ -127,7 +127,7 @@ public class Handler implements Runnable {
 			js = new JsonObject();
 			js.addProperty("messagetype", "graphs");
 			JsonObject graph = new JsonObject();
-			graph.addProperty("sentimentscore", sentiment);
+			graph.add("sentimentscore", sentiment);
 			graph.add("emailbydomain", domain);
 			graph.add("emailbyfolder", folder);
 			graph.add("emailssentandrecieved", sendNRec);

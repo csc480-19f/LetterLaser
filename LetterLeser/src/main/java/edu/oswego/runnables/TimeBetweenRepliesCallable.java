@@ -5,11 +5,9 @@ import com.google.gson.JsonObject;
 import edu.oswego.model.Email;
 import org.joda.time.DateTime;
 import org.joda.time.Hours;
-import org.joda.time.format.DateTimeFormat;
 
 import java.time.DayOfWeek;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.Callable;
 
@@ -258,12 +256,12 @@ public class TimeBetweenRepliesCallable implements Callable {
 	private JsonObject getReply(double[][] times){
 		for(int i=0;i<7;i++){
 			if(times[2][i]!=0){
-				times[0][i] = times[0][i]/times[2][i];
+				times[0][i] = Math.abs(times[0][i]/times[2][i]);
 			}else{
 				times[0][i]=0;
 			}
 			if(times[3][i]!=0){
-				times[1][i] = times[1][i]/times[3][i];
+				times[1][i] = Math.abs(times[1][i]/times[3][i]);
 			}else{
 				times[1][i]=0;
 			}

@@ -12,11 +12,12 @@ import edu.oswego.model.SentimentScore;
  * This class holds methods that execute python code.
  */
 public class AnalyzeThis {
-	private static final String pathToSentimentOnPi = "~/javaServer/apache-tomcat-9.0.26/webapps/LetterLeser/WEB-INF/classes/edu/oswego/sentiment/";
-	// if we run into issues with other dir then we use the hard coded one above
-	private final static String pathToSentiment = System.getProperty("user.dir") //+ File.separator + "LetterLeser"
-			+ File.separator + "src" + File.separator + "main" + File.separator + "java" + File.separator + "edu"
-			+ File.separator + "oswego" + File.separator + "sentiment" + File.separator;
+	private static String sep = File.separator;
+	private final static String pathToSentiment = sep + "home" + sep + "csc480f19" + sep + "LetterLeserNonJavaCode" + sep;
+			// Use this path if running locally
+			//System.getProperty("user.dir") //+ File.separator + "LetterLeser"
+			//+ File.separator + "src" + File.separator + "main" + File.separator + "java" + File.separator + "edu"
+			//+ File.separator + "oswego" + File.separator + "sentiment" + File.separator;
 	private final static File sentimentByEmail = new File(pathToSentiment + "SentimentByEmail.py");
 	private SentimentScore[] scores;
 
@@ -94,6 +95,7 @@ public class AnalyzeThis {
 		// This section creates the file and enciphers it.
 
 		File pyIn = new File(pathToSentiment + "pythonInput" + userEmail + ".txt");
+		File pyOut = new File(pathToSentiment + "pythonInput" + userEmail + ".txt");
 
 		try {
 			if(pyIn.exists()) pyIn.delete();
