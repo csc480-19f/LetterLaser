@@ -15,9 +15,9 @@ public class AnalyzeThis {
 	private static String sep = File.separator;
 	private final static String pathToSentiment = sep + "home" + sep + "csc480f19" + sep + "LetterLeserNonJavaCode" + sep;
 			// Use this path if running locally
-			//System.getProperty("user.dir") //+ File.separator + "LetterLeser"
-			//+ File.separator + "src" + File.separator + "main" + File.separator + "java" + File.separator + "edu"
-			//+ File.separator + "oswego" + File.separator + "sentiment" + File.separator;
+//			System.getProperty("user.dir") //+ File.separator + "LetterLeser"
+//			+ File.separator + "src" + File.separator + "main" + File.separator + "java" + File.separator + "edu"
+//			+ File.separator + "oswego" + File.separator + "sentiment" + File.separator;
 	private final static File sentimentByEmail = new File(pathToSentiment + "SentimentByEmail.py");
 	private SentimentScore[] scores;
 
@@ -95,10 +95,11 @@ public class AnalyzeThis {
 		// This section creates the file and enciphers it.
 
 		File pyIn = new File(pathToSentiment + "pythonInput" + userEmail + ".txt");
-		File pyOut = new File(pathToSentiment + "pythonInput" + userEmail + ".txt");
+		File pyOut = new File(pathToSentiment + "pythonOutput" + userEmail + ".txt");
 
 		try {
 			if(pyIn.exists()) pyIn.delete();
+			if(pyOut.exists()) pyOut.delete();
 			pyIn.createNewFile();
 			FileWriter write = new FileWriter(pyIn);
 			for (String email : emails) {

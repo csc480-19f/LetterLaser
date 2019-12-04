@@ -41,9 +41,9 @@ public class SentimentScoreCallable implements Callable {
 
 		JsonObject sentiment = new JsonObject();
 
-		sentiment.addProperty("positive", (positive/100) / emails.size());
-		sentiment.addProperty("negative", (negative/100) / emails.size());
-		sentiment.addProperty("neutral", (neutral/100) / emails.size());
+		sentiment.addProperty("positive", (int)((double)positive/emails.size() * 100));
+		sentiment.addProperty("negative", (int)((double)negative/emails.size()  * 100));
+		sentiment.addProperty("neutral", (int)((double)neutral/emails.size()  *100));
 
 		return sentiment;
 	}
