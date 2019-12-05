@@ -267,14 +267,14 @@ public class Mailer {
 				progress++;
 				if (counter == 15) {
 					messenger.sendUpdateStatusMessage(session,
-							"we have gathered " + progress + " out of " + totalMessages + " emails");
+							"Gathered " + progress + " out of " + totalMessages + " emails");
 					counter = -1;
 				}
 				counter++;
 
 			}
 
-			messenger.sendUpdateStatusMessage(session, "we have gather all the emails");
+			messenger.sendUpdateStatusMessage(session, "All emails have been gathered.");
 			return emails;
 		} catch (MessagingException e) {
 			DebugLogger.logEvent(Mailer.class.getName(), Level.WARNING, e.getMessage());

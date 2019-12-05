@@ -157,7 +157,7 @@ public class Websocket {
 		boolean connection = mailer.isConnected();
 		if (!connection) {
 			messenger.sendErrorMessage(session,
-					"sorry but we can't connect to your email. maybe invalid email n password");
+					"Invalid email or password.");
 			return;
 		}
 
