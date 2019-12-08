@@ -235,9 +235,11 @@ public class Mailer {
 			int totalMessages = msgs.length;
 			int progress = 0;
 			int counter = 0;
+			Thread waitingMessager = new Thread(new TimedMessage(messenger,session));
+			waitingMessager.start();
 			SentimentScore [] scores = this.getSentimentScores(msgs);
+			waitingMessager.interrupt();
 			for (Message m : msgs) {
-
 				boolean damnBugs = false;
 				List<EmailAddress> from = new ArrayList<>();
 				for (Address a : m.getFrom()) {
@@ -403,7 +405,7 @@ public class Mailer {
 
 	/**
 	 * Gets content of email for sentiment analysis
-	 * 
+	 *
 	 * @param message
 	 * @return content of email
 	 */
@@ -457,6 +459,46 @@ public class Mailer {
 		} catch (MessagingException e) {
 			e.printStackTrace();
 		}
+	}
+
+	private class TimedMessage implements Runnable{
+
+		Messenger messenger;
+		javax.websocket.Session session;
+		public TimedMessage(Messenger m, javax.websocket.Session s){
+			messenger = m;
+			session = s;
+		}
+
+		@Override
+		public void run(){
+			for(;;) {
+				try {
+					Thread.sleep(5000);
+				} catch (InterruptedException e) {
+					return;
+				}
+				String messageString = "";
+
+				switch ((int)(Math.random()*3)){
+					case 0:
+						messageString = "Calculating sentiment...";
+						break;
+					case 1:
+						messageString = "This won't take too much longer, promise.";
+						break;
+					case 2:
+						messageString = "Please be patient, you have a lot of emails.";
+						break;
+					default:
+						messageString = "So... come here often?";
+						break;
+
+				}
+				messenger.sendUpdateStatusMessage(session, messageString);
+			}
+		}
+
 	}
 
 }
