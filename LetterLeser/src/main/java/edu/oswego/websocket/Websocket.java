@@ -188,7 +188,7 @@ public class Websocket {
 		Mailer mailer = sessionMapper.get(email).getMailer();
 		String foldername = filter.get("foldername").getAsString();
 
-		messenger.sendUpdateStatusMessage(session, "attempting to pull your emails\nthis can take a while");
+		messenger.sendUpdateStatusMessage(session, "Attempting to pull your emails,\nthis can take a while...");
 		List<Email> emails = mailer.pullEmails(session, messenger, foldername);
 
 		if (emails == null) {

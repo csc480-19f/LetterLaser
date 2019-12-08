@@ -269,7 +269,7 @@ public class Mailer {
 				progress++;
 				if (counter == 15) {
 					messenger.sendUpdateStatusMessage(session,
-							"Gathered " + progress + " out of " + totalMessages + " emails");
+							"Gathered " + progress + " out of " + totalMessages + " emails.");
 					counter = -1;
 				}
 				counter++;
@@ -480,7 +480,7 @@ public class Mailer {
 				}
 				String messageString = "";
 
-				switch ((int)(Math.random()*3)){
+				switch ((int)(Math.random()*7)){
 					case 0:
 						messageString = "Calculating sentiment...";
 						break;
@@ -489,6 +489,18 @@ public class Mailer {
 						break;
 					case 2:
 						messageString = "Please be patient, you have a lot of emails.";
+						break;
+					case 3:
+						messageString = "Defragging the mainframe...";
+						break;
+					case 4:
+						messageString = "Adjusting binary trajectory...";
+						break;
+					case 5:
+						messageString = "Notifying user of calculations status...";
+						break;
+					case 6:
+						messageString = "Counting sheep...";
 						break;
 					default:
 						messageString = "So... come here often?";
