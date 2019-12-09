@@ -491,7 +491,7 @@ public class Mailer {
 						messageString = "Please be patient, you have a lot of emails.";
 						break;
 					case 3:
-						messageString = "Defragging the mainframe...";
+						messageString = "Interesting... =|";
 						break;
 					case 4:
 						messageString = "Adjusting binary trajectory...";
@@ -500,14 +500,18 @@ public class Mailer {
 						messageString = "Notifying user of calculations status...";
 						break;
 					case 6:
-						messageString = "Counting sheep...";
+						messageString = "Needed a tea break, but its coming along";
 						break;
 					default:
 						messageString = "So... come here often?";
 						break;
 
 				}
-				messenger.sendUpdateStatusMessage(session, messageString);
+				if(!Thread.interrupted()) {
+					messenger.sendUpdateStatusMessage(session, messageString);
+				}else{
+					return;
+				}
 			}
 		}
 
